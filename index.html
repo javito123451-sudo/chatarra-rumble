@@ -205,7 +205,7 @@ h1{font-family:'Bungee',sans-serif;font-weight:400;font-size:clamp(40px,10vw,88p
   <h1>Chatarra<br>Rumble</h1>
   <p class="sub">Dieciocho chatarreros saltan de un dron sobre la isla del desguace. Busca armas en las naves, escóndete y huye de la marea de aceite.</p>
   <div id="cards"></div>
-  <div class="row" style="justify-content:center"><button id="playBtn" class="btn">Jugar solo</button><button id="mpBtn" class="btn">Multijugador</button><button id="qBtn" class="btn alt">Gráficos</button></div>
+  <div class="row" style="justify-content:center"><button id="playBtn" class="btn">Jugar solo</button><button id="mpBtn" class="btn">Multijugador</button><button id="qBtn" class="btn alt">Gráficos</button><button id="stBtn" class="btn alt">Estilo</button></div>
   <div class="row" style="justify-content:center"><button id="afMenu" class="tg" aria-pressed="false">Disparo auto</button><button id="aaMenu" class="tg" aria-pressed="false">Apuntado auto</button></div>
   <p class="hint" id="ctrlHint"></p>
 </div>
@@ -265,6 +265,8 @@ const fmt=s=>{s=Math.max(0,Math.ceil(s));return Math.floor(s/60)+':'+String(s%60
 const MAP=100,R=0.6,N=18,SHIELD_MAX=60,DROP_Y=48;
 let QUALITY=TOUCH?'medium':'high';try{QUALITY=localStorage.getItem('cr_q')||QUALITY;}catch(e){}
 const HQ=QUALITY==='high',LQ=QUALITY==='low';
+let STYLE='real';try{STYLE=localStorage.getItem('cr_style')||'real';}catch(e){}
+const REAL=STYLE==='real';
 const FOG_NEAR=LQ?80:110,FOG_FAR=LQ?260:400,CAM_FAR=900;
 
 // ---------- datos
@@ -295,14 +297,15 @@ const canvas=$('c');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:!TOUCH&&!LQ,powerPreference:'high-performance'});
 renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,HQ?1.75:QUALITY==='medium'?1.5:1));
 renderer.shadowMap.enabled=!LQ;
-renderer.shadowMap.type=THREE.PCFShadowMap;
+renderer.shadowMap.type=REAL&&!LQ?THREE.PCFSoftShadowMap:THREE.PCFShadowMap;
+if(REAL){renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=0.92;}
 const scene=new THREE.Scene();
-const SKY=0xa9dcf0;scene.background=new THREE.Color(SKY);
+const SKY=REAL?0xa9bcc6:0xa9dcf0;scene.background=new THREE.Color(SKY);
 scene.fog=new THREE.Fog(SKY,150,420);
 const camera=new THREE.PerspectiveCamera(58,1,0.3,CAM_FAR);
-scene.add(new THREE.HemisphereLight(0xdff4ff,0x8a6a40,0.5));
+scene.add(new THREE.HemisphereLight(REAL?0xcfe2f0:0xdff4ff,REAL?0x4a3c2c:0x8a6a40,REAL?0.42:0.5));
 const SUN_OFF=new THREE.Vector3(38,70,26);
-const sun=new THREE.DirectionalLight(0xfff0d0,0.68);
+const sun=new THREE.DirectionalLight(REAL?0xffe2bc:0xfff0d0,REAL?1.0:0.68);
 sun.castShadow=!LQ;
 sun.shadow.mapSize.set(HQ?2048:1024,HQ?2048:1024);
 Object.assign(sun.shadow.camera,{left:-42,right:42,top:42,bottom:-42,near:1,far:160});
@@ -341,9 +344,15 @@ function crateTex(){const [c,g]=mkCanvas(128);g.fillStyle='#f6c64a';g.fillRect(0
 // toon de 3 tonos + contorno (inverted hull)
 const GRAD=(()=>{const d=new Uint8Array([95,175,255]);const t=new THREE.DataTexture(d,3,1,THREE.LuminanceFormat);t.minFilter=t.magFilter=THREE.NearestFilter;t.generateMipmaps=false;t.needsUpdate=true;return t;})();
 const OL=new THREE.MeshBasicMaterial({color:0x24160d,side:THREE.BackSide});
-const VTOON=new THREE.MeshToonMaterial({vertexColors:true,gradientMap:GRAD});
-const _mc={};function TM(hex){if(!_mc[hex])_mc[hex]=new THREE.MeshToonMaterial({color:hex,gradientMap:GRAD});return _mc[hex];}
-const lam=o=>new THREE.MeshToonMaterial(Object.assign({gradientMap:GRAD},o));
+// estilo realista: materiales PBR, sin contornos y colores menos saturados; estilo cartoon: toon de 3 tonos con contorno
+function MAT(o){o=Object.assign({},o);if(REAL){if(o.color!==undefined)o.color=realHex(o.color);return new THREE.MeshStandardMaterial(Object.assign({roughness:0.86,metalness:0.04},o));}return new THREE.MeshToonMaterial(Object.assign({gradientMap:GRAD},o));}
+const _rc=new THREE.Color();
+function realColor(c){const l=c.r*0.3+c.g*0.59+c.b*0.11;c.r=(c.r+(l-c.r)*0.22)*0.86;c.g=(c.g+(l-c.g)*0.22)*0.86;c.b=(c.b+(l-c.b)*0.22)*0.86;return c;}
+function realHex(h){if(!REAL)return h;_rc.set(h);return realColor(_rc).getHex();}
+if(REAL)OL.visible=false;
+const VTOON=MAT({vertexColors:true});
+const _mc={};function TM(hex){if(!_mc[hex])_mc[hex]=MAT({color:hex});return _mc[hex];}
+const lam=o=>MAT(o);
 const GLOW=glowTex(),SMOKE=smokeTex();
 const AOT=(()=>{const [c,g]=mkCanvas(128);const gr=g.createRadialGradient(64,64,0,64,64,64);gr.addColorStop(0,'rgba(0,0,0,0.5)');gr.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=gr;g.fillRect(0,0,128,128);return new THREE.CanvasTexture(c);})();
 const AOM=new THREE.MeshBasicMaterial({map:AOT,transparent:true,depthWrite:false});
@@ -362,7 +371,7 @@ class Batch{
     const pos=new Float32Array(n*3),nor=new Float32Array(n*3),col=new Float32Array(n*3),opos=new Float32Array(no*3);
     let o=0,oo=0;const c=new THREE.Color();
     for(const [g,color,ol] of items){const P=g.attributes.position.array,Nn=g.attributes.normal.array,cnt=g.attributes.position.count;
-      if(color instanceof THREE.Color)c.copy(color);else c.set(color);
+      if(color instanceof THREE.Color)c.copy(color);else{c.set(color);if(REAL)realColor(c);}
       pos.set(P,o*3);nor.set(Nn,o*3);
       for(let i=0;i<cnt;i++){col[(o+i)*3]=c.r;col[(o+i)*3+1]=c.g;col[(o+i)*3+2]=c.b;}
       if(ol){for(let i=0;i<cnt*3;i++)opos[oo*3+i]=P[i]+Nn[i]*thick;oo+=cnt;}
@@ -389,15 +398,15 @@ const beamMats={};const beamMat=c=>beamMats[c]||(beamMats[c]=new THREE.MeshBasic
 const ringMats={};const ringMat=c=>ringMats[c]||(ringMats[c]=new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:0.75,side:THREE.DoubleSide,depthWrite:false}));
 
 // ---------- elementos globales: cielo, agua, nubes
-const sky=(()=>{const g=new THREE.SphereGeometry(600,24,12),P=g.attributes.position,col=new Float32Array(P.count*3),top=new THREE.Color(0x3d9be6),hor=new THREE.Color(0xc9ecfa),c=new THREE.Color();
+const sky=(()=>{const g=new THREE.SphereGeometry(600,24,12),P=g.attributes.position,col=new Float32Array(P.count*3),top=new THREE.Color(REAL?0x3a7cc8:0x3d9be6),hor=new THREE.Color(REAL?0xb9c9d0:0xc9ecfa),c=new THREE.Color();
   for(let i=0;i<P.count;i++){const t=clamp(P.getY(i)/600,0,1);c.copy(hor).lerp(top,Math.pow(t,0.6));col[i*3]=c.r;col[i*3+1]=c.g;col[i*3+2]=c.b;}
   g.setAttribute('color',new THREE.BufferAttribute(col,3));const m=new THREE.Mesh(g,new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.BackSide,fog:false,depthWrite:false}));
   m.renderOrder=-1;m.frustumCulled=false;scene.add(m);return m;})();
-const water=new THREE.Mesh(new THREE.PlaneGeometry(1400,1400),new THREE.MeshToonMaterial({color:0x2ab0dc,gradientMap:GRAD,transparent:true,opacity:0.86}));
+const water=new THREE.Mesh(new THREE.PlaneGeometry(1400,1400),(REAL?new THREE.MeshStandardMaterial({color:0x2a7f99,roughness:0.12,metalness:0.35,transparent:true,opacity:0.9}):MAT({color:0x2ab0dc,transparent:true,opacity:0.86})));
 water.rotation.x=-Math.PI/2;water.position.y=-0.6;water.receiveShadow=true;scene.add(water);
 const clouds=(()=>{const b=new Batch();for(let i=0;i<(LQ?10:22);i++){const a=RNG()*6.28,r=rand(60,260),x=Math.cos(a)*r,z=Math.sin(a)*r,y=rand(55,75),s=rand(4,8);
   for(let k=0;k<4;k++)b.add(G.ico,MX(x+rand(-1.4,1.4)*s,y+rand(-0.3,0.4)*s,z+rand(-0.8,0.8)*s,0,0,0,s*rand(0.7,1.1),s*rand(0.5,0.7),s*rand(0.7,1)),0xffffff,false);}
-  const g=b.build(new THREE.MeshToonMaterial({vertexColors:true,gradientMap:GRAD,fog:false}),0,false);scene.add(g);return g;})();
+  const g=b.build(REAL?new THREE.MeshStandardMaterial({vertexColors:true,fog:false,roughness:1,emissive:0xb8c2c8}):MAT({vertexColors:true,fog:false}),0,false);scene.add(g);return g;})();
 const oilMat=new THREE.ShaderMaterial({transparent:true,depthWrite:false,
   uniforms:{uC:{value:new THREE.Vector2()},uR:{value:150},uT:{value:0}},
   vertexShader:'varying vec2 vW;void main(){vec4 w=modelMatrix*vec4(position,1.0);vW=w.xz;gl_Position=projectionMatrix*viewMatrix*w;}',
@@ -503,7 +512,7 @@ function nearestVisibleEnemy(e,maxd){let best=null,bd=maxd;for(const o of ents){
 // ---------- mundo
 let BQ=null,BY=0;
 function addMesh(geo,mat,sx,sy,sz,x,y,z,cast=true){const m=new THREE.Mesh(geo,mat);m.scale.set(sx,sy,sz);m.position.set(x,y+BY,z);
-  if(BQ&&mat.isMeshToonMaterial&&!mat.map&&!mat.transparent){BQ.push(m);return m;}
+  if(BQ&&(mat.isMeshToonMaterial||mat.isMeshStandardMaterial)&&!mat.map&&!mat.transparent){BQ.push(m);return m;}
   m.castShadow=cast;m.receiveShadow=true;world.add(m);return m;}
 function qm(geo,hex,mtx,ol=true){const m=new THREE.Mesh(geo,TM(hex));m.matrixAutoUpdate=false;m.matrix.copy(mtx);m.matrix.elements[13]+=BY;m.userData.ol=ol;BQ.push(m);return m;}
 function flushQ(q,mat,parent,thick=0.07,shadow=true,olMat=OL){if(!q.length)return null;const b=new Batch();
@@ -523,7 +532,7 @@ function buildObstacle(type,x,z,w,d){
 function addBuilding(x,z,w,d){
   const T=0.5,H=3,DG=2.6,WC=TM(pick(BCOL)),RC=pick(RCOL);
   const by=Math.max(1.2,TH(x,z));PADS.push({x0:x-w/2,x1:x+w/2,z0:z-d/2,z1:z+d/2,h:by,blend:7});BY=by;
-  const b={x0:x-w/2,x1:x+w/2,z0:z-d/2,z1:z+d/2,cx:x,cz:z,y0:by,doors:[],walls:[],wallMat:new THREE.MeshToonMaterial({vertexColors:true,gradientMap:GRAD,transparent:true}),roof:null,faded:false,wallOl:null};
+  const b={x0:x-w/2,x1:x+w/2,z0:z-d/2,z1:z+d/2,cx:x,cz:z,y0:by,doors:[],walls:[],wallMat:MAT({vertexColors:true,transparent:true}),roof:null,faded:false,wallOl:null};
   const prev=BQ,wq=[],rq=[];BQ=wq;
   const seg=(x0,x1,z0,z1)=>{if(x1-x0<0.05||z1-z0<0.05)return;const box={x0,x1,z0,z1,h:3,y0:by};obstacles.push(box);b.walls.push(box);addMesh(G.box,WC,x1-x0,H,z1-z0,(x0+x1)/2,H/2,(z0+z1)/2);};
   const doorSides=RNG()<0.5?['n','s']:['e','w'];
@@ -602,12 +611,19 @@ function tColor(x,z,h,c){
   const deep=smooth(-0.9,-3.5,h);r=lerp(r,0.2,deep);g=lerp(g,0.55,deep);b=lerp(b,0.62,deep);
   const v=(hash2(x*0.7,z*0.7)-0.5)*0.06;c[0]=clamp(r+v,0,1);c[1]=clamp(g+v,0,1);c[2]=clamp(b+v,0,1);
 }
+let _detail=null;
+// textura de detalle (grano de tierra y hierba) que se repite sobre el terreno en el estilo realista
+function detailTex(){if(_detail)return _detail;const [c,g]=mkCanvas(256),img=g.createImageData(256,256);
+  for(let y=0;y<256;y++)for(let x=0;x<256;x++){const n=vnoise(x*0.09,y*0.09)*0.5+vnoise(x*0.35+7,y*0.35+3)*0.3+hash2(x,y)*0.2,v=Math.round(200+n*55),o=(y*256+x)*4;img.data[o]=v;img.data[o+1]=v;img.data[o+2]=v;img.data[o+3]=255;}
+  g.putImageData(img,0,0);_detail=new THREE.CanvasTexture(c);_detail.wrapS=_detail.wrapT=THREE.RepeatWrapping;_detail.repeat.set(110,110);_detail.anisotropy=4;return _detail;}
 function buildTerrain(){
   const S=340,SEG=LQ?150:HQ?270:210,geo=new THREE.PlaneGeometry(S,S,SEG,SEG);geo.rotateX(-Math.PI/2);
   const P=geo.attributes.position,col=new Float32Array(P.count*3),c=[0,0,0];
   for(let i=0;i<P.count;i++){const x=P.getX(i),z=P.getZ(i),h=Math.abs(x)<=120&&Math.abs(z)<=120?gH(x,z):TH(x,z);P.setY(i,h);tColor(x,z,h,c);col[i*3]=c[0];col[i*3+1]=c[1];col[i*3+2]=c[2];}
   geo.setAttribute('color',new THREE.BufferAttribute(col,3));geo.computeVertexNormals();
-  const m=new THREE.Mesh(geo,VTOON);m.receiveShadow=true;m.userData.own=true;world.add(m);
+  if(REAL){const C=geo.attributes.color.array,cc=new THREE.Color();for(let i=0;i<C.length;i+=3){cc.setRGB(C[i],C[i+1],C[i+2]);realColor(cc);C[i]=cc.r;C[i+1]=cc.g;C[i+2]=cc.b;}}
+  const tmat=REAL?new THREE.MeshStandardMaterial({vertexColors:true,map:detailTex(),roughness:0.95,metalness:0}):VTOON;
+  const m=new THREE.Mesh(geo,tmat);m.receiveShadow=true;m.userData.own=true;world.add(m);
   // marea de aceite pegada al relieve
   const og=geo.clone();og.deleteAttribute('color');const OP=og.attributes.position;for(let i=0;i<OP.count;i++)OP.setY(i,OP.getY(i)+0.14);
   const om=new THREE.Mesh(og,oilMat);om.renderOrder=2;om.userData.own=true;world.add(om);
@@ -705,7 +721,7 @@ function clearWorld(){
 // ---------- personajes humanos (toon con contorno, piezas fusionadas)
 function makeHuman(ck,isPlayer){
   const c=CHARS[ck],g=new THREE.Group();
-  const mat=new THREE.MeshToonMaterial({vertexColors:true,gradientMap:GRAD});const olm=isPlayer?new THREE.MeshBasicMaterial({color:0x24160d,side:THREE.BackSide,transparent:true}):OL;
+  const mat=MAT({vertexColors:true,roughness:0.7});const olm=isPlayer?new THREE.MeshBasicMaterial({color:0x24160d,side:THREE.BackSide,transparent:true,visible:!REAL}):OL;
   if(isPlayer)mat.transparent=true;
   const flash=[mat],all=[mat];if(isPlayer)all.push(olm);
   const skin=pick(SKINS),out=c.color,pants=0x3a4250,boots=ck==='chispa'?0xff7a2a:0x2a2622,metal=0xc9d2d8,dark=0x2f3138,hair=pick([0x2a1a14,0x4a2c1a,0x151515,0x8a5a2a,0xd9a860]),glove=0x3a3330;
@@ -730,7 +746,7 @@ function makeHuman(ck,isPlayer){
   const arms=[];for(const sx of [-0.4,0.4]){const piv=new THREE.Group();piv.position.set(sx,1.55,0);upper.add(piv);const ab=new Batch();
     A(ab,G.sph,out,0,0,0,0.13,0.12,0.13);A(ab,G.cyl8,out,0,-0.17,0,0.085,0.32,0.085);A(ab,G.cyl8,skin,0,-0.47,0,0.075,0.3,0.075);A(ab,G.sph,glove,0,-0.66,0,0.095,0.1,0.095);
     build(ab,piv);piv.rotation.x=-1.25;piv.rotation.z=sx>0?0.25:-0.35;arms.push(piv);}
-  const gunMat=new THREE.MeshToonMaterial({color:0xd9d9d9,gradientMap:GRAD});if(isPlayer)gunMat.transparent=true;all.push(gunMat);flash.push(gunMat);
+  const gunMat=MAT({color:0xd9d9d9,roughness:0.45,metalness:0.55});if(isPlayer)gunMat.transparent=true;all.push(gunMat);flash.push(gunMat);
   const gun=new THREE.Group();gun.position.set(0.12,1.42,0.5);upper.add(gun);
   const gunMesh=new THREE.Mesh(G.box,gunMat);gunMesh.castShadow=true;gunMesh.scale.set(0.16,0.16,0.5);gunMesh.position.z=0.2;gun.add(gunMesh);
   const go=new THREE.Mesh(G.box,olm);go.scale.set(1.3,1.3,1.08);gunMesh.add(go);
@@ -768,7 +784,7 @@ function makeEnt(ck,isPlayer,name){
   e.flashT=0;e.human=isPlayer;e.ix=-1;e.netCtl=false;r.g.visible=false;r.g.rotation.order='YXZ';equip(e,0);return e;
 }
 function newWeapon(key){return {key,ammo:WEAPONS[key].mag,reloadT:0};}
-function updateGun(e){const w=WEAPONS[e.weapon.key];e.r.gunMat.color.setHex(w.color);e.r.gunMesh.scale.set(w.thick,w.thick,w.len);e.r.gunMesh.position.z=w.len/2-0.1;e.r.muzzle.position.z=w.len-0.02;e.r.muzzle.scale.setScalar(0.5+w.thick*2);}
+function updateGun(e){const w=WEAPONS[e.weapon.key];e.r.gunMat.color.setHex(realHex(w.color));e.r.gunMesh.scale.set(w.thick,w.thick,w.len);e.r.gunMesh.position.z=w.len/2-0.1;e.r.muzzle.position.z=w.len-0.02;e.r.muzzle.scale.setScalar(0.5+w.thick*2);}
 function equip(e,i){if(!e.slots[i])return;if(e.weapon&&e.weapon!==e.slots[i])e.weapon.reloadT=0;e.cur=i;e.weapon=e.slots[i];e.fireT=Math.max(e.fireT,0.25);e.bloom=0;updateGun(e);}
 function giveWeapon(e,key){let i=-1;for(let k=0;k<e.slots.length;k++)if(!e.slots[k]){i=k;break;}let old=null;
   if(i<0){if(e.isPlayer)i=e.cur;else{let ws=99;for(let k=0;k<e.slots.length;k++){const sc=WEAPONS[e.slots[k].key].score;if(sc<ws){ws=sc;i=k;}}}old=e.slots[i].key;}
@@ -1614,6 +1630,7 @@ function goFull(){if(!TOUCH)return;const d=document.documentElement;try{const r=
 $('playBtn').addEventListener('click',()=>{goFull();newMatch();});
 $('againBtn').addEventListener('click',()=>{if(NET.ws&&NET.code){NET.on=false;openLobby();return;}goFull();newMatch();});
 $('changeBtn').addEventListener('click',()=>{if(NET.ws){NET.inLobby=false;try{NET.ws.close();}catch(e){}NET.ws=null;NET.code=null;NET.on=false;}toMenu();});
+{const sb=$('stBtn');sb.textContent='Estilo: '+(REAL?'realista':'cartoon');sb.addEventListener('click',()=>{try{localStorage.setItem('cr_style',REAL?'toon':'real');}catch(e){}location.reload();});}
 {const qb=$('qBtn'),Q={high:'Alta',medium:'Media',low:'Baja'},order=['high','medium','low'];qb.textContent='Gráficos: '+Q[QUALITY];
  qb.addEventListener('click',()=>{const n=order[(order.indexOf(QUALITY)+1)%3];try{localStorage.setItem('cr_q',n);}catch(e){}location.reload();});}
 
