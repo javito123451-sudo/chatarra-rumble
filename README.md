@@ -7,3 +7,7 @@ Battle royale web 3D (Three.js) con modo multijugador por salas.
 
 El juego se conecta por defecto a `wss://chatarra-rumble-server.onrender.com`.
 Para probar con otro servidor: añade `?server=wss://tu-servidor` a la URL del juego.
+
+## Recursos de terceros
+- `lib/GLTFLoader.js` y `lib/SkeletonUtils.js`: ejemplos de Three.js r128 (licencia MIT).
+- `assets/soldier.glb`: modelo «Soldier» de los ejemplos de Three.js (personaje y animaciones de Mixamo).

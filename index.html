@@ -82,29 +82,37 @@ body.touch .tg{font-size:11px;padding:4px 8px}
 .dmg.big{color:var(--haz);font-size:22px}
 #jumpBtn small{display:block;font:700 12px 'Rubik',sans-serif;opacity:.75}
 #touch{position:fixed;inset:0;z-index:5}
-.stick{position:absolute;width:100px;height:100px;border-radius:50%;background:rgba(21,28,34,.32);border:3px solid rgba(237,230,214,.35);pointer-events:none;transform:translate(-50%,-50%)}
-.stick.on{background:rgba(21,28,34,.45);border-color:rgba(237,230,214,.6)}
-.knob{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:rgba(237,230,214,.8);border:3px solid #000}
-.stick.aim .knob{background:var(--rust)}
-.tbtn{position:absolute;z-index:7;border:3px solid #000;font-family:'Rubik',sans-serif;font-weight:800;color:var(--ink);box-shadow:0 4px 0 #000;touch-action:none}
-/* Mando táctil: pulgar derecho = acción (saltar grande, disparar al lado), encima voltereta/agachar/recargar y arriba habilidad/mira; pulgar izquierdo = mover, cambiar arma y correr */
-.rb{border-radius:50%;padding:0;font-size:11px;background:rgba(237,230,214,.9);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;line-height:1.05}
-.rb.on{background:var(--steel);color:#fff}
-.rb.cd{opacity:.5}
-#jmpBtn{width:84px;height:84px;right:calc(30px + env(safe-area-inset-right));bottom:calc(34px + env(safe-area-inset-bottom));background:var(--haz);font-size:15px}
-#fireBtn{width:70px;height:70px;right:calc(128px + env(safe-area-inset-right));bottom:calc(26px + env(safe-area-inset-bottom));background:var(--rust);color:#fff;font-size:12px}
-#fireBtn.on{background:#e0742f}
-#rollBtn{width:56px;height:56px;right:calc(44px + env(safe-area-inset-right));bottom:calc(134px + env(safe-area-inset-bottom));font-size:10px}
-#crBtn{width:58px;height:58px;right:calc(116px + env(safe-area-inset-right));bottom:calc(112px + env(safe-area-inset-bottom));font-size:10px}
-#crBtn.prone{background:#8a5fc0;color:#fff}
-#crBtn small{display:block;font-size:7.5px;font-weight:700;opacity:.8;margin-top:1px}
-#rlBtn{width:52px;height:52px;right:calc(186px + env(safe-area-inset-right));bottom:calc(110px + env(safe-area-inset-bottom));font-size:10px;background:conic-gradient(var(--haz) var(--rp,0deg),rgba(237,230,214,.9) 0)}
-#abBtn{width:60px;height:60px;border-radius:50%;right:calc(120px + env(safe-area-inset-right));bottom:calc(186px + env(safe-area-inset-bottom));background:conic-gradient(var(--haz) var(--p,360deg),rgba(70,70,70,.9) 0);font-size:9.5px;line-height:1.05;padding:4px;opacity:.75}
-#abBtn.ready{opacity:1;box-shadow:0 4px 0 #000,0 0 16px rgba(242,194,48,.8)}
-#scBtn{width:54px;height:54px;right:calc(214px + env(safe-area-inset-right));bottom:calc(30px + env(safe-area-inset-bottom));font-size:11px}
-#swBtn{width:58px;height:58px;left:calc(22px + env(safe-area-inset-left));bottom:calc(168px + env(safe-area-inset-bottom));font-size:10px}
-#runBtn{width:58px;height:58px;left:calc(94px + env(safe-area-inset-left));bottom:calc(168px + env(safe-area-inset-bottom))}
-#pkBtn{left:50%;transform:translateX(-50%);bottom:calc(112px + env(safe-area-inset-bottom));background:var(--chalk);border-radius:12px;padding:9px 16px;font-size:13px}
+/* ---- Mando táctil estilo cristal: botones pequeños, translúcidos y separados ---- */
+.stick{position:absolute;width:96px;height:96px;border-radius:50%;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.32);pointer-events:none;transform:translate(-50%,-50%);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 4px 16px rgba(0,0,0,.18)}
+.stick.on{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.5)}
+.knob{position:absolute;left:50%;top:50%;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;background:rgba(255,255,255,.55);border:1.5px solid rgba(255,255,255,.8);box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.stick.aim .knob{background:rgba(255,140,80,.6)}
+.tbtn{position:absolute;z-index:7;font-family:'Rubik',sans-serif;font-weight:700;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6);touch-action:none;
+  background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.38);-webkit-backdrop-filter:blur(8px) saturate(140%);backdrop-filter:blur(8px) saturate(140%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 4px 14px rgba(0,0,0,.22);transition:transform .08s,background .12s}
+.tbtn:active{transform:scale(.93)}
+.rb{border-radius:50%;padding:0;font-size:9.5px;line-height:1.05;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.rb.on{background:rgba(62,170,165,.45);border-color:rgba(160,255,240,.7)}
+.rb.cd{opacity:.45}
+#jmpBtn{width:70px;height:70px;right:calc(26px + env(safe-area-inset-right));bottom:calc(30px + env(safe-area-inset-bottom));font-size:12px;background:rgba(242,194,48,.28);border-color:rgba(255,226,140,.65)}
+#fireBtn{width:64px;height:64px;right:calc(110px + env(safe-area-inset-right));bottom:calc(22px + env(safe-area-inset-bottom));font-size:11px;background:rgba(220,90,40,.32);border-color:rgba(255,170,130,.65)}
+#fireBtn.on{background:rgba(240,110,50,.55)}
+#scBtn{width:46px;height:46px;right:calc(188px + env(safe-area-inset-right));bottom:calc(28px + env(safe-area-inset-bottom))}
+#rollBtn{width:48px;height:48px;right:calc(36px + env(safe-area-inset-right));bottom:calc(114px + env(safe-area-inset-bottom))}
+#crBtn{width:48px;height:48px;right:calc(98px + env(safe-area-inset-right));bottom:calc(100px + env(safe-area-inset-bottom));font-size:9px}
+#crBtn.prone{background:rgba(138,95,192,.5);border-color:rgba(210,180,255,.7)}
+#crBtn small{display:block;font-size:6.5px;font-weight:700;opacity:.85;margin-top:1px}
+#rlBtn{width:46px;height:46px;right:calc(160px + env(safe-area-inset-right));bottom:calc(96px + env(safe-area-inset-bottom));background:conic-gradient(rgba(242,194,48,.55) var(--rp,0deg),rgba(255,255,255,.12) 0)}
+#abBtn{width:52px;height:52px;border-radius:50%;right:calc(118px + env(safe-area-inset-right));bottom:calc(166px + env(safe-area-inset-bottom));font-size:8.5px;line-height:1.05;padding:3px;opacity:.7;background:conic-gradient(rgba(242,194,48,.45) var(--p,360deg),rgba(255,255,255,.1) 0)}
+#abBtn.ready{opacity:1;border-color:rgba(255,226,140,.85);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 0 14px rgba(242,194,48,.55)}
+#swBtn{width:48px;height:48px;left:calc(20px + env(safe-area-inset-left));bottom:calc(150px + env(safe-area-inset-bottom))}
+#runBtn{width:48px;height:48px;left:calc(80px + env(safe-area-inset-left));bottom:calc(150px + env(safe-area-inset-bottom))}
+#pkBtn{left:50%;transform:translateX(-50%);bottom:calc(100px + env(safe-area-inset-bottom));border-radius:12px;padding:7px 14px;font-size:12px}
+#pkBtn:active{transform:translateX(-50%) scale(.95)}
+body.touch .tg,body.touch .zb,body.touch #camBtn{background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.35);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6);box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 3px 10px rgba(0,0,0,.2);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+body.touch .tg.on{background:rgba(62,170,165,.45)}
+body.touch .slot{background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.3);box-shadow:none;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+body.touch .slot.on{background:rgba(220,110,50,.45);border-color:rgba(255,190,140,.8)}
 #rotHint{position:fixed;z-index:8;left:50%;top:38%;transform:translateX(-50%);background:rgba(21,28,34,.9);border:2px solid #000;border-radius:10px;padding:6px 12px;font:700 12px 'Rubik',sans-serif;pointer-events:none;white-space:nowrap}
 body.shoulder #rBase{display:none}
 body.touch #abChip,body.touch #pickHint{display:none}
@@ -159,12 +167,12 @@ h1{font-family:'Bungee',sans-serif;font-weight:400;font-size:clamp(40px,10vw,88p
   <button id="abBtn" class="tbtn" aria-label="Habilidad"><span id="abBtnTxt">Habilidad</span></button>
   <button id="jmpBtn" class="tbtn rb">Saltar</button>
   <button id="fireBtn" class="tbtn rb">Disparar</button>
-  <button id="rollBtn" class="tbtn rb">Volte&shy;reta</button>
-  <button id="crBtn" class="tbtn rb">Agachar<br><small>mantén: tumbarse</small></button>
+  <button id="rollBtn" class="tbtn rb">Rodar</button>
+  <button id="crBtn" class="tbtn rb">Agachar<small>mantén: tumbar</small></button>
   <button id="runBtn" class="tbtn rb">Correr</button>
   <button id="scBtn" class="tbtn rb">Mira</button>
   <button id="rlBtn" class="tbtn rb">Recargar</button>
-  <button id="swBtn" class="tbtn rb">Cambiar arma</button>
+  <button id="swBtn" class="tbtn rb">Arma</button>
   <button id="pkBtn" class="tbtn hidden">Coger</button>
 </div>
 <div id="rotHint" class="hidden">Gira el móvil en horizontal para jugar mejor</div>
@@ -243,6 +251,8 @@ h1{font-family:'Bungee',sans-serif;font-weight:400;font-size:clamp(40px,10vw,88p
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="lib/GLTFLoader.js"></script>
+<script src="lib/SkeletonUtils.js"></script>
 <script>
 (function(){
 'use strict';
@@ -719,7 +729,14 @@ function clearWorld(){
 }
 
 // ---------- personajes humanos (toon con contorno, piezas fusionadas)
+// ---------- personaje 3D animado (estilo realista): se carga una vez y se clona para cada jugador
+const CHAR_MODEL={gltf:null,scale:1};
+const TUNE={gunPos:[0,0.05,0],dUR:[-0.15,-0.45,1],dFR:[0.1,-0.05,1],dUL:[-0.55,-0.45,1],dFL:[-0.7,0,1],aim:true};
+function loadCharModel(){try{if(!REAL||LQ||!THREE.GLTFLoader||!THREE.SkeletonUtils)return;
+  new THREE.GLTFLoader().load('assets/soldier.glb',g=>{g.scene.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
+    const bb=new THREE.Box3().setFromObject(g.scene),h=bb.max.y-bb.min.y;CHAR_MODEL.scale=h>0?1.95/h:1;CHAR_MODEL.gltf=g;},undefined,()=>{});}catch(e){}}
 function makeHuman(ck,isPlayer){
+  if(CHAR_MODEL.gltf)return makeModelHuman(ck,isPlayer);
   const c=CHARS[ck],g=new THREE.Group();
   const mat=MAT({vertexColors:true,roughness:0.7});const olm=isPlayer?new THREE.MeshBasicMaterial({color:0x24160d,side:THREE.BackSide,transparent:true,visible:!REAL}):OL;
   if(isPlayer)mat.transparent=true;
@@ -764,6 +781,43 @@ function makeHuman(ck,isPlayer){
   const chute=new THREE.Group();build(cb,chute);chute.visible=false;g.add(chute);
   return {g,upper,legs,arms,flash,all,gunMat,gun,gunMesh,shield,stun,chute,muzzle};
 }
+function makeModelHuman(ck,isPlayer){
+  const c=CHARS[ck],g=new THREE.Group(),flash=[],all=[];
+  const upper=new THREE.Group(),legs=[new THREE.Group(),new THREE.Group()],arms=[new THREE.Group(),new THREE.Group()];g.add(upper);for(const l of legs)g.add(l);for(const a of arms)upper.add(a);
+  const mdl=THREE.SkeletonUtils.clone(CHAR_MODEL.gltf.scene);mdl.rotation.y=Math.PI;mdl.scale.setScalar(CHAR_MODEL.scale);g.add(mdl);
+  const tint=new THREE.Color(0xffffff).lerp(new THREE.Color(c.color),0.5);
+  mdl.traverse(o=>{if(o.isMesh){o.frustumCulled=false;o.material=o.material.clone();if(!/visor/i.test(o.name))o.material.color.copy(tint);if(isPlayer)o.material.transparent=true;flash.push(o.material);all.push(o.material);}});
+  const mixer=new THREE.AnimationMixer(mdl),clip=n=>THREE.AnimationClip.findByName(CHAR_MODEL.gltf.animations,n);
+  const acts=['Idle','Walk','Run'].map(n=>{const a=mixer.clipAction(clip(n));a.play();a.setEffectiveWeight(n==='Idle'?1:0);return a;});
+  const bone=n=>mdl.getObjectByName('mixamorig'+n);
+  const bones={armR:bone('RightArm'),foreR:bone('RightForeArm'),armL:bone('LeftArm'),foreL:bone('LeftForeArm'),hand:bone('RightHand'),spine:bone('Spine2')};
+  const gunMat=MAT({color:0xd9d9d9,roughness:0.45,metalness:0.55});if(isPlayer)gunMat.transparent=true;all.push(gunMat);flash.push(gunMat);
+  const gun=new THREE.Group();
+  const gunMesh=new THREE.Mesh(G.box,gunMat);gunMesh.castShadow=true;gunMesh.scale.set(0.16,0.16,0.5);gunMesh.position.z=0.2;gun.add(gunMesh);
+  const grip=new THREE.Mesh(G.box,TM(0x2f3138));grip.scale.set(0.08,0.18,0.1);grip.position.set(0,-0.12,0.02);gun.add(grip);
+  const muzzle=new THREE.Sprite(MUZZLE);muzzle.visible=false;muzzle.position.z=0.5;gun.add(muzzle);
+  if(bones.hand){mdl.updateMatrixWorld(true);const ws=new THREE.Vector3();bones.hand.getWorldScale(ws);gun.userData.inv=1/(ws.x||1);gun.scale.setScalar(gun.userData.inv);bones.hand.add(gun);}else{gun.position.set(0.12,1.42,0.5);upper.add(gun);}
+  const shield=new THREE.Mesh(G.sph,new THREE.MeshBasicMaterial({color:0xff7a2a,transparent:true,opacity:0.32,depthWrite:false}));all.push(shield.material);
+  shield.scale.set(1,1.3,1);shield.position.y=1.1;shield.visible=false;g.add(shield);
+  const stunM=new THREE.MeshBasicMaterial({color:0xf2c230});all.push(stunM);
+  const stun=new THREE.Mesh(G.stun,stunM);stun.rotation.x=Math.PI/2;stun.position.y=2.4;stun.visible=false;g.add(stun);
+  if(isPlayer){const rm=new THREE.MeshBasicMaterial({color:0xf2c230,transparent:true,opacity:0.8,side:THREE.DoubleSide,depthWrite:false});all.push(rm);
+    const ring=new THREE.Mesh(G.ring,rm);ring.rotation.x=-Math.PI/2;ring.position.y=0.06;ring.scale.setScalar(1.1);g.add(ring);}
+  const cb=new Batch();cb.add(G.dome,MX(0,4,0,0,0,0,2,1.1,2),c.color,false);cb.add(G.cyl8,MX(0,4.02,0,0,0,0,2.02,0.12,2.02),0xfff6e8,false);
+  for(const [x,z] of [[-1.4,-1.4],[1.4,-1.4],[-1.4,1.4],[1.4,1.4]])cb.add(G.cyl8,lineMX(x*0.18,1.75,z*0.12,x,4,z,0.02),0x2f3138,false);
+  const chute=new THREE.Group();chute.add(cb.build(MAT({vertexColors:true}),0.035,true));chute.visible=false;g.add(chute);
+  return {g,upper,legs,arms,flash,all,gunMat,gun,gunMesh,shield,stun,chute,muzzle,mdl,mixer,acts,bones,wt:[1,0,0]};
+}
+// pose de apuntar: orienta brazos hacia delante (como sujetando un arma larga) y alinea el arma con la mirada
+const _pa=new THREE.Vector3(),_pb=new THREE.Vector3(),_pd=new THREE.Vector3(),_q1=new THREE.Quaternion(),_q2=new THREE.Quaternion(),_q3=new THREE.Quaternion(),_gq=new THREE.Quaternion();
+function pointBone(bone,child,dir){bone.updateMatrixWorld(true);bone.getWorldPosition(_pa);child.getWorldPosition(_pb);_pb.sub(_pa).normalize();
+  _q1.setFromUnitVectors(_pb,dir);bone.getWorldQuaternion(_q2);_q2.premultiply(_q1);bone.parent.getWorldQuaternion(_q3);bone.quaternion.copy(_q3.invert().multiply(_q2));bone.updateMatrixWorld(true);}
+function poseAim(r,e){const b=r.bones;if(!b.armR||!b.foreR||!b.hand||!b.armL||!b.foreL)return;
+  r.g.updateMatrixWorld(true);r.g.getWorldQuaternion(_gq);
+  const reload=e.weapon&&e.weapon.reloadT>0,D=v=>_pd.set(v[0],v[1]-(reload?0.6:0),v[2]).normalize().applyQuaternion(_gq);
+  if(TUNE.aim){pointBone(b.armR,b.foreR,D(TUNE.dUR));pointBone(b.foreR,b.hand,D(TUNE.dFR));const lh=b.armL.parent.getObjectByName('mixamorigLeftHand');
+    pointBone(b.armL,b.foreL,D(TUNE.dUL));if(lh)pointBone(b.foreL,lh,D(TUNE.dFL));}
+  b.hand.getWorldQuaternion(_q2);r.gun.quaternion.copy(_q2.invert().multiply(_gq));}
 function makeBar(isPlayer){
   const g=new THREE.Group();
   const mk=(col,op)=>{const m=new THREE.Mesh(G.bar,new THREE.MeshBasicMaterial({color:col,depthTest:false,transparent:true,opacity:op}));m.renderOrder=20;g.add(m);return m;};
@@ -1302,7 +1356,13 @@ function syncVisual(e,dt,pb){
     if(e.rollT>0){const th=(1-e.rollT/0.42)*Math.PI*2,c=0.6,f=r.g.rotation.y;r.g.rotation.x=th;r.g.position.y+=c-c*Math.cos(th);r.g.position.x-=Math.sin(f)*c*Math.sin(th);r.g.position.z-=Math.cos(f)*c*Math.sin(th);
       r.legs[0].position.y=r.legs[1].position.y=0.55;r.legs[0].scale.y=r.legs[1].scale.y=0.62;r.upper.position.y=-0.35;}
     else{const tx=e.prone?1.42:0;r.g.rotation.x+=(tx-r.g.rotation.x)*Math.min(1,dt*10);if(r.g.rotation.x>0.05)r.g.position.y+=0.24*(r.g.rotation.x/1.42);}
-    const gt=ground&&e.weapon.reloadT>0?0.9:0;r.gun.rotation.x+=(gt-r.gun.rotation.x)*Math.min(1,dt*12);
+    if(r.mixer){
+      const mv=ground&&e.moving&&e.jy<=0&&e.rollT<=0,run=mv&&!e.crouch&&!e.prone,tw=[mv?0:1,mv&&!run?1:0,run?1:0];
+      for(let i=0;i<3;i++){r.wt[i]+=(tw[i]-r.wt[i])*Math.min(1,dt*8);r.acts[i].setEffectiveWeight(r.wt[i]);}
+      r.mdl.scale.y=CHAR_MODEL.scale*(e.crouch?0.78:1);
+      if(r.g.visible||e.isPlayer){r.mixer.update(dt*(e.running?1.2:1)*(e.crouch?0.7:1));if(ground&&e.rollT<=0&&!e.prone)poseAim(r,e);}
+      r.gun.position.set(TUNE.gunPos[0],TUNE.gunPos[1],TUNE.gunPos[2]).multiplyScalar(r.gun.userData.inv||1);
+    }else{const gt=ground&&e.weapon.reloadT>0?0.9:0;r.gun.rotation.x+=(gt-r.gun.rotation.x)*Math.min(1,dt*12);}
     r.chute.visible=e.chute;e.flashT-=dt;r.muzzle.visible=e.flashT>0;if(r.muzzle.visible)r.muzzle.material.rotation=RNG()*6.28;
     if(HQ&&ground&&e.moving&&!e.crouch&&e.jy<=0){e.dustT=(e.dustT||0)-dt;if(e.dustT<=0){e.dustT=0.32;if(Math.hypot(e.x-camera.position.x,e.z-camera.position.z)<30)dust(e.x,e.z,1);}}
     r.shield.visible=e.heatT>0;if(r.shield.visible)r.shield.material.opacity=0.25+0.12*Math.sin(time*20);
@@ -1656,8 +1716,8 @@ function step(dt){
 }
 function frame(now){requestAnimationFrame(frame);const dt=Math.min(0.05,Math.max(0,(now-last)/1000));last=now;step(dt);renderer.render(scene,camera);}
 addEventListener('resize',resize);
-buildWorld();zoneStart();resize();applyCamUI();applyAutoUI();requestAnimationFrame(frame);
-window.__CR={step,newMatch,get state(){return state;},get player(){return player;},get ents(){return ents;},get zone(){return zone;},get buildings(){return buildings;},mouse,input,toggleCam,settings,NET,get cam(){return camMode;},
+loadCharModel();buildWorld();zoneStart();resize();applyCamUI();applyAutoUI();requestAnimationFrame(frame);
+window.__CR={step,newMatch,get state(){return state;},get player(){return player;},get ents(){return ents;},get zone(){return zone;},get buildings(){return buildings;},mouse,input,toggleCam,settings,NET,TUNE,CHAR_MODEL,get cam(){return camMode;},
   setChosen:k=>{chosen=k;},counts:()=>({bullets:bullets.length,pickups:pickups.length,crates:crates.filter(c=>c.alive).length,fx:fxs.length,parts:parts.length})};
 })();
 </script>
