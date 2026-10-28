@@ -83,9 +83,9 @@ body.touch .tg{font-size:11px;padding:4px 8px}
 #jumpBtn small{display:block;font:700 12px 'Rubik',sans-serif;opacity:.75}
 #touch{position:fixed;inset:0;z-index:5}
 /* ---- Mando táctil estilo cristal: botones pequeños, translúcidos y separados ---- */
-.stick{position:absolute;width:96px;height:96px;border-radius:50%;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.32);pointer-events:none;transform:translate(-50%,-50%);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 4px 16px rgba(0,0,0,.18)}
+.stick{position:absolute;width:91px;height:91px;border-radius:50%;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.32);pointer-events:none;transform:translate(-50%,-50%);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 4px 16px rgba(0,0,0,.18)}
 .stick.on{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.5)}
-.knob{position:absolute;left:50%;top:50%;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;background:rgba(255,255,255,.55);border:1.5px solid rgba(255,255,255,.8);box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.knob{position:absolute;left:50%;top:50%;width:38px;height:38px;margin:-19px 0 0 -19px;border-radius:50%;background:rgba(255,255,255,.55);border:1.5px solid rgba(255,255,255,.8);box-shadow:0 2px 8px rgba(0,0,0,.25)}
 .stick.aim .knob{background:rgba(255,140,80,.6)}
 .tbtn{position:absolute;z-index:7;font-family:'Rubik',sans-serif;font-weight:700;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6);touch-action:none;
   background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.38);-webkit-backdrop-filter:blur(8px) saturate(140%);backdrop-filter:blur(8px) saturate(140%);
@@ -94,20 +94,22 @@ body.touch .tg{font-size:11px;padding:4px 8px}
 .rb{border-radius:50%;padding:0;font-size:9.5px;line-height:1.05;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
 .rb.on{background:rgba(62,170,165,.45);border-color:rgba(160,255,240,.7)}
 .rb.cd{opacity:.45}
-#jmpBtn{width:70px;height:70px;right:calc(26px + env(safe-area-inset-right));bottom:calc(30px + env(safe-area-inset-bottom));font-size:12px;background:rgba(242,194,48,.28);border-color:rgba(255,226,140,.65)}
-#fireBtn{width:64px;height:64px;right:calc(110px + env(safe-area-inset-right));bottom:calc(22px + env(safe-area-inset-bottom));font-size:11px;background:rgba(220,90,40,.32);border-color:rgba(255,170,130,.65)}
+#jmpBtn{width:66px;height:66px;right:calc(25px + env(safe-area-inset-right));bottom:calc(28px + env(safe-area-inset-bottom));font-size:11.5px;background:rgba(242,194,48,.28);border-color:rgba(255,226,140,.65)}
+#fireBtn{width:61px;height:61px;right:calc(104px + env(safe-area-inset-right));bottom:calc(21px + env(safe-area-inset-bottom));font-size:10.5px;background:rgba(220,90,40,.32);border-color:rgba(255,170,130,.65)}
 #fireBtn.on{background:rgba(240,110,50,.55)}
-#scBtn{width:46px;height:46px;right:calc(188px + env(safe-area-inset-right));bottom:calc(28px + env(safe-area-inset-bottom))}
-#rollBtn{width:48px;height:48px;right:calc(36px + env(safe-area-inset-right));bottom:calc(114px + env(safe-area-inset-bottom))}
-#crBtn{width:48px;height:48px;right:calc(98px + env(safe-area-inset-right));bottom:calc(100px + env(safe-area-inset-bottom));font-size:9px}
+#scBtn{width:44px;height:44px;right:calc(179px + env(safe-area-inset-right));bottom:calc(27px + env(safe-area-inset-bottom))}
+#rollBtn{width:46px;height:46px;right:calc(34px + env(safe-area-inset-right));bottom:calc(108px + env(safe-area-inset-bottom))}
+#crBtn{width:46px;height:46px;right:calc(93px + env(safe-area-inset-right));bottom:calc(95px + env(safe-area-inset-bottom));font-size:8.5px}
 #crBtn.prone{background:rgba(138,95,192,.5);border-color:rgba(210,180,255,.7)}
 #crBtn small{display:block;font-size:6.5px;font-weight:700;opacity:.85;margin-top:1px}
-#rlBtn{width:46px;height:46px;right:calc(160px + env(safe-area-inset-right));bottom:calc(96px + env(safe-area-inset-bottom));background:conic-gradient(rgba(242,194,48,.55) var(--rp,0deg),rgba(255,255,255,.12) 0)}
-#abBtn{width:52px;height:52px;border-radius:50%;right:calc(118px + env(safe-area-inset-right));bottom:calc(166px + env(safe-area-inset-bottom));font-size:8.5px;line-height:1.05;padding:3px;opacity:.7;background:conic-gradient(rgba(242,194,48,.45) var(--p,360deg),rgba(255,255,255,.1) 0)}
+#rlBtn{width:44px;height:44px;right:calc(152px + env(safe-area-inset-right));bottom:calc(91px + env(safe-area-inset-bottom));background:conic-gradient(rgba(242,194,48,.55) var(--rp,0deg),rgba(255,255,255,.12) 0)}
+#abBtn{width:49px;height:49px;border-radius:50%;right:calc(112px + env(safe-area-inset-right));bottom:calc(158px + env(safe-area-inset-bottom));font-size:8px;line-height:1.05;padding:3px;opacity:.7;background:conic-gradient(rgba(242,194,48,.45) var(--p,360deg),rgba(255,255,255,.1) 0)}
 #abBtn.ready{opacity:1;border-color:rgba(255,226,140,.85);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 0 14px rgba(242,194,48,.55)}
-#swBtn{width:48px;height:48px;left:calc(20px + env(safe-area-inset-left));bottom:calc(150px + env(safe-area-inset-bottom))}
-#runBtn{width:48px;height:48px;left:calc(80px + env(safe-area-inset-left));bottom:calc(150px + env(safe-area-inset-bottom))}
-#pkBtn{left:50%;transform:translateX(-50%);bottom:calc(100px + env(safe-area-inset-bottom));border-radius:12px;padding:7px 14px;font-size:12px}
+#swBtn{width:46px;height:46px;left:calc(19px + env(safe-area-inset-left));bottom:calc(142px + env(safe-area-inset-bottom))}
+#runBtn{width:46px;height:46px;left:calc(76px + env(safe-area-inset-left));bottom:calc(142px + env(safe-area-inset-bottom))}
+#fireL{width:61px;height:61px;left:calc(138px + env(safe-area-inset-left));bottom:calc(136px + env(safe-area-inset-bottom));font-size:10.5px;background:rgba(220,90,40,.32);border-color:rgba(255,170,130,.65)}
+#fireL.on{background:rgba(240,110,50,.55)}
+#pkBtn{left:50%;transform:translateX(-50%);bottom:calc(95px + env(safe-area-inset-bottom));border-radius:12px;padding:7px 13px;font-size:11.5px}
 #pkBtn:active{transform:translateX(-50%) scale(.95)}
 body.touch .tg,body.touch .zb,body.touch #camBtn{background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.35);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6);box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 3px 10px rgba(0,0,0,.2);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 body.touch .tg.on{background:rgba(62,170,165,.45)}
@@ -167,6 +169,7 @@ h1{font-family:'Bungee',sans-serif;font-weight:400;font-size:clamp(40px,10vw,88p
   <button id="abBtn" class="tbtn" aria-label="Habilidad"><span id="abBtnTxt">Habilidad</span></button>
   <button id="jmpBtn" class="tbtn rb">Saltar</button>
   <button id="fireBtn" class="tbtn rb">Disparar</button>
+  <button id="fireL" class="tbtn rb hidden">Disparar</button>
   <button id="rollBtn" class="tbtn rb">Rodar</button>
   <button id="crBtn" class="tbtn rb">Agachar<small>mantén: tumbar</small></button>
   <button id="runBtn" class="tbtn rb">Correr</button>
@@ -856,12 +859,63 @@ function makeHuman(ck,isPlayer){
   const chute=new THREE.Group();build(cb,chute);chute.visible=false;g.add(chute);
   return {g,upper,legs,arms,flash,all,gunMat,gun,gunMesh,shield,stun,chute,muzzle};
 }
+// ---------- robots de chatarra: pintura oxidada y piezas propias de cada personaje sobre el esqueleto animado
+const ROBOT_PAINT={brasa:0xc8642b,garfio:0xe0b030,chispa:0x3e9e98,bafle:0xc8457a};
+const _rustTex={},_rustMat={};
+function rustTex(paint){if(_rustTex[paint])return _rustTex[paint];const S=256,c=document.createElement('canvas');c.width=c.height=S;const g=c.getContext('2d'),img=g.createImageData(S,S),pc=new THREE.Color(paint);
+  const rust=[[0.48,0.23,0.11],[0.62,0.32,0.16],[0.35,0.18,0.09]],seed=(paint%997)*0.37;
+  for(let y=0;y<S;y++)for(let x=0;x<S;x++){const n=vnoise(x*0.035+seed,y*0.035)*0.6+vnoise(x*0.11+7,y*0.11+seed)*0.3+hash2(x,y)*0.1;
+    let r=pc.r,gg=pc.g,b=pc.b;const rr=smooth(0.5,0.62,n),R0=rust[(hash2(x>>3,y>>3)*3)|0];
+    r=lerp(r,R0[0],rr);gg=lerp(gg,R0[1],rr);b=lerp(b,R0[2],rr);
+    const grime=smooth(0.35,0.2,n)*0.35;r*=1-grime;gg*=1-grime;b*=1-grime;
+    if(hash2(x*0.5,(y>>1))>0.996){r=gg=b=0.62;}
+    const o=(y*S+x)*4;img.data[o]=clamp(r,0,1)*255;img.data[o+1]=clamp(gg,0,1)*255;img.data[o+2]=clamp(b,0,1)*255;img.data[o+3]=255;}
+  g.putImageData(img,0,0);g.strokeStyle='rgba(200,205,210,.35)';g.lineWidth=1;for(let k=0;k<26;k++){const x=hash2(k,paint)*S,y=hash2(paint,k)*S;g.beginPath();g.moveTo(x,y);g.lineTo(x+(hash2(k,1)-0.5)*60,y+(hash2(1,k)-0.5)*20);g.stroke();}
+  g.fillStyle='rgba(40,30,25,.8)';for(let k=0;k<60;k++){const x=(k%10)*25+8,y=Math.floor(k/10)*42+10;g.beginPath();g.arc(x,y,2,0,7);g.fill();}
+  const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;return _rustTex[paint]=t;}
+function rustMat(paint,opts){const k=paint+'|'+(opts?JSON.stringify(opts):'');if(_rustMat[k])return _rustMat[k];
+  return _rustMat[k]=new THREE.MeshStandardMaterial(Object.assign({map:rustTex(paint),metalness:0.55,roughness:0.72},opts||{}));}
+const _glowMat={};function glowMat(c){return _glowMat[c]||(_glowMat[c]=new THREE.MeshStandardMaterial({color:0x111111,emissive:c,emissiveIntensity:1.8,roughness:0.4}));}
+const DARK_METAL=()=>rustMat(0x3a3c40);
+function boneHolder(mdl,name){const b=mdl.getObjectByName('mixamorig'+name);if(!b)return null;mdl.updateMatrixWorld(true);
+  const q=new THREE.Quaternion(),s=new THREE.Vector3(),root=new THREE.Quaternion();b.getWorldQuaternion(q);b.getWorldScale(s);mdl.parent?mdl.parent.getWorldQuaternion(root):root.identity();
+  const h=new THREE.Group();h.quaternion.copy(q.invert().multiply(root));h.scale.setScalar(1/(s.x||1));b.add(h);return h;}
+function P(parent,geo,mat,x,y,z,sx,sy,sz,rx,ry,rz){const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.scale.set(sx,sy,sz);if(rx||ry||rz)m.rotation.set(rx||0,ry||0,rz||0);m.castShadow=true;parent.add(m);return m;}
+function dressRobot(mdl,ck){
+  const paint=ROBOT_PAINT[ck]||0x888888,body=rustMat(paint),dark=DARK_METAL(),eye=glowMat(PLASMA[ck]||0xffaa33),box=new THREE.BoxGeometry(1,1,1),cyl=new THREE.CylinderGeometry(1,1,1,12),sph=new THREE.SphereGeometry(1,14,10),cone=new THREE.ConeGeometry(1,1,12),tor=new THREE.TorusGeometry(1,0.25,8,18);
+  mdl.traverse(o=>{if(!o.isMesh)return;if(/visor/i.test(o.name)){o.material=eye;}else{const m=o.material.clone();m.map=rustTex(paint);m.color.setHex(0xffffff);m.metalness=0.55;m.roughness=0.72;o.material=m;}});
+  const head=boneHolder(mdl,'Head'),chest=boneHolder(mdl,'Spine2'),kL=boneHolder(mdl,'LeftLeg'),kR=boneHolder(mdl,'RightLeg'),aL=boneHolder(mdl,'LeftForeArm'),aR=boneHolder(mdl,'RightForeArm'),sL=boneHolder(mdl,'LeftArm'),sR=boneHolder(mdl,'RightArm');
+  // piezas comunes: rodilleras, hombreras y tubos en antebrazos
+  for(const k of [kL,kR])if(k){P(k,sph,dark,0,0.02,0.07,0.075,0.075,0.06);}
+  for(const [s,sg] of [[sL,1],[sR,-1]])if(s){P(s,box,body,0,0.04,0,0.17,0.07,0.17);P(s,cyl,dark,0,0.09,0,0.03,0.04,0.03);}
+  for(const a of [aL,aR])if(a){P(a,cyl,dark,0.04,0.12,-0.03,0.022,0.24,0.022);P(a,box,body,0,0.14,0.02,0.09,0.16,0.09);}
+  if(chest){P(chest,box,body,0,0.02,0.12,0.3,0.24,0.05);for(const x of [-0.1,0.1])P(chest,sph,dark,x,0.1,0.15,0.018,0.018,0.018);}
+  if(ck==='brasa'){ // soldadora: careta de soldar con rendija brillante y bombonas a la espalda
+    if(head){P(head,box,body,0,0.12,0.03,0.3,0.32,0.3);P(head,box,dark,0,0.14,0.185,0.26,0.1,0.02);P(head,box,eye,0,0.14,0.197,0.2,0.025,0.01);P(head,cyl,dark,0,0.3,0,0.04,0.04,0.04);}
+    if(chest){for(const x of [-0.09,0.09])P(chest,cyl,rustMat(0x9a2e22),x,0.0,-0.2,0.075,0.42,0.075);P(chest,tor,dark,0,0.18,-0.2,0.08,0.08,0.08,Math.PI/2);P(chest,cyl,dark,0.17,0.2,-0.18,0.03,0.3,0.03);}
+  }else if(ck==='garfio'){ // gruista: casco de obra, ojo-cámara y brazo de grúa con gancho
+    if(head){P(head,sph,body,0,0.12,0.02,0.17,0.16,0.17);P(head,new THREE.SphereGeometry(1,14,8,0,Math.PI*2,0,Math.PI/2),rustMat(0xf0c020),0,0.2,0.01,0.21,0.13,0.21);P(head,cyl,rustMat(0xf0c020),0,0.2,0.01,0.24,0.012,0.24);
+      P(head,cyl,dark,0,0.11,0.17,0.05,0.06,0.05,Math.PI/2);P(head,cyl,eye,0,0.11,0.2,0.035,0.01,0.035,Math.PI/2);}
+    if(chest){P(chest,box,dark,0.12,0.25,-0.2,0.06,0.55,0.06,0,0,-0.25);P(chest,box,rustMat(0xf0c020),0.22,0.5,-0.2,0.32,0.06,0.06);P(chest,cyl,dark,0.36,0.38,-0.2,0.006,0.25,0.006);
+      P(chest,tor,dark,0.36,0.24,-0.2,0.045,0.045,0.045,0,Math.PI/2);}
+  }else if(ck==='chispa'){ // mensajera: cabeza redonda con antena y ojo cian, propulsores a la espalda
+    if(head){P(head,sph,body,0,0.12,0.02,0.15,0.15,0.15);P(head,tor,dark,0,0.12,0.15,0.06,0.06,0.04);P(head,sph,eye,0,0.12,0.16,0.045,0.045,0.02);
+      P(head,cyl,dark,0.07,0.33,0,0.008,0.2,0.008);P(head,sph,eye,0.07,0.44,0,0.022,0.022,0.022);}
+    if(chest){for(const x of [-0.1,0.1]){P(chest,cyl,body,x,0.02,-0.2,0.06,0.26,0.06);P(chest,cone,dark,x,-0.15,-0.2,0.07,0.1,0.07,Math.PI);P(chest,cone,eye,x,-0.21,-0.2,0.045,0.06,0.045,Math.PI);}}
+  }else{ // bafle: cabeza-altavoz con auriculares y altavoz grande a la espalda
+    if(head){P(head,box,body,0,0.13,0.02,0.32,0.32,0.28);P(head,cyl,dark,0,0.13,0.165,0.11,0.02,0.11,Math.PI/2);P(head,cyl,rustMat(0x222222),0,0.13,0.175,0.06,0.02,0.06,Math.PI/2);
+      P(head,box,eye,0,0.26,0.165,0.18,0.02,0.01);P(head,tor,dark,0,0.2,0,0.19,0.19,0.2,0,Math.PI/2);for(const x of [-0.18,0.18])P(head,cyl,dark,x,0.13,0,0.07,0.05,0.07,0,0,Math.PI/2);}
+    if(chest){P(chest,box,body,0,0.02,-0.23,0.38,0.42,0.22);for(const y of [0.1,-0.08])P(chest,cyl,dark,0,y,-0.35,0.09,0.02,0.09,Math.PI/2);}
+  }
+}
+
 function makeModelHuman(ck,isPlayer){
   const c=CHARS[ck],g=new THREE.Group(),flash=[],all=[];
   const upper=new THREE.Group(),legs=[new THREE.Group(),new THREE.Group()],arms=[new THREE.Group(),new THREE.Group()];g.add(upper);for(const l of legs)g.add(l);for(const a of arms)upper.add(a);
   const mdl=THREE.SkeletonUtils.clone(CHAR_MODEL.gltf.scene);mdl.rotation.y=Math.PI;mdl.scale.setScalar(CHAR_MODEL.scale);g.add(mdl);
-  const tint=new THREE.Color(0xffffff).lerp(new THREE.Color(c.color),0.5);
-  mdl.traverse(o=>{if(o.isMesh){o.frustumCulled=false;o.material=o.material.clone();if(!/visor/i.test(o.name))o.material.color.copy(tint);if(isPlayer)o.material.transparent=true;flash.push(o.material);all.push(o.material);}});
+  dressRobot(mdl,ck);
+  mdl.traverse(o=>{if(!o.isMesh)return;o.frustumCulled=false;const bodyMesh=o.isSkinnedMesh&&!/visor/i.test(o.name);
+    if(isPlayer){o.material=o.material.clone();o.material.transparent=true;all.push(o.material);}else if(bodyMesh)all.push(o.material);if(bodyMesh)flash.push(o.material);});
   const mixer=new THREE.AnimationMixer(mdl),clip=n=>THREE.AnimationClip.findByName(CHAR_MODEL.gltf.animations,n);
   const acts=['Idle','Walk','Run'].map(n=>{const a=mixer.clipAction(clip(n));a.play();a.setEffectiveWeight(n==='Idle'?1:0);return a;});
   const bone=n=>mdl.getObjectByName('mixamorig'+n);
@@ -1308,7 +1362,7 @@ function tEnd(ev){for(const t of ev.changedTouches)if(t.identifier===lookT.id)lo
   if(s===sticks.R&&s.maxd<14&&performance.now()-s.t0<300)input.autoFire=0.3;
   s.id=null;s.x=s.y=0;setKnob(s,0,0);s.base.classList.remove('on');placeIdle();}}
 tl.addEventListener('touchend',tEnd);tl.addEventListener('touchcancel',tEnd);
-{const fb=$('fireBtn');let fid=null,fx=0,fy=0;
+for(const fbId of ['fireBtn','fireL']){const fb=$(fbId);let fid=null,fx=0,fy=0;
   fb.addEventListener('touchstart',e=>{e.preventDefault();e.stopPropagation();lastInput='touch';const t=e.changedTouches[0];fid=t.identifier;fx=t.clientX;fy=t.clientY;input.fireHeld=true;fb.classList.add('on');},{passive:false});
   fb.addEventListener('touchmove',e=>{e.preventDefault();e.stopPropagation();for(const t of e.changedTouches)if(t.identifier===fid){if(camMode==='shoulder')lookDelta(t.clientX-fx,t.clientY-fy);fx=t.clientX;fy=t.clientY;}},{passive:false});
   const fe=e=>{for(const t of e.changedTouches)if(t.identifier===fid){fid=null;input.fireHeld=false;fb.classList.remove('on');}};
@@ -1596,6 +1650,7 @@ function hud(){
   const rt=player.weapon.reloadT>0,rk=rt?1-player.weapon.reloadT/(sw.reload*PACE.reload):0;
   H.rl.classList.toggle('hidden',!(grounded&&rt));H.rlFill.style.width=(rk*100)+'%';H.rlBtn.style.setProperty('--rp',(rk*360)+'deg');
   H.scBtn.classList.toggle('on',input.adsToggle);
+  {const fl=$('fireL'),show=TOUCH&&grounded&&player.ads&&camMode==='shoulder';fl.classList.toggle('hidden',!show);if(!show&&fl.classList.contains('on')){fl.classList.remove('on');input.fireHeld=false;}}
   H.autoTag.classList.toggle('on',!!(grounded&&player.lockT&&onGround(player.lockT)));
   H.lockHint.classList.toggle('hidden',!(grounded&&camMode==='shoulder'&&!pointerLocked&&!TOUCH&&lastInput==='mouse'));
 }
