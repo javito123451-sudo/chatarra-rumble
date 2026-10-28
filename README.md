@@ -11,3 +11,4 @@ Para probar con otro servidor: añade `?server=wss://tu-servidor` a la URL del j
 ## Recursos de terceros
 - `lib/GLTFLoader.js` y `lib/SkeletonUtils.js`: ejemplos de Three.js r128 (licencia MIT).
 - `assets/soldier.glb`: modelo «Soldier» de los ejemplos de Three.js (personaje y animaciones de Mixamo).
+- `lib/post.js`: posprocesado de los ejemplos de Three.js r128 (EffectComposer, RenderPass, ShaderPass, UnrealBloomPass y sus shaders; licencia MIT).
