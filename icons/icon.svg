@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512"><defs>
+ <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b3540"/><stop offset="1" stop-color="#151b21"/></linearGradient>
+ <radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ffd27a" stop-opacity="1"/><stop offset=".45" stop-color="#ff6a1a" stop-opacity=".85"/><stop offset="1" stop-color="#ff6a1a" stop-opacity="0"/></radialGradient>
+ <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d9733a"/><stop offset=".55" stop-color="#a84f24"/><stop offset="1" stop-color="#6e3218"/></linearGradient>
+ <pattern id="haz" width="64" height="64" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="32" height="64" fill="#f2c230"/><rect x="32" width="32" height="64" fill="#151c22"/></pattern>
+ <filter id="rough"><feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="3" seed="7"/><feColorMatrix values="0 0 0 0 0.36  0 0 0 0 0.17  0 0 0 0 0.07  0 0 0 1.4 -0.55"/><feComposite in2="SourceGraphic" operator="in"/></filter>
+</defs>
+
+<rect width="512" height="512" rx="0" fill="url(#bg)"/>
+<rect y="440" width="512" height="72" fill="url(#haz)"/><rect y="432" width="512" height="10" fill="#0d1115"/>
+<g transform="translate(256,250) scale(0.86)"><!-- cabeza de robot soldador oxidado (centrada en 0,0, ~360 de ancho) -->
+<g>
+ <rect x="-150" y="-170" width="300" height="320" rx="46" fill="url(#metal)" stroke="#2a1a10" stroke-width="12"/>
+ <rect x="-150" y="-170" width="300" height="320" rx="46" fill="#000" filter="url(#rough)" opacity=".9"/>
+ <rect x="-178" y="-40" width="34" height="110" rx="12" fill="#3a3c40" stroke="#1a1a1a" stroke-width="8"/>
+ <rect x="144" y="-40" width="34" height="110" rx="12" fill="#3a3c40" stroke="#1a1a1a" stroke-width="8"/>
+ <rect x="-120" y="-60" width="240" height="96" rx="20" fill="#1c1e22" stroke="#0d0d0d" stroke-width="8"/>
+ <ellipse cx="0" cy="-12" rx="190" ry="70" fill="url(#glow)"/>
+ <rect x="-96" y="-22" width="192" height="22" rx="11" fill="#ffe6b0"/>
+ <g fill="#2a1a10"><circle cx="-115" cy="-135" r="11"/><circle cx="115" cy="-135" r="11"/><circle cx="-115" cy="110" r="11"/><circle cx="115" cy="110" r="11"/></g>
+ <g stroke="#2a1a10" stroke-width="10" stroke-linecap="round"><line x1="-70" y1="80" x2="-70" y2="120"/><line x1="-35" y1="80" x2="-35" y2="120"/><line x1="0" y1="80" x2="0" y2="120"/><line x1="35" y1="80" x2="35" y2="120"/><line x1="70" y1="80" x2="70" y2="120"/></g>
+ <rect x="-22" y="-215" width="44" height="50" rx="8" fill="#3a3c40" stroke="#1a1a1a" stroke-width="8"/>
+ <circle cx="0" cy="-226" r="16" fill="#ff6a1a"/><circle cx="0" cy="-226" r="40" fill="url(#glow)" opacity=".8"/>
+</g>
+</g></svg>

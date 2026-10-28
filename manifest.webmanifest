@@ -1,0 +1,14 @@
+{
+  "name": "Chatarra Rumble",
+  "short_name": "Chatarra",
+  "description": "Battle royale web 3D de robots de chatarra: solo, dúo, trío y multijugador.",
+  "start_url": ".",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#151b21",
+  "theme_color": "#1E2A33",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
