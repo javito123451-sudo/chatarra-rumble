@@ -99,7 +99,7 @@ body.touch .tg{font-size:11px;padding:4px 8px}
 #jmpBtn{width:66px;height:66px;right:calc(25px + env(safe-area-inset-right));bottom:calc(28px + env(safe-area-inset-bottom));font-size:11.5px;background:rgba(242,194,48,.28);border-color:rgba(255,226,140,.65)}
 #fireBtn{width:61px;height:61px;right:calc(104px + env(safe-area-inset-right));bottom:calc(21px + env(safe-area-inset-bottom));font-size:10.5px;background:rgba(220,90,40,.32);border-color:rgba(255,170,130,.65)}
 #fireBtn.on{background:rgba(240,110,50,.55)}
-#scBtn{width:44px;height:44px;right:calc(179px + env(safe-area-inset-right));bottom:calc(27px + env(safe-area-inset-bottom))}
+#scBtn{width:44px;height:44px;right:calc(54px + env(safe-area-inset-right));bottom:calc(168px + env(safe-area-inset-bottom))}
 #rollBtn{width:46px;height:46px;right:calc(34px + env(safe-area-inset-right));bottom:calc(108px + env(safe-area-inset-bottom))}
 #crBtn{width:46px;height:46px;right:calc(93px + env(safe-area-inset-right));bottom:calc(95px + env(safe-area-inset-bottom));font-size:8.5px}
 #crBtn.prone{background:rgba(138,95,192,.5);border-color:rgba(210,180,255,.7)}
@@ -291,9 +291,9 @@ const FOG_NEAR=REAL?(LQ?40:55):(LQ?80:110),FOG_FAR=REAL?(LQ?220:300):(LQ?260:400
 // ---------- datos
 const WEAPONS={
   remachadora:{name:'Remachadora',short:'Pistola',dmg:14,rate:0.36,speed:40,range:22,spread:0.06,pellets:1,mag:10,reload:1.3,color:0xd9d9d9,size:0.14,score:0,len:0.5,thick:0.16,kick:0.018},
-  rifle:{name:'Rifle de tuercas',short:'Rifle',dmg:9,rate:0.11,speed:52,range:32,spread:0.08,pellets:1,mag:30,reload:2.1,color:0xf2c230,size:0.13,score:3,len:1.1,thick:0.18,kick:0.011},
+  rifle:{adsMul:0.2,adsBloom:0.3,name:'Rifle de tuercas',short:'Rifle',dmg:9,rate:0.11,speed:52,range:32,spread:0.08,pellets:1,mag:30,reload:2.1,color:0xf2c230,size:0.13,score:3,len:1.1,thick:0.18,kick:0.011},
   escopeta:{name:'Escopeta de muelles',short:'Escopeta',dmg:10,rate:0.9,speed:36,range:13,spread:0.5,pellets:7,mag:5,reload:2,color:0x7fd4ff,size:0.12,score:2,len:0.95,thick:0.24,kick:0.05},
-  riel:{name:'Riel francotirador',short:'Riel',dmg:75,rate:1.5,speed:110,range:70,spread:0.012,pellets:1,mag:4,reload:2.6,color:0xb48cff,size:0.16,score:3,len:1.5,thick:0.15,scope:true,kick:0.07},
+  riel:{adsMul:0.04,adsBloom:0.1,name:'Riel francotirador',short:'Riel',dmg:75,rate:1.5,speed:110,range:70,spread:0.012,pellets:1,mag:4,reload:2.6,color:0xb48cff,size:0.16,score:3,len:1.5,thick:0.15,scope:true,kick:0.07},
   canon:{name:'Cañón de pilas',short:'Cañón',dmg:50,rate:1.3,speed:26,range:34,spread:0,pellets:1,mag:2,reload:2.5,color:0x8cff5a,size:0.32,splash:3.5,score:3,len:1.0,thick:0.32,kick:0.06}
 };
 const HEAD_MULT=1.6;
@@ -1053,7 +1053,7 @@ function spawnBullet(e,dx,dy,dz,o){
   mesh.position.set(b.x,b.y,b.z);bullets.push(b);
 }
 function startReload(e){const w=WEAPONS[e.weapon.key];if(e.weapon.reloadT<=0&&e.weapon.ammo<w.mag)e.weapon.reloadT=w.reload*PACE.reload;}
-function curSpread(e){const w=WEAPONS[e.weapon.key];if(w.pellets>1)return w.spread;const sm=(e.moving?1.35:0.85)*(e.prone?0.45:e.crouch?0.6:1)*(e.ads?0.6:1);return w.spread*sm+e.bloom;}
+function curSpread(e){const w=WEAPONS[e.weapon.key];if(w.pellets>1)return w.spread;const sm=(e.moving?1.35:0.85)*(e.prone?0.45:e.crouch?0.6:1)*(e.ads?(w.adsMul!=null?w.adsMul:0.6):1);return w.spread*sm+e.bloom*(e.ads&&w.adsBloom!=null?w.adsBloom:1);}
 function tryFire(e,dx,dy,dz){
   if(!onGround(e)||e.stunT>0||e.dashT>0||e.rollT>0)return;const w=WEAPONS[e.weapon.key];
   if(e.weapon.reloadT>0||e.fireT>0)return;if(e.weapon.ammo<=0){startReload(e);return;}
@@ -1061,7 +1061,7 @@ function tryFire(e,dx,dy,dz){
   shootBullets(e,dx,dy,dz,false);
   if(NET.on)netSend({t:'f',i:e.ix,d:[Math.round(dx*1000)/1000,Math.round(dy*1000)/1000,Math.round(dz*1000)/1000]});
   if(w.pellets===1)e.bloom=Math.min(w.spread*1.5+0.04,e.bloom+w.spread*0.3);
-  if(e===player&&camMode==='shoulder'){camPitch=clamp(camPitch-w.kick,PITCH_MIN,PITCH_MAX);camYaw+=rand(-w.kick,w.kick)*0.35;}
+  if(e===player&&camMode==='shoulder'){const kk=w.kick*(e.ads&&w.adsMul!=null?0.45:1);camPitch=clamp(camPitch-kk,PITCH_MIN,PITCH_MAX);camYaw+=rand(-kk,kk)*0.35;}
   if(e.weapon.ammo<=0)startReload(e);
 }
 function shootBullets(e,dx,dy,dz,ghost){const w=WEAPONS[e.weapon.key];
