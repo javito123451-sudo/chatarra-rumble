@@ -802,7 +802,14 @@ const CHAR_MODEL={gltf:null,scale:1};
 const TUNE={gunPos:[0,0.05,0],dUR:[-0.15,-0.45,1],dFR:[0.1,-0.05,1],dUL:[-0.55,-0.45,1],dFL:[-0.7,0,1],aim:true};
 function loadCharModel(){try{if(!REAL||LQ||!THREE.GLTFLoader||!THREE.SkeletonUtils)return;
   new THREE.GLTFLoader().load('assets/soldier.glb',g=>{g.scene.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
-    const bb=new THREE.Box3().setFromObject(g.scene),h=bb.max.y-bb.min.y;CHAR_MODEL.scale=h>0?1.95/h:1;CHAR_MODEL.gltf=g;},undefined,()=>{});}catch(e){}}
+    const bb=new THREE.Box3().setFromObject(g.scene),h=bb.max.y-bb.min.y;CHAR_MODEL.scale=h>0?1.95/h:1;CHAR_MODEL.gltf=g;
+    // si la partida ya había empezado con los muñecos provisionales, se cambian al soldado en caliente
+    if(world&&ents.length)for(const e of ents)rebuildBody(e);},undefined,()=>{});}catch(e){}}
+function rebuildBody(e){const old=e.r;if(old.mdl)return;const nr=makeHuman(e.char,e.isPlayer);if(!nr.mdl)return;
+  nr.g.rotation.order='YXZ';nr.g.position.copy(old.g.position);nr.g.rotation.y=old.g.rotation.y;nr.g.visible=old.g.visible;
+  for(const m of e.bar.g.children)nr.all.push(m.material);world.remove(old.g);world.add(nr.g);
+  old.g.traverse(o=>{if(o.userData&&o.userData.own&&o.geometry)o.geometry.dispose();});
+  e.r=nr;e._fl=false;e._op=1;updateGun(e);}
 function makeHuman(ck,isPlayer){
   if(CHAR_MODEL.gltf)return makeModelHuman(ck,isPlayer);
   const c=CHARS[ck],g=new THREE.Group();
