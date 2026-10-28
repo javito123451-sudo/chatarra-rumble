@@ -294,7 +294,7 @@ const WEAPONS={
   rifle:{adsMul:0.2,adsBloom:0.3,name:'Rifle de tuercas',short:'Rifle',dmg:9,rate:0.11,speed:52,range:32,spread:0.08,pellets:1,mag:30,reload:2.1,color:0xf2c230,size:0.13,score:3,len:1.1,thick:0.18,kick:0.011},
   escopeta:{name:'Escopeta de muelles',short:'Escopeta',dmg:10,rate:0.9,speed:36,range:13,spread:0.5,pellets:7,mag:5,reload:2,color:0x7fd4ff,size:0.12,score:2,len:0.95,thick:0.24,kick:0.05},
   riel:{adsMul:0.04,adsBloom:0.1,name:'Riel francotirador',short:'Riel',dmg:75,rate:1.5,speed:110,range:70,spread:0.012,pellets:1,mag:4,reload:2.6,color:0xb48cff,size:0.16,score:3,len:1.5,thick:0.15,scope:true,kick:0.07},
-  canon:{name:'Cañón de pilas',short:'Cañón',dmg:50,rate:1.3,speed:26,range:34,spread:0,pellets:1,mag:2,reload:2.5,color:0x8cff5a,size:0.32,splash:3.5,score:3,len:1.0,thick:0.32,kick:0.06}
+  canon:{name:'Cañón de pilas',short:'Cañón',dmg:50,rate:1.3,speed:26,range:34,spread:0,pellets:1,mag:2,reload:2.5,color:0x8cff5a,size:0.32,splash:5,score:3,len:1.0,thick:0.32,kick:0.06}
 };
 const HEAD_MULT=1.6;
 const LOOT=['rifle','rifle','escopeta','riel','canon'];
@@ -1116,9 +1116,12 @@ function kill(t,src,fromNet){
   if(src===player&&t!==player)toast('¡Fuera de combate!',900);
   checkTeams(t);
 }
-function explode(x,z,owner,dmg,r,ghostFx){
-  if(!ghostFx)for(const e of ents){if(!onGround(e)||e===owner)continue;const d=Math.hypot(e.x-x,e.z-z);if(d<r)applyHit(e,dmg*(1-0.5*d/r),owner,false);}
-  if(!ghostFx)for(const c of crates){if(c.alive&&Math.hypot(c.x-x,c.z-z)<r)damageCrate(c,dmg);}
+// explosión con daño de área: impacto directo = daño completo; alrededor, proporcional a la distancia (100 % en el centro, 0 % en el borde)
+function explode(x,z,owner,dmg,r,ghostFx,y){
+  const ey=y==null?gH(x,z)+1:y;
+  if(!ghostFx)for(const e of ents){if(!onGround(e)||e===owner||mates(owner,e))continue;const d=Math.hypot(e.x-x,e.z-z,(chestY(e)-ey)*0.8);
+    if(d<r){const k=1-d/r;applyHit(e,dmg*Math.max(0.08,k*k*0.6+k*0.4),owner,false);}}
+  if(!ghostFx)for(const c of crates){if(!c.alive)continue;const d=Math.hypot(c.x-x,c.z-z);if(d<r)damageCrate(c,dmg*(1-d/r*0.7));}
   const gy=gH(x,z);sparks(x,gy+0.8,z,0x8cff5a,16,8);ringFx(x,z,r,0x8cff5a,0.35);
   puff(x,gy+1,z,{color:0xbfff7a,size:r*1.6,grow:0.6,dur:0.28});puff(x,gy+1,z,{color:0xffd27a,size:r*0.9,grow:1.2,dur:0.35});
   if(player&&player.alive&&Math.hypot(player.x-x,player.z-z)<12)camShake=Math.max(camShake,0.35);
@@ -1486,15 +1489,17 @@ function updateBullets(dt){
   for(let i=bullets.length-1;i>=0;i--){
     const b=bullets[i],sp=Math.hypot(b.vx,b.vy,b.vz),ux=b.vx/sp,uy=b.vy/sp,uz=b.vz/sp;let rem=sp*dt,dead=false;
     while(rem>0&&!dead){const st=Math.min(0.45,rem);rem-=st;b.x+=ux*st;b.y+=uy*st;b.z+=uz*st;b.dist+=st;
-      if(b.y<=gH(b.x,b.z)+0.03){dead=true;if(b.splash)explode(b.x,b.z,b.owner,b.dmg,b.splash,b.ghost);else{sparks(b.x,b.y+0.1,b.z,0xffe7a0,3,2);puff(b.x,b.y+0.2,b.z,{smoke:true,color:0xb7a58f,size:0.6,grow:1.4,dur:0.5,op:0.55,vy:0.4});}break;}
+      if(b.y<=gH(b.x,b.z)+0.03){dead=true;if(b.splash)explode(b.x,b.z,b.owner,b.dmg,b.splash,b.ghost,b.y);else{sparks(b.x,b.y+0.1,b.z,0xffe7a0,3,2);puff(b.x,b.y+0.2,b.z,{smoke:true,color:0xb7a58f,size:0.6,grow:1.4,dur:0.5,op:0.55,vy:0.4});}break;}
       let solid=false;for(const o of obstacles){const y0=o.y0||0;if(b.y>=y0&&b.y<y0+(o.h||3)&&inBox(b.x,b.z,o)){solid=true;break;}}
       if(!solid)for(const r of ROOFS)if(b.y>=r.y0&&b.y<r.y0+r.h+0.05&&inBox(b.x,b.z,r)){solid=true;break;}
-      if(solid){dead=true;if(b.splash)explode(b.x,b.z,b.owner,b.dmg,b.splash,b.ghost);else bulletImpact(b,ux,uy,uz);break;}
+      if(solid){dead=true;if(b.splash)explode(b.x,b.z,b.owner,b.dmg,b.splash,b.ghost,b.y);else bulletImpact(b,ux,uy,uz);break;}
       let hitC=null;for(const c of crates)if(c.alive&&b.y>=c.y0&&b.y<c.y0+1.35&&inBox(b.x,b.z,c.box,0.05)){hitC=c;break;}
-      if(hitC){dead=true;if(b.splash)explode(b.x,b.z,b.owner,b.dmg,b.splash,b.ghost);else if(!b.hook){if(!b.ghost)damageCrate(hitC,b.dmg);sparks(b.x,b.y,b.z,0xf2c230,3,3);}break;}
+      if(hitC){dead=true;if(b.splash)explode(b.x,b.z,b.owner,b.dmg,b.splash,b.ghost,b.y);else if(!b.hook){if(!b.ghost)damageCrate(hitC,b.dmg);sparks(b.x,b.y,b.z,0xf2c230,3,3);}break;}
+      if(b.splash&&!b.hook){let near=false;for(const e of ents){if(!onGround(e)||e===b.owner||mates(b.owner,e))continue;if(Math.hypot(e.x-b.x,e.z-b.z,chestY(e)-b.y)<1.7){near=true;break;}}
+        if(near){dead=true;explode(b.x,b.z,b.owner,b.dmg,b.splash,b.ghost,b.y);break;}}
       for(const e of ents){if(!onGround(e)||e===b.owner)continue;const h=entHit(e,b);
-        if(h){if(b.ghost){if(b.splash)explode(b.x,b.z,b.owner,b.dmg,b.splash,true);}else if(b.hook)hookHit(b.owner,e);else if(b.splash)explode(b.x,b.z,b.owner,b.dmg,b.splash);else{applyHit(e,b.dmg,b.owner,h===2);sparks(b.x,b.y,b.z,h===2?0xf2c230:0xffffff,h===2?6:3,3);}dead=true;break;}}
-      if(!dead&&b.dist>=b.range){dead=true;if(b.splash)explode(b.x,b.z,b.owner,b.dmg,b.splash,b.ghost);}
+        if(h){if(b.ghost){if(b.splash)explode(b.x,b.z,b.owner,b.dmg,b.splash,true,b.y);}else if(b.hook)hookHit(b.owner,e);else if(b.splash)explode(b.x,b.z,b.owner,b.dmg,b.splash,false,b.y);else{applyHit(e,b.dmg,b.owner,h===2);sparks(b.x,b.y,b.z,h===2?0xf2c230:0xffffff,h===2?6:3,3);}dead=true;break;}}
+      if(!dead&&b.dist>=b.range){dead=true;if(b.splash)explode(b.x,b.z,b.owner,b.dmg,b.splash,b.ghost,b.y);}
     }
     if(dead){freeBullet(b);bullets.splice(i,1);continue;}
     b.mesh.position.set(b.x,b.y,b.z);
