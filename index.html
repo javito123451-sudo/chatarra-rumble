@@ -15,6 +15,8 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;overflow:hidden;background:var(--oil);color:var(--chalk);font-family:'Rubik',system-ui,-apple-system,'Segoe UI',sans-serif;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 #c{position:fixed;inset:0;width:100%;height:100%;display:block}
+#grade{position:fixed;inset:0;pointer-events:none;z-index:1;display:none;background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 45%,rgba(8,6,4,.55) 100%),linear-gradient(rgba(30,20,10,.12),rgba(10,14,20,.18))}
+body.real #grade{display:block}
 .hidden{display:none!important}
 #hud{position:fixed;inset:0;pointer-events:none;z-index:6}
 #tl{position:absolute;top:calc(10px + env(safe-area-inset-top));left:calc(10px + env(safe-area-inset-left));display:flex;flex-direction:column;gap:6px;align-items:flex-start;max-width:48vw}
@@ -162,6 +164,7 @@ h1{font-family:'Bungee',sans-serif;font-weight:400;font-size:clamp(40px,10vw,88p
 </head>
 <body>
 <canvas id="c"></canvas>
+<div id="grade"></div>
 
 <div id="touch" class="hidden">
   <div id="lBase" class="stick"><div class="knob"></div></div>
@@ -282,8 +285,8 @@ const MAP=160,R=0.6,N=24,SHIELD_MAX=60,DROP_Y=56,AF=(MAP/100)*(MAP/100);
 let QUALITY=TOUCH?'medium':'high';try{QUALITY=localStorage.getItem('cr_q')||QUALITY;}catch(e){}
 const HQ=QUALITY==='high',LQ=QUALITY==='low';
 let STYLE='real';try{STYLE=localStorage.getItem('cr_style')||'real';}catch(e){}
-const REAL=STYLE==='real';
-const FOG_NEAR=LQ?80:110,FOG_FAR=LQ?260:400,CAM_FAR=900;
+const REAL=STYLE==='real';if(REAL)document.body.classList.add('real');
+const FOG_NEAR=REAL?(LQ?40:55):(LQ?80:110),FOG_FAR=REAL?(LQ?220:300):(LQ?260:400),CAM_FAR=900;
 
 // ---------- datos
 const WEAPONS={
@@ -320,14 +323,14 @@ const renderer=new THREE.WebGLRenderer({canvas,antialias:!TOUCH&&!LQ,powerPrefer
 renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,HQ?1.75:QUALITY==='medium'?1.5:1));
 renderer.shadowMap.enabled=!LQ;
 renderer.shadowMap.type=REAL&&!LQ?THREE.PCFSoftShadowMap:THREE.PCFShadowMap;
-if(REAL){renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=0.92;}
+if(REAL){renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=0.78;}
 const scene=new THREE.Scene();
-const SKY=REAL?0xa9bcc6:0xa9dcf0;scene.background=new THREE.Color(SKY);
+const SKY=REAL?0x5f676d:0xa9dcf0;scene.background=new THREE.Color(SKY);
 scene.fog=new THREE.Fog(SKY,150,420);
 const camera=new THREE.PerspectiveCamera(58,1,0.3,CAM_FAR);
-scene.add(new THREE.HemisphereLight(REAL?0xcfe2f0:0xdff4ff,REAL?0x4a3c2c:0x8a6a40,REAL?0.42:0.5));
-const SUN_OFF=new THREE.Vector3(38,70,26);
-const sun=new THREE.DirectionalLight(REAL?0xffe2bc:0xfff0d0,REAL?1.0:0.68);
+scene.add(new THREE.HemisphereLight(REAL?0x8d9aa6:0xdff4ff,REAL?0x2a2219:0x8a6a40,REAL?0.34:0.5));
+const SUN_OFF=REAL?new THREE.Vector3(62,34,30):new THREE.Vector3(38,70,26);
+const sun=new THREE.DirectionalLight(REAL?0xffb57a:0xfff0d0,REAL?1.05:0.68);
 sun.castShadow=!LQ;
 sun.shadow.mapSize.set(HQ?2048:1024,HQ?2048:1024);
 Object.assign(sun.shadow.camera,{left:-42,right:42,top:42,bottom:-42,near:1,far:160});
@@ -369,7 +372,7 @@ const OL=new THREE.MeshBasicMaterial({color:0x24160d,side:THREE.BackSide});
 // estilo realista: materiales PBR, sin contornos y colores menos saturados; estilo cartoon: toon de 3 tonos con contorno
 function MAT(o){o=Object.assign({},o);if(REAL){if(o.color!==undefined)o.color=realHex(o.color);return new THREE.MeshStandardMaterial(Object.assign({roughness:0.86,metalness:0.04},o));}return new THREE.MeshToonMaterial(Object.assign({gradientMap:GRAD},o));}
 const _rc=new THREE.Color();
-function realColor(c){const l=c.r*0.3+c.g*0.59+c.b*0.11;c.r=(c.r+(l-c.r)*0.22)*0.86;c.g=(c.g+(l-c.g)*0.22)*0.86;c.b=(c.b+(l-c.b)*0.22)*0.86;return c;}
+function realColor(c){const l=c.r*0.3+c.g*0.59+c.b*0.11;c.r=(c.r+(l-c.r)*0.38)*0.74;c.g=(c.g+(l-c.g)*0.38)*0.74;c.b=(c.b+(l-c.b)*0.38)*0.74;return c;}
 function realHex(h){if(!REAL)return h;_rc.set(h);return realColor(_rc).getHex();}
 if(REAL)OL.visible=false;
 const VTOON=MAT({vertexColors:true});
@@ -421,15 +424,15 @@ const beamMats={};const beamMat=c=>beamMats[c]||(beamMats[c]=new THREE.MeshBasic
 const ringMats={};const ringMat=c=>ringMats[c]||(ringMats[c]=new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:0.75,side:THREE.DoubleSide,depthWrite:false}));
 
 // ---------- elementos globales: cielo, agua, nubes
-const sky=(()=>{const g=new THREE.SphereGeometry(600,24,12),P=g.attributes.position,col=new Float32Array(P.count*3),top=new THREE.Color(REAL?0x3a7cc8:0x3d9be6),hor=new THREE.Color(REAL?0xb9c9d0:0xc9ecfa),c=new THREE.Color();
+const sky=(()=>{const g=new THREE.SphereGeometry(600,24,12),P=g.attributes.position,col=new Float32Array(P.count*3),top=new THREE.Color(REAL?0x222c3a:0x3d9be6),hor=new THREE.Color(REAL?0x8a7f74:0xc9ecfa),c=new THREE.Color();
   for(let i=0;i<P.count;i++){const t=clamp(P.getY(i)/600,0,1);c.copy(hor).lerp(top,Math.pow(t,0.6));col[i*3]=c.r;col[i*3+1]=c.g;col[i*3+2]=c.b;}
   g.setAttribute('color',new THREE.BufferAttribute(col,3));const m=new THREE.Mesh(g,new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.BackSide,fog:false,depthWrite:false}));
   m.renderOrder=-1;m.frustumCulled=false;scene.add(m);return m;})();
-const water=new THREE.Mesh(new THREE.PlaneGeometry(1400,1400),(REAL?new THREE.MeshStandardMaterial({color:0x2a7f99,roughness:0.12,metalness:0.35,transparent:true,opacity:0.9}):MAT({color:0x2ab0dc,transparent:true,opacity:0.86})));
+const water=new THREE.Mesh(new THREE.PlaneGeometry(1400,1400),(REAL?new THREE.MeshStandardMaterial({color:0x1b3d48,roughness:0.15,metalness:0.4,transparent:true,opacity:0.92}):MAT({color:0x2ab0dc,transparent:true,opacity:0.86})));
 water.rotation.x=-Math.PI/2;water.position.y=-0.6;water.receiveShadow=true;scene.add(water);
 const clouds=(()=>{const b=new Batch();for(let i=0;i<(LQ?10:22);i++){const a=RNG()*6.28,r=rand(60,260),x=Math.cos(a)*r,z=Math.sin(a)*r,y=rand(55,75),s=rand(4,8);
   for(let k=0;k<4;k++)b.add(G.ico,MX(x+rand(-1.4,1.4)*s,y+rand(-0.3,0.4)*s,z+rand(-0.8,0.8)*s,0,0,0,s*rand(0.7,1.1),s*rand(0.5,0.7),s*rand(0.7,1)),0xffffff,false);}
-  const g=b.build(REAL?new THREE.MeshStandardMaterial({vertexColors:true,fog:false,roughness:1,emissive:0xb8c2c8}):MAT({vertexColors:true,fog:false}),0,false);scene.add(g);return g;})();
+  const g=b.build(REAL?new THREE.MeshStandardMaterial({color:0x777d84,vertexColors:true,fog:false,roughness:1,emissive:0x3c4046}):MAT({vertexColors:true,fog:false}),0,false);scene.add(g);return g;})();
 const oilMat=new THREE.ShaderMaterial({transparent:true,depthWrite:false,
   uniforms:{uC:{value:new THREE.Vector2()},uR:{value:150},uT:{value:0}},
   vertexShader:'varying vec2 vW;void main(){vec4 w=modelMatrix*vec4(position,1.0);vW=w.xz;gl_Position=projectionMatrix*viewMatrix*w;}',
@@ -656,7 +659,7 @@ function tColor(x,z,h,c){
 let _detail=null;
 // textura de detalle (grano de tierra y hierba) que se repite sobre el terreno en el estilo realista
 function detailTex(){if(_detail)return _detail;const [c,g]=mkCanvas(256),img=g.createImageData(256,256);
-  for(let y=0;y<256;y++)for(let x=0;x<256;x++){const n=vnoise(x*0.09,y*0.09)*0.5+vnoise(x*0.35+7,y*0.35+3)*0.3+hash2(x,y)*0.2,v=Math.round(200+n*55),o=(y*256+x)*4;img.data[o]=v;img.data[o+1]=v;img.data[o+2]=v;img.data[o+3]=255;}
+  for(let y=0;y<256;y++)for(let x=0;x<256;x++){const n=vnoise(x*0.09,y*0.09)*0.5+vnoise(x*0.35+7,y*0.35+3)*0.3+hash2(x,y)*0.2,v=Math.round(165+n*90),o=(y*256+x)*4;img.data[o]=v;img.data[o+1]=v;img.data[o+2]=v;img.data[o+3]=255;}
   g.putImageData(img,0,0);_detail=new THREE.CanvasTexture(c);_detail.wrapS=_detail.wrapT=THREE.RepeatWrapping;_detail.repeat.set(110,110);_detail.anisotropy=4;return _detail;}
 function buildTerrain(){
   const S=2*(MAP+45),SEG=LQ?170:HQ?300:240,geo=new THREE.PlaneGeometry(S,S,SEG,SEG);geo.rotateX(-Math.PI/2);
