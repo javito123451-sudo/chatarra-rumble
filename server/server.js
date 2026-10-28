@@ -89,7 +89,9 @@ wss.on('connection', ws => {
     if (msg.t === 'start') {
       if (room.hostId !== ws.playerId) return;
       const seed = Number.isFinite(msg.seed) ? msg.seed | 0 : Math.floor(Math.random() * 2147483647);
-      broadcast(room, { t: 'start', seed, hostId: room.hostId, players: playerList(room) });
+      const mode = ['solo', 'duo', 'trio'].includes(msg.mode) ? msg.mode : 'solo';
+      const rule = msg.rule === 'versus' ? 'versus' : 'together';
+      broadcast(room, { t: 'start', seed, hostId: room.hostId, players: playerList(room), mode, rule });
       return;
     }
     if (CONTROL.has(msg.t)) return;
