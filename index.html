@@ -212,6 +212,11 @@ body.ads-holo #cross,body.ads-scope #cross{display:none!important}
 .panel h3{margin:4px 0 8px;font-family:'Bungee',sans-serif;font-weight:400;color:var(--haz)}
 .logo{font-family:'Bungee',sans-serif;font-size:clamp(26px,5vw,52px);line-height:.95;color:var(--haz);text-shadow:3px 3px 0 var(--rust),6px 6px 0 #000;transform:rotate(-2deg);margin-top:4px}
 #charTag{margin-top:10px;font-weight:800;max-width:300px}#charTag b{font-family:'Bungee',sans-serif;font-weight:400;font-size:20px;color:#fff;display:block}#charTag span{color:var(--haz);font-size:13px}#charTag p{margin:4px 0 0;font-size:12px;opacity:.85;line-height:1.35}
+.prof{cursor:pointer}.prof .edit{opacity:.7;font-size:12px}
+#pickChar{margin-top:10px;pointer-events:auto;font-size:13px}
+#charNav{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(36px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:10px;pointer-events:auto}
+#charNav #chName{font-family:'Bungee',sans-serif;font-size:18px;min-width:110px;text-align:center;text-shadow:0 2px 4px #000}
+#charNav .glassBtn.sq{width:44px;height:44px;font-size:24px}
 .dragHint{position:fixed;left:50%;bottom:calc(12px + env(safe-area-inset-bottom));transform:translateX(-50%);opacity:.6}
 .tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}.tab{border-radius:10px;padding:6px 12px;font:800 13px 'Rubik',sans-serif;cursor:pointer}.tab.on{background:rgba(242,194,48,.32);border-color:rgba(255,226,140,.8)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:8px}
@@ -287,14 +292,16 @@ body.ads-holo #cross,body.ads-scope #cross{display:none!important}
 
 <div id="menu" class="screen home">
   <div id="topBar">
-    <div class="glassBox prof"><div class="pn"><b id="pName">Chatarrero</b><small>Nivel <b id="pLvl">1</b></small></div><div class="xpbar"><i id="pXp"></i></div></div>
+    <div class="glassBox prof" id="profBox" title="Toca para cambiar tu nombre"><div class="pn"><b id="pName">Chatarrero</b><span class="edit">✎</span><small>Nivel <b id="pLvl">1</b></small></div><div class="xpbar"><i id="pXp"></i></div></div>
     <div class="spacer"></div>
     <div class="glassBox cur" title="Tuercas: se ganan jugando"><span class="ic nut"></span><b id="pCoins">0</b></div>
     <div class="glassBox cur" title="Chips: moneda premium"><span class="ic chip"></span><b id="pGems">0</b><button class="plus" id="gemPlus" aria-label="Conseguir Chips">+</button></div>
     <button class="glassBtn sq" id="setMenuBtn" aria-label="Ajustes">⚙</button>
   </div>
   <nav id="sideNav"><button class="navb on" data-p="home">Inicio</button><button class="navb" data-p="locker">Taquilla</button><button class="navb" data-p="shop">Tienda</button><button class="navb" data-p="opts">Opciones</button></nav>
-  <div id="pHome" class="panel bare"><div class="logo">CHATARRA<br>RUMBLE</div><div id="charTag"></div><p class="hint dragHint">Arrastra para girar a tu robot</p></div>
+  <div id="pHome" class="panel bare"><div class="logo">CHATARRA<br>RUMBLE</div><div id="charTag"></div><button class="glassBtn" id="pickChar">Elegir personaje</button>
+    <div id="charNav"><button class="glassBtn sq" id="chPrev" aria-label="Personaje anterior">‹</button><span id="chName"></span><button class="glassBtn sq" id="chNext" aria-label="Personaje siguiente">›</button></div>
+    <p class="hint dragHint">Arrastra para girar a tu robot</p></div>
   <div id="pLocker" class="panel hidden"><div class="tabs"><button class="tab on" data-t="char">Personaje</button><button class="tab" data-t="o">Vestimenta</button><button class="tab" data-t="w">Armas</button><button class="tab" data-t="p">Mascota</button></div><div id="lockGrid" class="grid"></div></div>
   <div id="pShop" class="panel hidden"><h3>Ofertas</h3><div id="shopGrid" class="grid"></div><h3>Chips</h3><div id="gemGrid" class="grid"></div><p class="hint" style="text-align:left">Los pagos con tarjeta llegan pronto. Mientras tanto, gana Tuercas en cada partida y con la recompensa diaria.</p></div>
   <div id="pOpts" class="panel hidden"><div class="optCol">
@@ -2164,7 +2171,7 @@ function myCos(){return cleanCos({o:PROFILE.equip.o[chosen]||'orig',w:PROFILE.eq
 chosen=PROFILE.equip.char;
 function renderTop(){let nm='Chatarrero';try{nm=localStorage.getItem('cr_name')||nm;}catch(e){}$('pName').textContent=nm;const lv=levelOf(PROFILE.xp);$('pLvl').textContent=lv;
   $('pXp').style.width=((PROFILE.xp%500)/5)+'%';$('pCoins').textContent=PROFILE.coins;$('pGems').textContent=PROFILE.gems;
-  const c=CHARS[chosen];$('charTag').innerHTML='';const b=document.createElement('b');b.textContent=c.name;const sp=document.createElement('span');sp.textContent=c.ab+' · Vida '+c.hp;const pp=document.createElement('p');pp.textContent=c.desc;$('charTag').append(b,sp,pp);}
+  const c=CHARS[chosen];$('chName').textContent=c.name;$('charTag').innerHTML='';const b=document.createElement('b');b.textContent=c.name;const sp=document.createElement('span');sp.textContent=c.ab+' · Vida '+c.hp;const pp=document.createElement('p');pp.textContent=c.desc;$('charTag').append(b,sp,pp);}
 {const today=new Date().toISOString().slice(0,10);if(PROFILE.daily!==today){PROFILE.daily=today;PROFILE.coins+=50;saveProfile();setTimeout(()=>toast('Recompensa diaria: +50 Tuercas',2600),1500);}}
 const CATS={o:OUTFITS,w:WSKINS,p:PETS};
 const owned=(cat,id)=>!!PROFILE.owned[cat+':'+id];
@@ -2200,6 +2207,11 @@ function showPanel(pn){for(const b of document.querySelectorAll('.navb'))b.class
 for(const b of document.querySelectorAll('.navb'))b.addEventListener('click',()=>{audInit();showPanel(b.dataset.p);});
 for(const b of document.querySelectorAll('.tab'))b.addEventListener('click',()=>{lockTab=b.dataset.t;for(const x of document.querySelectorAll('.tab'))x.classList.toggle('on',x===b);renderLocker();});
 $('gemPlus').addEventListener('click',()=>showPanel('shop'));
+function cycleChar(d){const i=CHAR_KEYS.indexOf(chosen);chosen=CHAR_KEYS[(i+d+CHAR_KEYS.length)%CHAR_KEYS.length];PROFILE.equip.char=chosen;saveProfile();buildLobbyChar();sfxUi('pick');}
+$('chPrev').addEventListener('click',()=>{audInit();cycleChar(-1);});$('chNext').addEventListener('click',()=>{audInit();cycleChar(1);});
+$('pickChar').addEventListener('click',()=>{audInit();lockTab='char';for(const x of document.querySelectorAll('.tab'))x.classList.toggle('on',x.dataset.t==='char');showPanel('locker');});
+$('profBox').addEventListener('click',()=>{let cur='';try{cur=localStorage.getItem('cr_name')||'';}catch(e){}const v=prompt('Tu nombre de jugador (máx. 12 letras)',cur||'');if(v==null)return;const nm=v.trim().slice(0,12);
+  try{localStorage.setItem('cr_name',nm);}catch(e){}if($('nameIn'))$('nameIn').value=nm;renderTop();});
 // escena 3D del garaje con el robot
 const LOBBY={scene:new THREE.Scene(),cam:new THREE.PerspectiveCamera(34,1,0.1,80),r:null,pet:null,rot:-0.5,offset:0.12,t:0,built:false};
 function setupLobby(){if(LOBBY.built)return;LOBBY.built=true;const S=LOBBY.scene;S.background=new THREE.Color(0x12161b);S.fog=new THREE.Fog(0x12161b,9,26);S.environment=scene.environment||null;
