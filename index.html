@@ -177,6 +177,7 @@ h1{font-family:'Bungee',sans-serif;font-weight:400;font-size:clamp(40px,10vw,88p
 #lobbyList li{background:var(--oil2);border:2px solid #000;border-radius:10px;padding:5px 10px;font-weight:800;font-size:13px;box-shadow:0 3px 0 #000}
 #lobbyList li.me{border-color:var(--haz)}#lobbyList li small{opacity:.7;font-weight:700}
 #lobbyStatus{min-height:1.4em;font-size:13px;opacity:.9}
+#sights{position:fixed;inset:0;z-index:4;pointer-events:none}
 #sightHolo{position:absolute;left:50%;top:50%;width:170px;height:170px;margin:-85px 0 0 -85px;display:none;filter:drop-shadow(0 0 3px rgba(255,60,40,.8))}
 #sightHolo svg,#sightScope svg{display:block;width:100%;height:100%}
 #sightScope{position:absolute;inset:0;display:none}
@@ -184,12 +185,26 @@ h1{font-family:'Bungee',sans-serif;font-weight:400;font-size:clamp(40px,10vw,88p
 #sightScope svg{position:absolute;left:50%;top:50%;width:92vmin;height:92vmin;transform:translate(-50%,-50%)}
 body.ads-holo #sightHolo,body.ads-scope #sightScope{display:block}
 body.ads-holo #cross,body.ads-scope #cross{display:none!important}
+#settings{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.35);touch-action:auto}
+.setCard{width:min(88vw,360px);padding:16px 18px;border-radius:16px;background:rgba(30,36,42,.72);border:1.5px solid rgba(255,255,255,.35);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 10px 30px rgba(0,0,0,.4);display:flex;flex-direction:column;gap:12px;color:#fff}
+.setCard h3{margin:0;font-family:'Bungee',sans-serif;font-weight:400;font-size:20px;color:var(--haz)}
+.setRow{display:grid;grid-template-columns:1fr auto;gap:4px 8px;font-weight:700;font-size:13px}
+.setRow input{grid-column:1/3;width:100%;accent-color:var(--haz);height:28px;touch-action:auto}
+.setRow b{color:var(--haz)}
+#settings .btn{align-self:center;font-size:16px;padding:8px 22px}
 @media (prefers-reduced-motion:reduce){.card,.btn,#cross{transition:none}}
 </style>
 </head>
 <body>
 <canvas id="c"></canvas>
 <div id="grade"></div>
+<div id="sights">
+  <div id="sightHolo"><svg viewBox="-80 -80 160 160"><circle r="46" fill="none" stroke="#ff3a28" stroke-width="2.2" opacity=".9"/><circle r="2.6" fill="#ff3a28"/><g stroke="#ff3a28" stroke-width="2.2" stroke-linecap="round"><line x1="0" y1="-46" x2="0" y2="-34"/><line x1="0" y1="46" x2="0" y2="34"/><line x1="-46" y1="0" x2="-34" y2="0"/><line x1="46" y1="0" x2="34" y2="0"/></g></svg></div>
+  <div id="sightScope"><div class="lens"></div><svg viewBox="-500 -500 1000 1000"><g stroke="#000" fill="none"><line x1="-500" y1="0" x2="-130" y2="0" stroke-width="12"/><line x1="130" y1="0" x2="500" y2="0" stroke-width="12"/><line x1="0" y1="130" x2="0" y2="500" stroke-width="12"/><line x1="0" y1="-500" x2="0" y2="-130" stroke-width="5"/>
+    <line x1="-130" y1="0" x2="130" y2="0" stroke-width="1.8"/><line x1="0" y1="-130" x2="0" y2="130" stroke-width="1.8"/>
+    <g fill="#000" stroke="none"><circle cx="-100" cy="0" r="3.5"/><circle cx="-70" cy="0" r="3.5"/><circle cx="-40" cy="0" r="3.5"/><circle cx="40" cy="0" r="3.5"/><circle cx="70" cy="0" r="3.5"/><circle cx="100" cy="0" r="3.5"/><circle cx="0" cy="40" r="3.5"/><circle cx="0" cy="70" r="3.5"/><circle cx="0" cy="100" r="3.5"/><circle cx="0" cy="-40" r="3.5"/><circle cx="0" cy="-70" r="3.5"/><circle cx="0" cy="-100" r="3.5"/></g>
+    <g stroke-width="1.5"><line x1="-12" y1="55" x2="12" y2="55"/><line x1="-9" y1="85" x2="9" y2="85"/><line x1="-6" y1="115" x2="6" y2="115"/></g></g><circle r="2.2" fill="#ff2a1a"/></svg></div>
+</div>
 
 <div id="touch" class="hidden">
   <div id="lBase" class="stick"><div class="knob"></div></div>
@@ -210,18 +225,13 @@ body.ads-holo #cross,body.ads-scope #cross{display:none!important}
 
 <div id="hud" class="hidden">
   <div id="scope"></div>
-  <div id="sightHolo"><svg viewBox="-80 -80 160 160"><circle r="46" fill="none" stroke="#ff3a28" stroke-width="2.2" opacity=".9"/><circle r="2.6" fill="#ff3a28"/><g stroke="#ff3a28" stroke-width="2.2" stroke-linecap="round"><line x1="0" y1="-46" x2="0" y2="-34"/><line x1="0" y1="46" x2="0" y2="34"/><line x1="-46" y1="0" x2="-34" y2="0"/><line x1="46" y1="0" x2="34" y2="0"/></g></svg></div>
-  <div id="sightScope"><div class="lens"></div><svg viewBox="-500 -500 1000 1000"><g stroke="#000" fill="none"><line x1="-500" y1="0" x2="-130" y2="0" stroke-width="12"/><line x1="130" y1="0" x2="500" y2="0" stroke-width="12"/><line x1="0" y1="130" x2="0" y2="500" stroke-width="12"/><line x1="0" y1="-500" x2="0" y2="-130" stroke-width="5"/>
-    <line x1="-130" y1="0" x2="130" y2="0" stroke-width="1.8"/><line x1="0" y1="-130" x2="0" y2="130" stroke-width="1.8"/>
-    <g fill="#000" stroke="none"><circle cx="-100" cy="0" r="3.5"/><circle cx="-70" cy="0" r="3.5"/><circle cx="-40" cy="0" r="3.5"/><circle cx="40" cy="0" r="3.5"/><circle cx="70" cy="0" r="3.5"/><circle cx="100" cy="0" r="3.5"/><circle cx="0" cy="40" r="3.5"/><circle cx="0" cy="70" r="3.5"/><circle cx="0" cy="100" r="3.5"/><circle cx="0" cy="-40" r="3.5"/><circle cx="0" cy="-70" r="3.5"/><circle cx="0" cy="-100" r="3.5"/></g>
-    <g stroke-width="1.5"><line x1="-12" y1="55" x2="12" y2="55"/><line x1="-9" y1="85" x2="9" y2="85"/><line x1="-6" y1="115" x2="6" y2="115"/></g></g><circle r="2.2" fill="#ff2a1a"/></svg></div>
   <div id="cross" class="hidden"></div>
   <div id="hitm"></div>
   <div id="dmgs"></div>
   <div id="rl" class="hidden"><i id="rlFill"></i></div>
   <div id="lockHint" class="hidden">Haz clic para controlar la cámara con el ratón</div>
   <button id="camBtn">Cámara</button>
-  <div id="zoomBox"><button class="zb" id="zOut" aria-label="Alejar cámara">−</button><button class="zb" id="zIn" aria-label="Acercar cámara">+</button></div>
+  <div id="zoomBox"><button class="zb" id="zOut" aria-label="Alejar cámara">−</button><button class="zb" id="zIn" aria-label="Acercar cámara">+</button><button class="zb" id="setBtn" aria-label="Ajustes">⚙</button></div>
   <div id="autoBox"><button class="tg" id="afBtn" aria-pressed="false">Disparo auto</button><button class="tg" id="aaBtn" aria-pressed="false">Apuntado auto</button></div>
   <div id="autoTag">Objetivo fijado</div>
   <div id="tl">
@@ -249,7 +259,7 @@ body.ads-holo #cross,body.ads-scope #cross{display:none!important}
   <p class="sub">Veinticuatro chatarreros saltan de un dron sobre la isla del desguace. Busca armas en las naves, escóndete y huye de la marea de aceite.</p>
   <div id="cards"></div>
   <div class="row" style="justify-content:center"><button id="playBtn" class="btn">Jugar solo</button><button id="mpBtn" class="btn">Multijugador</button><button id="qBtn" class="btn alt">Gráficos</button><button id="stBtn" class="btn alt">Estilo</button></div>
-  <div class="row" style="justify-content:center"><button class="tg" id="musBtn">Música</button><button class="tg" id="sfxBtn">Sonido</button></div>
+  <div class="row" style="justify-content:center"><button class="tg" id="setMenuBtn">⚙ Ajustes</button><button class="tg" id="musBtn">Música</button><button class="tg" id="sfxBtn">Sonido</button></div>
   <div class="row" style="justify-content:center"><button id="afMenu" class="tg" aria-pressed="false">Disparo auto</button><button id="aaMenu" class="tg" aria-pressed="false">Apuntado auto</button></div>
   <div class="row" style="justify-content:center;align-items:center"><span class="hint" style="opacity:.9">Modo:</span><button class="tg mode" data-m="solo">Solo</button><button class="tg mode" data-m="duo">Dúo</button><button class="tg mode" data-m="trio">Trío</button></div>
   <p class="hint" id="ctrlHint"></p>
@@ -275,6 +285,13 @@ body.ads-holo #cross,body.ads-scope #cross{display:none!important}
   <button id="lobbyBack" class="btn alt">Salir</button>
 </div>
 
+<div id="settings" class="hidden"><div class="setCard" role="dialog" aria-label="Ajustes">
+  <h3>Ajustes</h3>
+  <label class="setRow"><span>Música de fondo</span><b id="musVal"></b><input type="range" id="musVol" min="0" max="100" step="1"></label>
+  <label class="setRow"><span>Efectos de sonido</span><b id="sfxVal"></b><input type="range" id="sfxVol" min="0" max="100" step="1"></label>
+  <label class="setRow"><span>Sensibilidad de la cámara</span><b id="sensVal"></b><input type="range" id="sensVol" min="30" max="200" step="5"></label>
+  <button class="btn" id="setClose">Cerrar</button>
+</div></div>
 <div id="end" class="screen hidden">
   <h2 id="endTitle"></h2>
   <div id="endPlace">#1</div>
@@ -1425,7 +1442,8 @@ addEventListener('keydown',e=>{if(e.target&&e.target.tagName==='INPUT')return;ke
   if(e.code==='Digit1')input.sw=0;if(e.code==='Digit2')input.sw=1;if(e.code==='Digit3')input.sw=2;if(e.code==='KeyZ'&&!e.repeat)input.prone=true;if((e.code==='ShiftLeft'||e.code==='ShiftRight')&&!e.repeat)input.roll=true;if(e.code==='KeyX'&&!e.repeat)input.autoRun=!input.autoRun;if(e.code==='Tab'){e.preventDefault();input.sw=-1;}});
 addEventListener('keyup',e=>{keys[e.code]=false;});
 const mouse={x:0,y:0,down:false,right:false,has:false};
-function lookDelta(dx,dy){const k=player&&player.ads?(player.scoped?Math.max(0.05,camera.fov/58*0.95):0.45):1;camYaw-=dx*0.0065*k;camPitch=clamp(camPitch+dy*0.004*k,PITCH_MIN,PITCH_MAX);}
+let SENS=1;try{const v=parseFloat(localStorage.getItem('cr_sens'));if(v>0)SENS=v;}catch(e){}
+function lookDelta(dx,dy){dx*=SENS;dy*=SENS;const k=player&&player.ads?(player.scoped?Math.max(0.05,camera.fov/58*0.95):0.45):1;camYaw-=dx*0.0065*k;camPitch=clamp(camPitch+dy*0.004*k,PITCH_MIN,PITCH_MAX);}
 addEventListener('mousemove',e=>{mouse.x=e.clientX/innerWidth*2-1;mouse.y=-(e.clientY/innerHeight)*2+1;mouse.has=true;lastInput='mouse';
   if(pointerLocked)lookDelta(e.movementX*0.38,e.movementY*0.45);});
 canvas.addEventListener('mousedown',e=>{
@@ -1947,14 +1965,16 @@ try{$('nameIn').value=localStorage.getItem('cr_name')||'';}catch(e){}
 
 // ---------- sonido y música (todo sintetizado con Web Audio: sin archivos, sin derechos de autor)
 // La música es un rock-blues original en La (guitarras con distorsión, bajo y batería) que se intensifica en combate.
-const AUD={ctx:null,on:false,mus:true,sfx:true,master:null,musG:null,sfxG:null,gtr:null,lead:null,noise:null,step:0,next:0,bar:0,inten:0.15,timer:null,drone:null,droneG:null,footT:0,lastMode:''};
-try{AUD.mus=localStorage.getItem('cr_mus')!=='0';AUD.sfx=localStorage.getItem('cr_sfx')!=='0';}catch(e){}
+const AUD={musVol:0.7,sfxVol:0.85,ctx:null,on:false,mus:true,sfx:true,master:null,musG:null,sfxG:null,gtr:null,lead:null,noise:null,step:0,next:0,bar:0,inten:0.15,timer:null,drone:null,droneG:null,footT:0,lastMode:''};
+try{AUD.mus=localStorage.getItem('cr_mus')!=='0';AUD.sfx=localStorage.getItem('cr_sfx')!=='0';const mv=parseFloat(localStorage.getItem('cr_musvol')),sv=parseFloat(localStorage.getItem('cr_sfxvol'));if(mv>=0)AUD.musVol=mv;if(sv>=0)AUD.sfxVol=sv;}catch(e){}
+const musLevel=()=>AUD.mus?0.5*AUD.musVol:0,sfxLevel=()=>AUD.sfx?0.95*AUD.sfxVol:0;
+function audApplyVol(){if(!AUD.ctx)return;AUD.musG.gain.setTargetAtTime(musLevel(),AUD.ctx.currentTime,0.08);AUD.sfxG.gain.setTargetAtTime(sfxLevel(),AUD.ctx.currentTime,0.05);}
 function audInit(){if(AUD.ctx){if(AUD.ctx.state==='suspended')AUD.ctx.resume();return;}
   const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;const c=new AC();AUD.ctx=c;
   const comp=c.createDynamicsCompressor();comp.threshold.value=-14;comp.ratio.value=4;comp.connect(c.destination);
   AUD.master=c.createGain();AUD.master.gain.value=0.9;AUD.master.connect(comp);
-  AUD.musG=c.createGain();AUD.musG.gain.value=AUD.mus?0.34:0;AUD.musG.connect(AUD.master);
-  AUD.sfxG=c.createGain();AUD.sfxG.gain.value=AUD.sfx?0.8:0;AUD.sfxG.connect(AUD.master);
+  AUD.musG=c.createGain();AUD.musG.gain.value=musLevel();AUD.musG.connect(AUD.master);
+  AUD.sfxG=c.createGain();AUD.sfxG.gain.value=sfxLevel();AUD.sfxG.connect(AUD.master);
   // guitarra rítmica: distorsión + "pantalla" de amplificador
   const shp=(k)=>{const n=1024,cv=new Float32Array(n);for(let i=0;i<n;i++){const x=i*2/n-1;cv[i]=(3+k)*x*20*Math.PI/180/(Math.PI+k*Math.abs(x));}return cv;};
   const gi=c.createGain(),ws=c.createWaveShaper(),lp=c.createBiquadFilter(),pk=c.createBiquadFilter(),go=c.createGain();
@@ -1967,8 +1987,8 @@ function audInit(){if(AUD.ctx){if(AUD.ctx.state==='suspended')AUD.ctx.resume();r
   const nb=c.createBuffer(1,c.sampleRate*1.5,c.sampleRate),d=nb.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;AUD.noise=nb;
   AUD.next=c.currentTime+0.1;AUD.timer=setInterval(audSchedule,25);AUD.on=true;}
 ['pointerdown','touchstart','keydown'].forEach(ev=>addEventListener(ev,audInit,{passive:true}));
-function audSetMus(v){AUD.mus=v;try{localStorage.setItem('cr_mus',v?'1':'0');}catch(e){}if(AUD.musG)AUD.musG.gain.setTargetAtTime(v?0.34:0,AUD.ctx.currentTime,0.2);}
-function audSetSfx(v){AUD.sfx=v;try{localStorage.setItem('cr_sfx',v?'1':'0');}catch(e){}if(AUD.sfxG)AUD.sfxG.gain.setTargetAtTime(v?0.8:0,AUD.ctx.currentTime,0.05);}
+function audSetMus(v){AUD.mus=v;try{localStorage.setItem('cr_mus',v?'1':'0');}catch(e){}audApplyVol();}
+function audSetSfx(v){AUD.sfx=v;try{localStorage.setItem('cr_sfx',v?'1':'0');}catch(e){}audApplyVol();}
 const mf=m=>440*Math.pow(2,(m-69)/12);
 function env(g,t,a,peak,dec,sus,rel,len){g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(peak,t+a);g.gain.setTargetAtTime(peak*sus,t+a,dec);g.gain.setTargetAtTime(0.0001,t+len,rel);}
 function noiseSrc(t,dur){const c=AUD.ctx,s=c.createBufferSource();s.buffer=AUD.noise;s.start(t,Math.random()*0.5,dur+0.1);return s;}
@@ -2083,6 +2103,16 @@ function goFull(){if(!TOUCH)return;const d=document.documentElement;try{const r=
 $('playBtn').addEventListener('click',()=>{goFull();newMatch();});
 $('againBtn').addEventListener('click',()=>{if(NET.ws&&NET.code){NET.on=false;openLobby();return;}goFull();newMatch();});
 $('changeBtn').addEventListener('click',()=>{if(NET.ws){NET.inLobby=false;try{NET.ws.close();}catch(e){}NET.ws=null;NET.code=null;NET.on=false;}toMenu();});
+{const S=$('settings'),mv=$('musVol'),sv=$('sfxVol'),se=$('sensVol'),
+  upd=()=>{mv.value=Math.round(AUD.musVol*100);sv.value=Math.round(AUD.sfxVol*100);se.value=Math.round(SENS*100);$('musVal').textContent=mv.value+'%';$('sfxVal').textContent=sv.value+'%';$('sensVal').textContent=se.value+'%';};
+  const open=()=>{audInit();unlock();upd();S.classList.remove('hidden');},close=()=>S.classList.add('hidden');
+  mv.addEventListener('input',()=>{AUD.musVol=mv.value/100;if(AUD.musVol>0&&!AUD.mus){audSetMus(true);const b=$('musBtn');b.textContent='Música: sí';b.classList.add('on');}audApplyVol();upd();try{localStorage.setItem('cr_musvol',AUD.musVol);}catch(e){}});
+  sv.addEventListener('input',()=>{AUD.sfxVol=sv.value/100;audApplyVol();upd();try{localStorage.setItem('cr_sfxvol',AUD.sfxVol);}catch(e){}});
+  se.addEventListener('input',()=>{SENS=se.value/100;upd();try{localStorage.setItem('cr_sens',SENS);}catch(e){}});
+  $('setClose').addEventListener('click',close);S.addEventListener('click',e=>{if(e.target===S)close();});
+  $('setMenuBtn').addEventListener('click',open);
+  {const b=$('setBtn');let tt=0;b.addEventListener('touchstart',e=>{e.preventDefault();e.stopPropagation();tt=performance.now();open();},{passive:false});b.addEventListener('click',()=>{if(performance.now()-tt>600)open();});}
+  addEventListener('keydown',e=>{if(e.code==='Escape'&&!S.classList.contains('hidden'))close();});}
 {const mb=$('musBtn'),fb=$('sfxBtn'),up=()=>{mb.textContent='Música: '+(AUD.mus?'sí':'no');mb.classList.toggle('on',AUD.mus);fb.textContent='Sonido: '+(AUD.sfx?'sí':'no');fb.classList.toggle('on',AUD.sfx);};
   mb.addEventListener('click',()=>{audInit();audSetMus(!AUD.mus);up();});fb.addEventListener('click',()=>{audInit();audSetSfx(!AUD.sfx);up();});up();}
 {const sb=$('stBtn');sb.textContent='Estilo: '+(REAL?'realista':'cartoon');sb.addEventListener('click',()=>{try{localStorage.setItem('cr_style',REAL?'toon':'real');}catch(e){}location.reload();});}
