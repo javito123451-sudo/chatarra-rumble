@@ -18,7 +18,7 @@ const server = http.createServer((req, res) => {
 const wss = new WebSocketServer({ server, maxPayload: 64 * 1024 });
 
 function send(ws, msg) { if (ws.readyState === 1) ws.send(typeof msg === 'string' ? msg : JSON.stringify(msg)); }
-function playerList(room) { return [...room.players.values()].map(p => ({ id: p.id, name: p.name, char: p.char })); }
+function playerList(room) { return [...room.players.values()].map(p => ({ id: p.id, name: p.name, char: p.char, cos: p.cos })); }
 function broadcast(room, msg, exceptId) {
   const data = JSON.stringify(msg);
   for (const p of room.players.values()) if (p.id !== exceptId) send(p.ws, data);
@@ -33,10 +33,16 @@ function newCode() {
 }
 function cleanName(n) { return String(n || 'Chatarrero').replace(/[<>]/g, '').trim().slice(0, 12) || 'Chatarrero'; }
 function cleanChar(c) { return ['brasa', 'garfio', 'chispa', 'bafle'].includes(c) ? c : 'brasa'; }
+// cosméticos: solo identificadores cortos conocidos por el cliente (traje, acabado de arma, mascota)
+function cleanCos(c) {
+  c = c && typeof c === 'object' ? c : {};
+  const id = v => (typeof v === 'string' && /^[a-z]{1,12}$/.test(v)) ? v : undefined;
+  return { o: id(c.o), w: id(c.w), p: id(c.p) };
+}
 
 function joinRoom(ws, room, msg) {
   const id = 'p' + (nextId++);
-  room.players.set(id, { id, name: cleanName(msg.name), char: cleanChar(msg.char), ws });
+  room.players.set(id, { id, name: cleanName(msg.name), char: cleanChar(msg.char), cos: cleanCos(msg.cos), ws });
   ws.playerId = id;
   ws.roomCode = room.code;
   send(ws, { t: 'joined', id, code: room.code, hostId: room.hostId || id, players: playerList(room) });
