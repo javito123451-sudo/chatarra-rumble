@@ -280,6 +280,13 @@ body.playing #compass{display:block}
 .tier .lv{font-family:'Bungee',sans-serif;font-size:12px;color:var(--haz)}.tier .rw{font-weight:800;font-size:12px;min-height:30px}.tier .st{font-size:11px;opacity:.85}
 .tier.got{border-color:rgba(122,240,138,.8);background:rgba(122,240,138,.15)}.tier.next{border-color:rgba(255,226,140,.95);box-shadow:0 0 16px rgba(242,194,48,.4)}
 @media (orientation:portrait){.passCard{top:auto;bottom:calc(150px + env(safe-area-inset-bottom));right:12px;width:180px}}
+#nowPlaying{position:fixed;left:50%;top:calc(78px + env(safe-area-inset-top));z-index:9;display:flex;align-items:center;gap:10px;padding:7px 16px 7px 10px;border-radius:14px;pointer-events:none;
+  background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.35);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:0 6px 20px rgba(0,0,0,.35);color:#fff;text-shadow:0 1px 2px #000;
+  opacity:0;transform:translate(-50%,-14px);transition:opacity .45s,transform .45s}
+#nowPlaying.show{opacity:1;transform:translate(-50%,0)}
+#nowPlaying .np{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;background:linear-gradient(135deg,var(--haz),var(--rust));color:#151c22;text-shadow:none;animation:npSpin 2.4s linear infinite}
+@keyframes npSpin{50%{transform:scale(1.12)}}
+#nowPlaying small{display:block;font:800 9px 'Rubik',sans-serif;letter-spacing:3px;opacity:.8}#nowPlaying b{font-family:'Bungee',sans-serif;font-weight:400;font-size:15px}
 @media (prefers-reduced-motion:reduce){.card,.btn,#cross{transition:none}}
 </style>
 </head>
@@ -295,6 +302,7 @@ body.playing #compass{display:block}
     <div class="spBar"><i id="spFill"></i></div><p id="spTxt">Cargando el desguace…</p><button id="spGo" class="btn big hidden">TOCA PARA JUGAR</button></div>
   <p class="spTip" id="spTip"></p></div>
 <div id="fade"></div>
+<div id="nowPlaying"><span class="np">♪</span><span><small>AHORA SUENA</small><b id="npTitle"></b></span></div>
 <div id="elimBanner" class="hidden"><small id="elimSmall">ELIMINADO</small><b id="elimName"></b></div>
 <div id="dmgDir"></div>
 <div id="compass"><div id="compStrip"></div><i class="cmark"></i></div>
@@ -2238,7 +2246,7 @@ function audInit(){if(AUD.ctx){if(AUD.ctx.state==='suspended')AUD.ctx.resume();r
   lws.curve=shp(60);llp.type='lowpass';llp.frequency.value=4200;dl.delayTime.value=0.34;fb.gain.value=0.3;lo.gain.value=0.16;
   li.connect(lws);lws.connect(llp);llp.connect(lo);llp.connect(dl);dl.connect(fb);fb.connect(dl);dl.connect(lo);lo.connect(AUD.musG);AUD.lead=li;
   const nb=c.createBuffer(1,c.sampleRate*1.5,c.sampleRate),d=nb.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;AUD.noise=nb;
-  AUD.next=c.currentTime+0.1;AUD.timer=setInterval(audSchedule,25);AUD.on=true;}
+  AUD.next=c.currentTime+0.1;AUD.timer=setInterval(audSchedule,25);AUD.on=true;musUpdate();}
 ['pointerdown','touchstart','keydown'].forEach(ev=>addEventListener(ev,audInit,{passive:true}));
 function audSetMus(v){AUD.mus=v;try{localStorage.setItem('cr_mus',v?'1':'0');}catch(e){}audApplyVol();}
 function audSetSfx(v){AUD.sfx=v;try{localStorage.setItem('cr_sfx',v?'1':'0');}catch(e){}audApplyVol();}
@@ -2264,7 +2272,23 @@ function hat(t,open){const c=AUD.ctx,n=noiseSrc(t,open?0.3:0.05),f=c.createBiqua
 function crash(t){const c=AUD.ctx,n=noiseSrc(t,1.2),f=c.createBiquadFilter(),g=c.createGain();f.type='highpass';f.frequency.value=4500;n.connect(f);f.connect(g);g.connect(AUD.musG);g.gain.setValueAtTime(0.25,t);g.gain.exponentialRampToValueAtTime(0.001,t+1.2);}
 // --- composición: riff original de 1 compás sobre cada acorde de una progresión de 8 compases (La-La-Re-La-Mi-Re-La-Mi)
 const PROG=[45,45,50,45,52,50,45,52],PENTA=[0,3,5,7,10,12,15,17];
-function audSchedule(){const c=AUD.ctx;if(!c||c.state!=='running')return;
+// ---------- canciones propias: lista para el menú y rotación en partida, con aviso de "Ahora suena"
+const SONGS=[{f:'music/no-te-deje-en-visto.mp3',t:'Yo No Te Dejé En Visto',m:'menu'},{f:'music/arriba-abajo.mp3',t:'Arriba / Abajo',m:'menu'},
+  {f:'music/cicatriz-de-acero.mp3',t:'Cicatriz de Acero',m:'combat'},{f:'music/farmear-aura-remix.mp3',t:'Farmear Aura (Remix)',m:'combat'},{f:'music/seis-ceros.mp3',t:'Seis Ceros',m:'combat'}];
+const MUS={el:null,g:null,mode:'',queue:{},cur:null,fail:0,ok:false,switching:false};
+function musInit(){if(MUS.el||!AUD.ctx)return;const el=new Audio();el.preload='auto';MUS.el=el;
+  try{const src=AUD.ctx.createMediaElementSource(el),g=AUD.ctx.createGain();g.gain.value=0.9;src.connect(g);g.connect(AUD.musG);MUS.g=g;}catch(e){}
+  el.addEventListener('ended',()=>musNext());el.addEventListener('playing',()=>{MUS.ok=true;MUS.fail=0;});
+  el.addEventListener('error',()=>{MUS.ok=false;MUS.fail++;if(MUS.fail<4)setTimeout(musNext,600);});}
+function musWant(){return state==='play'||state==='dead'||state==='won'?'combat':'menu';}
+function musNext(){if(!MUS.el)return;const mode=MUS.mode||'menu';let q=MUS.queue[mode];
+  if(!q||!q.length){q=MUS.queue[mode]=shuffle(SONGS.filter(x=>mode==='combat'||x.m==='menu').slice());if(MUS.cur&&q.length>1&&q[0]===MUS.cur)q.push(q.shift());}
+  const sg=q.shift();MUS.cur=sg;MUS.el.src=sg.f;const pr=MUS.el.play();if(pr&&pr.catch)pr.catch(()=>{});nowPlaying(sg);}
+function musUpdate(){if(!AUD.ctx)return;musInit();if(!MUS.el)return;const want=musWant();
+  if(want!==MUS.mode&&!MUS.switching){const first=!MUS.mode;MUS.mode=want;if(first||!MUS.g){musNext();return;}
+    MUS.switching=true;MUS.g.gain.setTargetAtTime(0.0001,AUD.ctx.currentTime,0.25);setTimeout(()=>{musNext();MUS.g.gain.setTargetAtTime(0.9,AUD.ctx.currentTime,0.3);MUS.switching=false;},900);}}
+function nowPlaying(sg){const el=$('nowPlaying');if(!el)return;$('npTitle').textContent=sg.t;el.classList.remove('show');void el.offsetWidth;el.classList.add('show');clearTimeout(nowPlaying.t);nowPlaying.t=setTimeout(()=>el.classList.remove('show'),5000);}
+function audSchedule(){const c=AUD.ctx;if(!c||c.state!=='running')return;if(MUS.ok&&MUS.el&&!MUS.el.paused)return;
   const target=state==='play'||state==='dead'||state==='won'?AUD.inten:0.12,bpm=target>0.3?136:112;AUD.spb=60/bpm;
   while(AUD.next<c.currentTime+0.15){const s=AUD.step%16,t=AUD.next+(s%2?AUD.spb/4*0.12:0),R=PROG[AUD.bar%8],I=target;
     if(I>0.3){ // banda completa
@@ -2501,7 +2525,7 @@ const PERF={t:0,n:0,max:renderer.getPixelRatio(),pr:renderer.getPixelRatio(),min
 function adaptRes(dt){PERF.t+=dt;PERF.n++;if(PERF.t<2.5)return;const fps=PERF.n/PERF.t;PERF.t=0;PERF.n=0;let pr=PERF.pr;
   if(fps<45&&pr>PERF.min)pr=Math.max(PERF.min,pr-0.15);else if(fps>57&&pr<PERF.max)pr=Math.min(PERF.max,pr+0.1);
   if(pr!==PERF.pr){PERF.pr=pr;renderer.setPixelRatio(pr);renderer.setSize(innerWidth,innerHeight,false);if(composer){composer.setPixelRatio(pr);composer.setSize(innerWidth,innerHeight);}}}
-function frame(now){requestAnimationFrame(frame);const dt=Math.min(0.05,Math.max(0,(now-last)/1000));last=now;if(document.visibilityState==='visible')adaptRes(dt);step(dt);GRASS_U.time.value=time;if(state==='menu'&&!$('menu').classList.contains('hidden')){lobbyStep(dt);renderer.render(LOBBY.scene,LOBBY.cam);return;}if(composer){if(gradePass)gradePass.uniforms.uTime.value=time;composer.render();}else renderer.render(scene,camera);}
+function frame(now){requestAnimationFrame(frame);const dt=Math.min(0.05,Math.max(0,(now-last)/1000));last=now;musUpdate();if(document.visibilityState==='visible')adaptRes(dt);step(dt);GRASS_U.time.value=time;if(state==='menu'&&!$('menu').classList.contains('hidden')){lobbyStep(dt);renderer.render(LOBBY.scene,LOBBY.cam);return;}if(composer){if(gradePass)gradePass.uniforms.uTime.value=time;composer.render();}else renderer.render(scene,camera);}
 addEventListener('resize',resize);
 setupPost();loadCharModel();zoneStart();buildLobbyChar();showPanel('home');
 {const TIPS=['Consejo: en dúo y trío puedes reanimar a tus compañeros derribados.','Consejo: los trampolines te suben al tejado de las naves.','Consejo: agáchate o túmbate para que el francotirador no se mueva.','Consejo: el cañón hace daño en área aunque falles por poco.','Consejo: recoge el chip de reinicio para traer de vuelta a un compañero.'];
@@ -2511,7 +2535,7 @@ setupPost();loadCharModel();zoneStart();buildLobbyChar();showPanel('home');
     if((modelOk&&fontsOk&&el>1.2)||el>14){$('spFill').style.width='100%';$('spTxt').textContent='Listo';$('spGo').classList.remove('hidden');return;}
     $('spTxt').textContent=!modelOk?'Montando robots…':'Cargando el desguace…';requestAnimationFrame(tick);};tick();
   const go=()=>{audInit();sfxUi('pad');$('splash').classList.add('out');setTimeout(()=>$('splash').remove(),700);};$('spGo').addEventListener('click',go);}resize();applyCamUI();applyAutoUI();requestAnimationFrame(frame);
-window.__CR={step,newMatch,get state(){return state;},get player(){return player;},get ents(){return ents;},get zone(){return zone;},get buildings(){return buildings;},mouse,input,toggleCam,settings,NET,TUNE,CHAR_MODEL,JPADS,ROOFS,get obstacles(){return obstacles;},get cam(){return camMode;},
+window.__CR={step,newMatch,get state(){return state;},get player(){return player;},get ents(){return ents;},get zone(){return zone;},get buildings(){return buildings;},mouse,input,toggleCam,settings,NET,TUNE,CHAR_MODEL,JPADS,ROOFS,get obstacles(){return obstacles;},get MUS(){return MUS;},get cam(){return camMode;},
   setChosen:k=>{chosen=k;},counts:()=>({bullets:bullets.length,pickups:pickups.length,crates:crates.filter(c=>c.alive).length,fx:fxs.length,parts:parts.length})};
 })();
 </script>
