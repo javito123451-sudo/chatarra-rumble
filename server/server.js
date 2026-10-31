@@ -5,15 +5,20 @@ const http = require('http');
 const { WebSocketServer } = require('ws');
 
 const PORT = process.env.PORT || 8080;
-const MAX_PLAYERS = 18;
+const MAX_PLAYERS = 24;
+const QUICK_WAIT = 20000;   // espera máxima en partida rápida antes de empezar con bots
+const QUICK_SHORT = 8000;   // si ya hay bastante gente, se acorta la espera
+const QUICK_ENOUGH = 6;     // jugadores a partir de los cuales se acorta
+const MODES = ['solo', 'duo', 'trio', 'squad'];
 const LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; // sin I ni O para no confundir con 1 y 0
-const CONTROL = new Set(['create', 'join', 'start']);
+const CONTROL = new Set(['create', 'join', 'start', 'quick']);
 const rooms = new Map(); // código -> { code, hostId, players: Map(id -> {id, name, char, ws}) }
 let nextId = 1;
 
 const server = http.createServer((req, res) => {
   res.writeHead(200, { 'content-type': 'text/plain; charset=utf-8', 'access-control-allow-origin': '*' });
-  res.end(`Chatarra Rumble: ${rooms.size} salas activas\n`);
+  const pub = [...rooms.values()].filter(r => r.public && !r.started).length;
+  res.end(`Chatarra Rumble: ${rooms.size} salas activas (${pub} públicas buscando jugadores)\n`);
 });
 const wss = new WebSocketServer({ server, maxPayload: 64 * 1024 });
 
@@ -82,9 +87,27 @@ wss.on('connection', ws => {
       joinRoom(ws, room, msg);
       return;
     }
+    // Partida rápida: une a desconocidos en una sala pública del mismo modo y la arranca sola
+    if (msg.t === 'quick') {
+      if (ws.roomCode) leave(ws);
+      const mode = MODES.includes(msg.mode) ? msg.mode : 'solo';
+      let room = [...rooms.values()].find(r => r.public && !r.started && r.mode === mode && r.players.size < MAX_PLAYERS);
+      if (!room) {
+        const code = newCode();
+        if (!code) return send(ws, { t: 'err', msg: 'No hay salas libres, prueba en un momento.' });
+        room = { code, hostId: null, players: new Map(), public: true, mode, started: false, startAt: Date.now() + QUICK_WAIT };
+        rooms.set(code, room);
+      }
+      joinRoom(ws, room, msg);
+      if (room.players.size >= QUICK_ENOUGH) room.startAt = Math.min(room.startAt, Date.now() + QUICK_SHORT);
+      if (room.players.size >= MAX_PLAYERS) room.startAt = Date.now();
+      quickTick(room);
+      return;
+    }
     if (msg.t === 'join') {
       const room = rooms.get(String(msg.code || '').toUpperCase());
       if (!room) return send(ws, { t: 'err', msg: 'No existe ninguna sala con ese código.' });
+      if (room.public && room.started) return send(ws, { t: 'err', msg: 'Esa partida ya ha empezado.' });
       if (room.players.size >= MAX_PLAYERS) return send(ws, { t: 'err', msg: 'La sala está llena (18 jugadores).' });
       if (ws.roomCode) leave(ws);
       joinRoom(ws, room, msg);
@@ -108,6 +131,19 @@ wss.on('connection', ws => {
   ws.on('close', () => leave(ws));
   ws.on('error', () => {});
 });
+
+// Cuenta atrás de las salas públicas: avisa cada segundo y arranca cuando toca
+function quickTick(room) {
+  if (!room.public || room.started) return;
+  const left = Math.max(0, room.startAt - Date.now());
+  broadcast(room, { t: 'qwait', n: room.players.size, max: MAX_PLAYERS, secs: Math.ceil(left / 1000), mode: room.mode });
+  if (left <= 0 && room.players.size > 0) {
+    room.started = true;
+    const seed = Math.floor(Math.random() * 2147483647);
+    broadcast(room, { t: 'start', seed, hostId: room.hostId, players: playerList(room), mode: room.mode, rule: 'together', public: true });
+  }
+}
+setInterval(() => { for (const room of rooms.values()) quickTick(room); }, 1000);
 
 // Corta conexiones muertas cada 30 s
 setInterval(() => {

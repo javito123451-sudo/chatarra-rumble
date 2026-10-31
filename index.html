@@ -294,6 +294,13 @@ body.playing #nowPlaying{top:calc(44px + env(safe-area-inset-top))}body.touch.pl
 .rotPhone{width:58px;height:98px;border:4px solid #fff;border-radius:12px;position:relative;animation:rotP 2.2s ease-in-out infinite}
 .rotPhone i{position:absolute;left:50%;bottom:6px;width:14px;height:4px;margin-left:-7px;border-radius:2px;background:#fff}
 @keyframes rotP{0%,25%{transform:rotate(0)}55%,85%{transform:rotate(-90deg)}100%{transform:rotate(0)}}
+#quick{gap:10px}
+.qRadar{position:relative;width:150px;height:150px;border-radius:50%;border:2px solid rgba(74,255,154,.5);background:radial-gradient(circle,rgba(74,255,154,.15) 0,rgba(74,255,154,.03) 60%,transparent 70%);overflow:hidden;box-shadow:0 0 30px rgba(74,255,154,.25)}
+.qRadar::before,.qRadar::after{content:'';position:absolute;inset:25%;border-radius:50%;border:1px solid rgba(74,255,154,.35)}.qRadar::after{inset:45%}
+.qRadar i{position:absolute;left:50%;top:50%;width:50%;height:50%;transform-origin:0 0;background:conic-gradient(from 0deg,rgba(74,255,154,.55),transparent 70deg);animation:qSpin 1.6s linear infinite}
+.qRadar b{position:absolute;left:62%;top:30%;width:8px;height:8px;border-radius:50%;background:#7af08a;box-shadow:0 0 10px #7af08a;animation:qBlip 1.6s ease-in-out infinite}
+@keyframes qSpin{to{transform:rotate(360deg)}}@keyframes qBlip{0%,40%{opacity:0}50%{opacity:1}100%{opacity:0}}
+.qCount{font-family:'Bungee',sans-serif;font-size:22px;margin:4px 0 0}
 @media (prefers-reduced-motion:reduce){.card,.btn,#cross{transition:none}}
 </style>
 </head>
@@ -397,7 +404,16 @@ body.playing #nowPlaying{top:calc(44px + env(safe-area-inset-top))}body.touch.pl
     <div class="row"><button id="afMenu" class="tg" aria-pressed="false">Disparo auto</button><button id="aaMenu" class="tg" aria-pressed="false">Apuntado auto</button></div></div>
     <p class="hint" id="ctrlHint" style="text-align:left"></p></div>
   <div id="playBox"><div class="row modes"><button class="tg mode" data-m="solo">Solo</button><button class="tg mode" data-m="duo">Dúo</button><button class="tg mode" data-m="trio">Trío</button><button class="tg mode" data-m="squad">Escuadrón</button></div>
-    <button id="playBtn" class="btn big">JUGAR</button><button id="mpBtn" class="glassBtn wide">Multijugador</button></div>
+    <button id="playBtn" class="btn big">JUGAR</button><div class="row" style="gap:8px"><button id="quickBtn" class="glassBtn">⚡ Partida rápida</button><button id="mpBtn" class="glassBtn">Con amigos</button></div></div>
+</div>
+
+<div id="quick" class="screen hidden">
+  <h2>Partida rápida</h2>
+  <p class="sub" id="qMode"></p>
+  <div class="qRadar"><i></i><b></b></div>
+  <p id="qCount" class="qCount">Conectando…</p>
+  <p class="hint" id="qTime"></p>
+  <button id="qCancel" class="btn alt">Cancelar</button>
 </div>
 
 <div id="lobby" class="screen hidden">
@@ -485,7 +501,7 @@ const EN={
 'Cuando estéis todos, pulsa Empezar partida.':'When everyone is in, press Start match.','Esperando a que el anfitrión empiece la partida…':'Waiting for the host to start the match…',
 'Pasa el código a tus amigos. Puedes empezar ya y jugar contra bots.':'Share the code with your friends. You can start now and play against bots.',
 'No existe ninguna sala con ese código.':'There is no room with that code.','La sala está llena (18 jugadores).':'The room is full.',
-'Tú':'You','Vacío':'Empty',
+'Tú':'You','Vacío':'Empty','Partida rápida':'Quick match','⚡ Partida rápida':'⚡ Quick match','Con amigos':'With friends','Conectando…':'Connecting…','Cancelar':'Cancel','¡Empezando!':'Starting!','Esa partida ya ha empezado.':'That match has already started.',
 // personajes y habilidades
 'Brasa':'Brasa','Garfio':'Garfio','Chispa':'Chispa','Bafle':'Bafle','Escudo térmico':'Heat shield','Gancho':'Hook','Turbo':'Turbo','Onda de graves':'Bass wave',
 'Soldadora con careta: se pone al rojo y recibe un 75% menos de daño durante 3 s.':'Welder with a mask: glows red hot and takes 75% less damage for 3 s.',
@@ -532,6 +548,7 @@ const EN_RX=[
  [/^\((.+?)(, anfitrión)?\)$/,m=>'('+w(m[1])+(m[2]?', host':'')+')'],
  [/^(Rueda|Pellizca) para hacer zoom.+$/,m=>m[1]==='Rueda'?'Scroll to zoom, drag to move and click to place a marker':'Pinch to zoom, drag to move and tap to place a marker'],
  [/^Mantén pulsado/,m=>null],
+ [/^Empieza en (\d+) s · los huecos se rellenan con bots$/,m=>'Starts in '+m[1]+' s · empty slots are filled with bots'],
  [/^Mantén( E)?: reiniciar compañeros$/,m=>'Hold'+(m[1]||'')+': reboot teammates'],[/^Chip de (.+) recogido: llévalo a un punto de reinicio \(verde en el mapa\)$/,m=>m[1]+"'s chip collected: take it to a reboot point (green on the map)"],
  [/^(\d+ chips|Chip) de reinicio: ve a un punto verde$/,m=>(m[1]==='Chip'?'Reboot chip':m[1].replace('chips','reboot chips'))+': go to a green point'],
  [/^¡Reiniciando! (.+) vuelven? al combate$/,m=>'Rebooting! '+m[1]+' back in the fight']];
@@ -2290,7 +2307,7 @@ function netConnect(then){
     if(NET.inLobby){showRoom(false);lobbyStatus('Se perdió la conexión. Vuelve a crear o unirte a una sala.');}};
   ws.onerror=()=>{lobbyStatus('No se pudo conectar con el servidor. Inténtalo otra vez en unos segundos.');};
 }
-function myName(){const v=($('nameIn').value||'').trim().slice(0,12);return v||'Chatarrero';}
+function myName(){let v=($('nameIn').value||'').trim().slice(0,12);if(!v)try{v=(localStorage.getItem('cr_name')||'').slice(0,12);}catch(e){}return v||('Chatarrero'+((Math.random()*900+100)|0));}
 function showRoom(on){$('roomBox').classList.toggle('hidden',!on);$('lobbyPick').classList.toggle('hidden',on);}
 function renderLobby(){
   $('roomCode').textContent=NET.code||'';const ul=$('lobbyList');ul.innerHTML='';
@@ -2299,8 +2316,8 @@ function renderLobby(){
   NET.host=NET.hostId===NET.id;$('startBtn').classList.toggle('hidden',!NET.host);applyModeUI();
   lobbyStatus(NET.host?(NET.players.length<2?'Pasa el código a tus amigos. Puedes empezar ya y jugar contra bots.':'Cuando estéis todos, pulsa Empezar partida.'):'Esperando a que el anfitrión empiece la partida…');
 }
-function openLobby(){NET.inLobby=true;$('menu').classList.add('hidden');$('end').classList.add('hidden');$('lobby').classList.remove('hidden');showRoom(!!NET.code);if(NET.code)renderLobby();else lobbyStatus('');}
-function leaveLobby(){cgInvite(null);NET.inLobby=false;if(NET.ws)try{NET.ws.close();}catch(e){}NET.ws=null;NET.code=null;NET.on=false;$('lobby').classList.add('hidden');$('menu').classList.remove('hidden');}
+function openLobby(){NET.inLobby=true;NET.quick=false;$('menu').classList.add('hidden');$('end').classList.add('hidden');$('lobby').classList.remove('hidden');showRoom(!!NET.code);if(NET.code)renderLobby();else lobbyStatus('');}
+function leaveLobby(){cgInvite(null);NET.inLobby=false;NET.quick=false;if(NET.ws)try{NET.ws.close();}catch(e){}NET.ws=null;NET.code=null;NET.on=false;$('lobby').classList.add('hidden');$('menu').classList.remove('hidden');}
 function r2(v){return Math.round(v*100)/100;}
 function packEnt(e){const f=(e.crouch?1:0)|(e.prone?2:0)|(e.rollT>0?4:0)|(e.moving?8:0)|(e.chute?16:0)|(e.heatT>0?32:0)|(e.stunT>0?64:0)|(e.alive?128:0)|(e.downed?256:0)|(e.flipT>0?512:0)|(e.slideT>0?1024:0);
   return [e.ix,r2(e.x),r2(e.y),r2(e.z),r2(e.face),r2(e.jy),f,WKEYS.indexOf(e.weapon.key),Math.round(e.hp),Math.round(e.shield),e.phase==='plane'?0:e.phase==='fall'?1:2,e.rollT>0?r2(e.rollT):0];}
@@ -2325,10 +2342,11 @@ function netTick(dt){if(!NET.on)return;
 function entById(id){return ents.find(e=>e.netId===id);}
 function onNet(m){
   switch(m.t){
-    case 'joined':NET.id=m.id;NET.code=m.code;NET.hostId=m.hostId;NET.players=m.players||[];showRoom(true);renderLobby();cgInvite(m.code);break;
+    case 'joined':NET.id=m.id;NET.code=m.code;NET.hostId=m.hostId;NET.players=m.players||[];if(NET.quick){$('qCount').textContent=NET.players.length+' / 24';break;}showRoom(true);renderLobby();cgInvite(m.code);break;
+    case 'qwait':if(NET.quick){$('qCount').textContent=m.n+' / '+m.max;$('qTime').textContent=m.secs>0?'Empieza en '+m.secs+' s · los huecos se rellenan con bots':'¡Empezando!';}break;
     case 'lobby':NET.players=m.players||[];NET.hostId=m.hostId;if(NET.inLobby)renderLobby();if(NET.hostId===NET.id)netSend({t:'cfg',cfg:NET.cfg});break;
     case 'cfg':if(m.cfg&&MODE_TS[m.cfg.mode]){NET.cfg={mode:m.cfg.mode,rule:m.cfg.rule==='versus'?'versus':'together'};applyModeUI();}break;
-    case 'err':lobbyStatus(m.msg||'Error');break;
+    case 'err':lobbyStatus(m.msg||'Error');if(NET.quick)$('qTime').textContent=m.msg||'Error';break;
     case 'host':NET.hostId=m.id;NET.host=m.id===NET.id;if(NET.host&&NET.on){toast('Ahora eres el anfitrión',1500);for(const e of ents)if(!e.human){e.thinkT=0;e.goal=null;}}if(NET.inLobby)renderLobby();break;
     case 'start':startNetMatch(m);break;
     case 'left':{const e=entById(m.id);NET.players=NET.players.filter(p=>p.id!==m.id);if(NET.inLobby)renderLobby();
@@ -2360,7 +2378,7 @@ function onNet(m){
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 function startNetMatch(m){
   NET.inLobby=false;NET.on=true;NET.hostId=m.hostId;NET.host=m.hostId===NET.id;NET.sendT=0;NET.zoneT=0;NET.pid=0;
-  $('lobby').classList.add('hidden');goFull();newMatch({seed:m.seed,players:m.players,mode:m.mode||'solo',rule:m.rule||'together'});
+  $('lobby').classList.add('hidden');$('quick').classList.add('hidden');goFull();newMatch({seed:m.seed,players:m.players,mode:m.mode||'solo',rule:m.rule||'together'});
 }
 NET.cfg={mode:MODE,rule:'together'};
 function applyModeUI(){for(const b of document.querySelectorAll('.tg.mode'))b.classList.toggle('on',b.dataset.m===MODE);
@@ -2372,6 +2390,11 @@ for(const b of document.querySelectorAll('.tg.lmode'))b.addEventListener('click'
 $('ruleBtn').addEventListener('click',()=>{if(!NET.host)return;NET.cfg.rule=NET.cfg.rule==='versus'?'together':'versus';netSend({t:'cfg',cfg:NET.cfg});applyModeUI();});
 applyModeUI();
 $('mpBtn').addEventListener('click',openLobby);
+function quickMatch(){audInit();NET.quick=true;NET.inLobby=false;$('menu').classList.add('hidden');$('end').classList.add('hidden');$('lobby').classList.add('hidden');$('quick').classList.remove('hidden');
+  $('qMode').textContent='Modo '+MODE_NAME[MODE];$('qCount').textContent='Conectando…';$('qTime').textContent='Conectando con el servidor… la primera vez puede tardar hasta un minuto en despertar.';
+  const go=()=>netSend({t:'quick',name:myName(),char:chosen,cos:myCos(),mode:MODE});if(NET.ws&&NET.ws.readyState===1)go();else netConnect(go);}
+function cancelQuick(){NET.quick=false;if(NET.ws)try{NET.ws.close();}catch(e){}NET.ws=null;NET.code=null;NET.on=false;$('quick').classList.add('hidden');toMenu();}
+$('quickBtn').addEventListener('click',quickMatch);$('qCancel').addEventListener('click',cancelQuick);
 $('lobbyBack').addEventListener('click',leaveLobby);
 $('createBtn').addEventListener('click',()=>{try{localStorage.setItem('cr_name',myName());}catch(e){}netConnect(()=>netSend({t:'create',name:myName(),char:chosen,cos:myCos()}));});
 $('joinBtn').addEventListener('click',()=>{const c=($('codeIn').value||'').trim().toUpperCase();if(c.length!==4){lobbyStatus('Escribe el código de 4 letras.');return;}
@@ -2669,8 +2692,8 @@ $('ctrlHint').textContent=TOUCH?'Juega en horizontal. Acrobacias: pulsa Saltar e
 function goFull(){if(!TOUCH)return;const d=document.documentElement;try{const r=(d.requestFullscreen||d.webkitRequestFullscreen||function(){}).call(d);if(r&&r.catch)r.catch(()=>{});}catch(e){}}
 function fadeTo(fn){const f=$('fade');f.classList.add('on');setTimeout(()=>{fn();setTimeout(()=>f.classList.remove('on'),80);},360);}
 $('playBtn').addEventListener('click',()=>{goFull();audInit();sfxUi('pad');fadeTo(()=>newMatch());});
-$('againBtn').addEventListener('click',()=>cgAd('midgame',()=>{if(NET.ws&&NET.code){NET.on=false;openLobby();return;}goFull();newMatch();}));
-$('changeBtn').addEventListener('click',()=>cgAd('midgame',()=>{if(NET.ws){NET.inLobby=false;try{NET.ws.close();}catch(e){}NET.ws=null;NET.code=null;NET.on=false;}toMenu();}));
+$('againBtn').addEventListener('click',()=>cgAd('midgame',()=>{if(NET.quick){NET.on=false;NET.code=null;quickMatch();return;}if(NET.ws&&NET.code){NET.on=false;openLobby();return;}goFull();newMatch();}));
+$('changeBtn').addEventListener('click',()=>cgAd('midgame',()=>{NET.quick=false;if(NET.ws){NET.inLobby=false;try{NET.ws.close();}catch(e){}NET.ws=null;NET.code=null;NET.on=false;}toMenu();}));
 {const S=$('settings'),mv=$('musVol'),sv=$('sfxVol'),se=$('sensVol'),
   upd=()=>{mv.value=Math.round(AUD.musVol*100);sv.value=Math.round(AUD.sfxVol*100);se.value=Math.round(SENS*100);$('musVal').textContent=mv.value+'%';$('sfxVal').textContent=sv.value+'%';$('sensVal').textContent=se.value+'%';};
   const open=()=>{audInit();unlock();upd();S.classList.remove('hidden');},close=()=>S.classList.add('hidden');
