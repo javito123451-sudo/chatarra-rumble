@@ -121,6 +121,7 @@ body.touch .tg{font-size:11px;padding:4px 8px}
 #crBtn{width:46px;height:46px;right:calc(93px + env(safe-area-inset-right));bottom:calc(95px + env(safe-area-inset-bottom));font-size:8.5px}
 #crBtn.prone{background:rgba(138,95,192,.5);border-color:rgba(210,180,255,.7)}
 #crBtn small{display:block;font-size:6.5px;font-weight:700;opacity:.85;margin-top:1px}
+#pingBtn{width:44px;height:44px;right:calc(172px + env(safe-area-inset-right));bottom:calc(150px + env(safe-area-inset-bottom));font-size:8.5px;background:rgba(255,200,60,.22);border-color:rgba(255,226,140,.6)}
 #rlBtn{width:44px;height:44px;right:calc(152px + env(safe-area-inset-right));bottom:calc(91px + env(safe-area-inset-bottom));background:conic-gradient(rgba(242,194,48,.55) var(--rp,0deg),rgba(255,255,255,.12) 0)}
 #abBtn{width:49px;height:49px;border-radius:50%;right:calc(112px + env(safe-area-inset-right));bottom:calc(158px + env(safe-area-inset-bottom));font-size:8px;line-height:1.05;padding:3px;opacity:.7;background:conic-gradient(rgba(242,194,48,.45) var(--p,360deg),rgba(255,255,255,.1) 0)}
 #abBtn.ready{opacity:1;border-color:rgba(255,226,140,.85);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 0 14px rgba(242,194,48,.55)}
@@ -301,6 +302,12 @@ body.playing #nowPlaying{top:calc(44px + env(safe-area-inset-top))}body.touch.pl
 .qRadar b{position:absolute;left:62%;top:30%;width:8px;height:8px;border-radius:50%;background:#7af08a;box-shadow:0 0 10px #7af08a;animation:qBlip 1.6s ease-in-out infinite}
 @keyframes qSpin{to{transform:rotate(360deg)}}@keyframes qBlip{0%,40%{opacity:0}50%{opacity:1}100%{opacity:0}}
 .qCount{font-family:'Bungee',sans-serif;font-size:22px;margin:4px 0 0}
+#pings{position:fixed;inset:0;z-index:6;pointer-events:none;overflow:hidden}
+.ping{position:absolute;left:0;top:0;transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center;gap:2px;font:800 11px 'Rubik',sans-serif;color:#fff;text-shadow:0 1px 2px #000;white-space:nowrap}
+.ping i{width:22px;height:22px;transform:rotate(45deg);border:2.5px solid #fff;background:rgba(242,194,48,.85);box-shadow:0 0 12px rgba(242,194,48,.9);animation:pingIn .35s cubic-bezier(.2,1.6,.4,1)}
+.ping.enemy i{background:rgba(255,60,50,.9);box-shadow:0 0 14px rgba(255,60,50,.95)}.ping.item i{background:rgba(122,240,255,.85);box-shadow:0 0 12px rgba(122,240,255,.9)}
+.ping.edge{opacity:.85}.ping small{font-size:10px;opacity:.9}
+@keyframes pingIn{from{transform:rotate(45deg) scale(2.2);opacity:0}}
 @media (prefers-reduced-motion:reduce){.card,.btn,#cross{transition:none}}
 </style>
 </head>
@@ -319,6 +326,7 @@ body.playing #nowPlaying{top:calc(44px + env(safe-area-inset-top))}body.touch.pl
 <div id="nowPlaying"><span class="np">♪</span><span><small>AHORA SUENA</small><b id="npTitle"></b></span></div>
 <div id="elimBanner" class="hidden"><small id="elimSmall">ELIMINADO</small><b id="elimName"></b></div>
 <div id="dmgDir"></div>
+<div id="pings"></div>
 <div id="compass"><div id="compStrip"></div><i class="cmark"></i></div>
 <div id="grade"></div>
 <div id="sights">
@@ -341,6 +349,7 @@ body.playing #nowPlaying{top:calc(44px + env(safe-area-inset-top))}body.touch.pl
   <button id="runBtn" class="tbtn rb">Correr</button>
   <button id="scBtn" class="tbtn rb">Mira</button>
   <button id="rlBtn" class="tbtn rb">Recargar</button>
+  <button id="pingBtn" class="tbtn rb">Marcar</button>
   <button id="swBtn" class="tbtn rb">Arma</button>
   <button id="pkBtn" class="tbtn hidden">Coger</button>
 </div>
@@ -502,7 +511,7 @@ const EN={
 'Cuando estéis todos, pulsa Empezar partida.':'When everyone is in, press Start match.','Esperando a que el anfitrión empiece la partida…':'Waiting for the host to start the match…',
 'Pasa el código a tus amigos. Puedes empezar ya y jugar contra bots.':'Share the code with your friends. You can start now and play against bots.',
 'No existe ninguna sala con ese código.':'There is no room with that code.','La sala está llena (18 jugadores).':'The room is full.',
-'Tú':'You','Vacío':'Empty','Partida rápida':'Quick match','⚡ Partida rápida':'⚡ Quick match','Con amigos':'With friends','Conectando…':'Connecting…','Cancelar':'Cancel','¡Empezando!':'Starting!','Esa partida ya ha empezado.':'That match has already started.',
+'Tú':'You','Vacío':'Empty','Marcar':'Ping','Partida rápida':'Quick match','⚡ Partida rápida':'⚡ Quick match','Con amigos':'With friends','Conectando…':'Connecting…','Cancelar':'Cancel','¡Empezando!':'Starting!','Esa partida ya ha empezado.':'That match has already started.',
 // personajes y habilidades
 'Brasa':'Brasa','Garfio':'Garfio','Chispa':'Chispa','Bafle':'Bafle','Escudo térmico':'Heat shield','Gancho':'Hook','Turbo':'Turbo','Onda de graves':'Bass wave',
 'Soldadora con careta: se pone al rojo y recibe un 75% menos de daño durante 3 s.':'Welder with a mask: glows red hot and takes 75% less damage for 3 s.',
@@ -524,8 +533,8 @@ const EN={
 'Consejo: en dúo, trío y escuadrón puedes reanimar a tus compañeros derribados.':'Tip: in duo, trio and squad you can revive knocked-down teammates.','Consejo: los trampolines te suben al tejado de las naves.':'Tip: jump pads launch you onto warehouse roofs.',
 'Consejo: agáchate o túmbate para que el francotirador no se mueva.':'Tip: crouch or go prone to steady the sniper.','Consejo: el cañón hace daño en área aunque falles por poco.':'Tip: the cannon deals area damage even on near misses.',
 'Consejo: recoge el chip de reinicio para traer de vuelta a un compañero.':'Tip: pick up the reboot chip to bring a teammate back.',
-'Juega en horizontal. Acrobacias: pulsa Saltar en el aire para un doble salto con voltereta; junto a una pared, salto de pared; corriendo, Agachar para deslizarte (y salta durante el deslizamiento para salir disparado); empuja contra un borde en el aire para trepar. Pulgar izquierdo: joystick, Arma y Correr. Pulgar derecho: Saltar, Disparar, Rodar, Agachar (mantén para tumbarte), Recargar, Mira y Habilidad.':'Play in landscape. Acrobatics: press Jump in the air for a flipping double jump; next to a wall, wall jump; while sprinting, Crouch to slide (jump during the slide to launch forward); push against a ledge in the air to climb. Left thumb: joystick, Weapon and Sprint. Right thumb: Jump, Fire, Roll, Crouch (hold to go prone), Reload, Aim and Ability.',
-'WASD moverte, ratón apuntar, clic disparar, clic derecho mira, Espacio saltar (otra vez en el aire: doble salto con voltereta; junto a una pared: salto de pared), C mientras corres: deslizarte (y Espacio para salir disparado), empujar contra un borde en el aire: trepar, Shift voltereta, Z cuerpo a tierra, X correr, R recargar, 1/2/3 armas, Q habilidad, E coger/reanimar, F disparo auto, G apuntado auto, V cámara, M mapa.':'WASD move, mouse aim, click fire, right click aim down sights, Space jump (again in the air: flipping double jump; next to a wall: wall jump), C while sprinting: slide (and Space to launch), push against a ledge in the air: climb, Shift roll, Z prone, X sprint, R reload, 1/2/3 weapons, Q ability, E pick up/revive, F auto fire, G auto aim, V camera, M map.'
+'Juega en horizontal. Acrobacias: pulsa Saltar en el aire para un doble salto con voltereta; junto a una pared, salto de pared; corriendo, Agachar para deslizarte (y salta durante el deslizamiento para salir disparado); empuja contra un borde en el aire para trepar. Pulgar izquierdo: joystick, Arma y Correr. Pulgar derecho: Saltar, Disparar, Rodar, Agachar (mantén para tumbarte), Recargar, Mira, Marcar y Habilidad.':'Play in landscape. Acrobatics: press Jump in the air for a flipping double jump; next to a wall, wall jump; while sprinting, Crouch to slide (jump during the slide to launch forward); push against a ledge in the air to climb. Left thumb: joystick, Weapon and Sprint. Right thumb: Jump, Fire, Roll, Crouch (hold to go prone), Reload, Aim, Ping and Ability.',
+'WASD moverte, ratón apuntar, clic disparar, clic derecho mira, Espacio saltar (otra vez en el aire: doble salto con voltereta; junto a una pared: salto de pared), C mientras corres: deslizarte (y Espacio para salir disparado), empujar contra un borde en el aire: trepar, Shift voltereta, Z cuerpo a tierra, X correr, R recargar, 1/2/3 armas, Q habilidad, E coger/reanimar, F disparo auto, G apuntado auto, T o rueda del ratón marcar, V cámara, M mapa.':'WASD move, mouse aim, click fire, right click aim down sights, Space jump (again in the air: flipping double jump; next to a wall: wall jump), C while sprinting: slide (and Space to launch), push against a ledge in the air: climb, Shift roll, Z prone, X sprint, R reload, 1/2/3 weapons, Q ability, E pick up/revive, F auto fire, G auto aim, T or mouse wheel click ping, V camera, M map.'
 };
 const ENW={Tuercas:'Nuts',Chips:'Chips','sí':'on',no:'off',hombro:'shoulder','aérea':'aerial',Alta:'High',Media:'Medium',Baja:'Low',realista:'realistic',cartoon:'cartoon',Dúo:'Duo',Trío:'Trio',Solo:'Solo','Escuadrón':'Squad'};
 const w=x=>EN[x]||ENW[x]||x;
@@ -1747,6 +1756,7 @@ function bestPickup(b){
 }
 function nearestCrate(b,maxd){let best=null,bd=maxd;for(const c of crates){if(!c.alive||c===b.skipCrate)continue;const d=Math.hypot(c.x-b.x,c.z-b.z);if(d<bd){bd=d;best=c;}}return best;}
 function botThink(b){
+  if(b.goalType==='ping'&&b.pingT>0&&!(b.target&&b.target.alive&&dist(b,b.target)<15))return;
   if(b.downed){const m=ents.find(o=>o!==b&&o.alive&&!o.downed&&o.team===b.team);b.goal=m?{x:m.x,z:m.z}:null;b.goalType='crawl';b.target=null;b.losOk=false;return;}
   if(MATCH.ts>1&&!(b.target&&b.target.alive&&dist(b,b.target)<14)){const dm=ents.find(o=>o!==b&&o.alive&&o.downed&&o.team===b.team&&dist(b,o)<45);if(dm){b.goal={x:dm.x,z:dm.z};b.goalType='revive';b.goalObj=dm;b.route=null;b.target=null;b.losOk=false;return;}}
   if(b.carry&&b.carry.some(i=>ents[i]&&!ents[i].alive)&&!(b.target&&b.target.alive&&dist(b,b.target)<12)){let best=null,bd=1e9;for(const r of REBOOTS){if(r.cd>0)continue;const d=Math.hypot(r.x-b.x,r.z-b.z);if(d<bd){bd=d;best=r;}}
@@ -1792,6 +1802,7 @@ function botUpdate(b,dt){
   if(b.goalType==='revive'&&b.goalObj&&b.goalObj.alive&&b.goalObj.downed&&dist(b,b.goalObj)<2.2){b.mvx=b.mvz=0;b.revT=(b.revT||0)+dt;b.face=Math.atan2(b.goalObj.x-b.x,b.goalObj.z-b.z);if(b.revT>=REVIVE_T){b.revT=0;finishRevive(b.goalObj,b);b.goalType='';}return;}else if(b.goalType!=='revive')b.revT=0;
   if(b.route&&b.route.length&&Math.hypot(b.route[0][0]-b.x,b.route[0][1]-b.z)<1.3){b.route.shift();if(b.route.length)b.goal={x:b.route[0][0],z:b.route[0][1]};else{b.route=null;b.goalType='';}}
   if(b.target)b.route=null;
+  if(b.goalType==='ping'){b.pingT-=dt;if(b.pingT<=0||Math.hypot(b.goal.x-b.x,b.goal.z-b.z)<3)b.goalType='';}
   let mx=0,mz=0;
   if(b.goal){
     const nearCrate=b.goalType==='crate'&&b.goalObj&&b.goalObj.alive&&Math.hypot(b.goalObj.x-b.x,b.goalObj.z-b.z)<4.5&&!losBlockedExcept(b.x,b.z,b.goalObj);
@@ -1821,7 +1832,7 @@ addEventListener('keydown',e=>{if(e.target&&e.target.tagName==='INPUT')return;ke
   if(e.code==='KeyQ')input.ability=true;if(e.code==='KeyV'&&!e.repeat)toggleCam();
   if(e.code==='KeyE')input.pickup=true;if(e.code==='KeyF'&&!e.repeat){settings.autoFire=!settings.autoFire;saveSettings();toast('Disparo auto: '+(settings.autoFire?'sí':'no'),800);}if(e.code==='KeyG'&&!e.repeat){settings.autoAim=!settings.autoAim;saveSettings();toast('Apuntado auto: '+(settings.autoAim?'sí':'no'),800);}if(e.code==='KeyR')input.reload=true;
   if((e.code==='KeyC'||e.code==='ControlLeft')&&!e.repeat)input.crouch=true;
-  if(e.code==='KeyM'&&!e.repeat){mapOpen?closeMap():openMap();}if(e.code==='KeyN'&&!e.repeat){audSetMus(!AUD.mus);toast('Música: '+(AUD.mus?'sí':'no'),800);}if(e.code==='Escape'&&mapOpen)closeMap();
+  if(e.code==='KeyM'&&!e.repeat){mapOpen?closeMap():openMap();}if(e.code==='KeyT'&&!e.repeat)doPing(player);if(e.code==='KeyN'&&!e.repeat){audSetMus(!AUD.mus);toast('Música: '+(AUD.mus?'sí':'no'),800);}if(e.code==='Escape'&&mapOpen)closeMap();
   if(e.code==='Digit1')input.sw=0;if(e.code==='Digit2')input.sw=1;if(e.code==='Digit3')input.sw=2;if(e.code==='KeyZ'&&!e.repeat)input.prone=true;if((e.code==='ShiftLeft'||e.code==='ShiftRight')&&!e.repeat)input.roll=true;if(e.code==='KeyX'&&!e.repeat)input.autoRun=!input.autoRun;if(e.code==='Tab'){e.preventDefault();input.sw=-1;}});
 addEventListener('keyup',e=>{keys[e.code]=false;});
 const mouse={x:0,y:0,down:false,right:false,has:false};
@@ -1915,6 +1926,30 @@ function acroJump(e){if(e.stunT>0||e.rollT>0||e.downed)return;
   if(w&&e.wjT<=0){e.jvy=9.6;e.wjT=0.38;e.wjX=w.nx;e.wjZ=w.nz;e.airJumps=1;e.flipT=0.5;e.face=Math.atan2(w.nx,w.nz);sparks(e.x-w.nx*0.4,e.y+e.jy+1,e.z-w.nz*0.4,0xffe7a0,6,3);if(e===player){sfxUi('roll');camShake=Math.max(camShake,0.08);}return;}
   if(e.airJumps>0){e.airJumps--;e.jvy=8.2;e.flipT=0.5;puff(e.x,e.y+e.jy+0.3,e.z,{color:PLASMA[e.char]||0x7af0ff,size:1.4,grow:1.5,dur:0.3});if(e===player)sfxUi('pad');}}
 function startSlide(e){const l=Math.hypot(e.vx||0,e.vz||0)||1;e.slideX=(e.vx||0)/l;e.slideZ=(e.vz||0)/l;e.slideT=0.8;e.crouch=true;e.prone=false;dust(e.x,e.z,4);if(e===player){sfxUi('roll');input.autoRun=false;}}
+// ---------- marcas (ping): señalan un enemigo, un objeto o un sitio para ti y tu equipo
+const PINGS=[];
+function addPing(o){const owner=ents[o.o];if(!owner)return;if(owner!==player&&!mates(player,owner))return;
+  for(let i=PINGS.length-1;i>=0;i--)if(PINGS[i].o===o.o&&(PINGS[i].k===o.k||o.k==='loc'&&PINGS[i].k==='loc')){PINGS[i].el.remove();PINGS.splice(i,1);}
+  const el=document.createElement('div');el.className='ping '+(o.k==='enemy'?'enemy':o.k==='item'?'item':'');el.innerHTML='<i></i><b></b><small></small>';$('pings').appendChild(el);
+  const pg={x:o.x,y:o.y,z:o.z,k:o.k,e:o.e!=null?ents[o.e]:null,o:o.o,t:o.k==='enemy'?6:12,el,who:owner===player?'':owner.name};PINGS.push(pg);
+  el.querySelector('b').textContent=(o.k==='enemy'?(LANG==='en'?'ENEMY':'ENEMIGO'):o.k==='item'?(LANG==='en'?'LOOT':'BOTÍN'):(LANG==='en'?'GO HERE':'AQUÍ'));
+  sfxUi(o.k==='enemy'?'hit':'pick');
+  // los compañeros bot van al sitio marcado por un humano de su equipo
+  if(o.k!=='enemy'&&owner.human)for(const b of ents)if(!b.human&&b.alive&&mates(b,owner)&&!b.netCtl){b.goal={x:o.x,z:o.z};b.goalType='ping';b.pingT=12;b.route=null;}}
+function doPing(p){if(!p||!p.alive||state!=='play')return;let x,y,z,k='loc',e=null;
+  if(camMode==='shoulder'){const A=aimPoint(p);x=A.x;y=A.y;z=A.z;if(A.hit&&A.hit!==p&&!mates(p,A.hit)){k='enemy';e=A.hit;}}
+  else{x=p.x+Math.sin(p.face)*20;z=p.z+Math.cos(p.face)*20;y=gH(x,z);const t=nearestVisibleEnemy(p,40);if(t&&Math.abs(Math.atan2(t.x-p.x,t.z-p.z)-p.face)<0.4){k='enemy';e=t;x=t.x;z=t.z;y=t.y+1;}}
+  if(k==='loc'){let best=null,bd=3;for(const q of pickups){const d=Math.hypot(q.x-x,q.z-z);if(d<bd){bd=d;best=q;}}if(best){k='item';x=best.x;z=best.z;y=gH(x,z)+0.6;}}
+  const o={x:r2(x),y:r2(y),z:r2(z),k,e:e?e.ix:null,o:p.ix};addPing(o);if(NET.on)netSend(Object.assign({t:'pg'},o));}
+const _pv=new THREE.Vector3();
+function updatePings(dt){const W=innerWidth,H=innerHeight;for(let i=PINGS.length-1;i>=0;i--){const g=PINGS[i];g.t-=dt;
+  if(g.e){if(!g.e.alive)g.t=Math.min(g.t,0.5);else{g.x=g.e.x;g.y=g.e.y+g.e.jy+2.4;g.z=g.e.z;}}
+  if(g.t<=0||state!=='play'&&state!=='dead'){g.el.remove();PINGS.splice(i,1);continue;}
+  _pv.set(g.x,g.y+(g.e?0:0.8),g.z).project(camera);let sx=(_pv.x*0.5+0.5)*W,sy=(-_pv.y*0.5+0.5)*H;const behind=_pv.z>1;
+  if(behind){sx=W-sx;sy=H-sy;}const m=40,edge=behind||sx<m||sx>W-m||sy<m||sy>H-m;sx=clamp(sx,m,W-m);sy=clamp(sy,m+20,H-m);
+  g.el.classList.toggle('edge',edge);g.el.style.transform='translate('+sx.toFixed(0)+'px,'+sy.toFixed(0)+'px) translate(-50%,-100%)';g.el.style.opacity=g.t<1?g.t:'';
+  const d=player?Math.round(Math.hypot(g.x-player.x,g.z-player.z)):0;g.el.querySelector('small').textContent=d+' m'+(g.who?' · '+g.who:'');}}
+function clearPings(){for(const g of PINGS)g.el.remove();PINGS.length=0;}
 function playerControl(dt){
   const p=player,sh=camMode==='shoulder';
   if(p.phase==='plane'){if(input.jump||input.hop){input.jump=input.hop=false;jump(p);camYaw=Math.atan2(plane.dx,plane.dz);}aimLine.visible=false;return;}
@@ -2251,6 +2286,7 @@ function drawMapTo(ctx,W,H,cx,cz,ppu,big){
   if(zone.mode!=='final'){ctx.strokeStyle='#fff';ctx.lineWidth=big?2.5:1.5;ctx.beginPath();ctx.arc(X(zone.toX),Y(zone.toZ),Math.max(0.5,zone.toR*ppu),0,7);ctx.stroke();}
   if(plane.active){ctx.strokeStyle='rgba(242,194,48,.95)';ctx.setLineDash([6,5]);ctx.lineWidth=big?3:2;ctx.beginPath();ctx.moveTo(X(plane.sx),Y(plane.sz));ctx.lineTo(X(plane.sx+plane.dx*plane.len),Y(plane.sz+plane.dz*plane.len));ctx.stroke();ctx.setLineDash([]);}
   if(marker){const mx=X(marker.x),my=Y(marker.z),r=big?9:6;ctx.fillStyle='#f2c230';ctx.strokeStyle='#000';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(mx,my);ctx.arc(mx,my-r*1.6,r,Math.PI*0.75,Math.PI*0.25,false);ctx.closePath();ctx.fill();ctx.stroke();}
+  for(const g of PINGS){ctx.fillStyle=g.k==='enemy'?'#ff3c32':g.k==='item'?'#7af0ff':'#f2c230';ctx.strokeStyle='#000';ctx.lineWidth=2;const px=X(g.x),py=Y(g.z),sz=big?7:5;ctx.beginPath();ctx.moveTo(px,py-sz);ctx.lineTo(px+sz,py);ctx.lineTo(px,py+sz);ctx.lineTo(px-sz,py);ctx.closePath();ctx.fill();ctx.stroke();}
   if(MATCH.ts>1)for(const r of REBOOTS){ctx.fillStyle=r.cd>0?'#ff5a4a':'#4aff9a';ctx.strokeStyle='#000';ctx.lineWidth=2;const rx=X(r.x),ry=Y(r.z),sz=big?7:5;ctx.beginPath();ctx.rect(rx-sz,ry-sz,sz*2,sz*2);ctx.fill();ctx.stroke();ctx.fillStyle='#000';ctx.fillRect(rx-1,ry-sz+2,2,sz*2-4);ctx.fillRect(rx-sz+2,ry-1,sz*2-4,2);}
   if(player&&MATCH.ts>1)for(const e of ents){if(e===player||!e.alive||e.team!==player.team||e.phase==='plane')continue;ctx.fillStyle='#4fb8ff';ctx.strokeStyle='#000';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(X(e.x),Y(e.z),big?6:4,0,7);ctx.fill();ctx.stroke();}
   if(player){const px=player.phase==='plane'?plane.x:player.x,pz=player.phase==='plane'?plane.z:player.z,sz=big?1.6:1;
@@ -2371,6 +2407,7 @@ function onNet(m){
     case 'up':{const t=ents[m.to];if(t)revive(t,ents[m.by]||null,true);break;}
     case 'rv':{const t=ents[m.to];if(t&&owns(t))revive(t,ents[m.from]||null);break;}
     case 'rb':{const t=ents[m.to];if(t&&owns(t))reboot(t,m.x,m.z);break;}
+    case 'pg':addPing(m);break;
     case 'rbs':{const r=REBOOTS[m.s];if(r)useReboot(null,r,true);break;}
     case 'rbd':{const t=ents[m.i];if(t&&!owns(t)){reboot(t,m.x,m.z,true);t.x=m.x;t.z=m.z;}break;}
     case 'cx':{const c=crates[m.i];if(c)breakCrate(c);break;}
@@ -2603,6 +2640,7 @@ function renderPass(){const tr=$('passTrack');tr.innerHTML='';const lv=levelOf(P
     d.innerHTML='';const a=document.createElement('div');a.className='lv';a.textContent='NIVEL '+l;const b=document.createElement('div');b.className='rw';b.textContent=rewName(r);const c=document.createElement('div');c.className='st';c.textContent=got?'✓ Conseguido':(l<=lv?'Reclamando…':'Bloqueado');d.append(a,b,c);tr.appendChild(d);}}
 function renderPassCard(){if(!PASS)return;const lv=levelOf(PROFILE.xp),nx=PASS.find(([l])=>l>lv);$('passTxt').textContent=nx?'Nivel '+lv+' · Siguiente (nv. '+nx[0]+'): '+rewName(nx[1]):'¡Pase completado!';$('passXp').style.width=((PROFILE.xp%500)/5)+'%';}
 $('passCard').addEventListener('click',()=>showPanel('pass'));claimPass(true);
+{const pb=$('pingBtn');pb.addEventListener('touchstart',e=>{e.preventDefault();e.stopPropagation();doPing(player);},{passive:false});addEventListener('mousedown',e=>{if(e.button===1&&state==='play'){e.preventDefault();doPing(player);}});}
 {const rb=$('revBtn');const on=e=>{e.preventDefault();e.stopPropagation();input.reviveHold=true;},off=e=>{input.reviveHold=false;};
   rb.addEventListener('touchstart',on,{passive:false});rb.addEventListener('touchend',off);rb.addEventListener('touchcancel',off);rb.addEventListener('mousedown',on);addEventListener('mouseup',off);}
 function cycleChar(d){const i=CHAR_KEYS.indexOf(chosen);chosen=CHAR_KEYS[(i+d+CHAR_KEYS.length)%CHAR_KEYS.length];PROFILE.equip.char=chosen;saveProfile();buildLobbyChar();sfxUi('pick');}
@@ -2645,7 +2683,7 @@ function lobbyStep(dt){if(!LOBBY.r)return;LOBBY.t+=dt;
   addEventListener('pointermove',e=>{if(!LOBBY.drag)return;LOBBY.rot+=(e.clientX-px)*0.012;px=e.clientX;});addEventListener('pointerup',()=>{LOBBY.drag=false;});}
 
 // ---------- flujo
-function newMatch(net){document.body.classList.add('playing');cgGameplay(true);cgInvite(null);
+function newMatch(net){clearPings();document.body.classList.add('playing');cgGameplay(true);cgInvite(null);
   if(!net){NET.on=false;}
   const R0=RNG;if(net)RNG=mulberry32(net.seed);
   try{
@@ -2688,8 +2726,8 @@ function showEnd(){
   $('end').classList.remove('hidden');
 }
 function toMenu(){document.body.classList.remove('playing');cgGameplay(false);state='menu';showPanel('home');buildLobbyChar();unlock();closeMap();scene.fog.near=150;scene.fog.far=420;camera.fov=58;camera.updateProjectionMatrix();$('end').classList.add('hidden');$('hud').classList.add('hidden');$('touch').classList.add('hidden');$('menu').classList.remove('hidden');}
-$('ctrlHint').textContent=TOUCH?'Juega en horizontal. Acrobacias: pulsa Saltar en el aire para un doble salto con voltereta; junto a una pared, salto de pared; corriendo, Agachar para deslizarte (y salta durante el deslizamiento para salir disparado); empuja contra un borde en el aire para trepar. Pulgar izquierdo: joystick, Arma y Correr. Pulgar derecho: Saltar, Disparar, Rodar, Agachar (mantén para tumbarte), Recargar, Mira y Habilidad.'
-  :'WASD moverte, ratón apuntar, clic disparar, clic derecho mira, Espacio saltar (otra vez en el aire: doble salto con voltereta; junto a una pared: salto de pared), C mientras corres: deslizarte (y Espacio para salir disparado), empujar contra un borde en el aire: trepar, Shift voltereta, Z cuerpo a tierra, X correr, R recargar, 1/2/3 armas, Q habilidad, E coger/reanimar, F disparo auto, G apuntado auto, V cámara, M mapa.';
+$('ctrlHint').textContent=TOUCH?'Juega en horizontal. Acrobacias: pulsa Saltar en el aire para un doble salto con voltereta; junto a una pared, salto de pared; corriendo, Agachar para deslizarte (y salta durante el deslizamiento para salir disparado); empuja contra un borde en el aire para trepar. Pulgar izquierdo: joystick, Arma y Correr. Pulgar derecho: Saltar, Disparar, Rodar, Agachar (mantén para tumbarte), Recargar, Mira, Marcar y Habilidad.'
+  :'WASD moverte, ratón apuntar, clic disparar, clic derecho mira, Espacio saltar (otra vez en el aire: doble salto con voltereta; junto a una pared: salto de pared), C mientras corres: deslizarte (y Espacio para salir disparado), empujar contra un borde en el aire: trepar, Shift voltereta, Z cuerpo a tierra, X correr, R recargar, 1/2/3 armas, Q habilidad, E coger/reanimar, F disparo auto, G apuntado auto, T o rueda del ratón marcar, V cámara, M mapa.';
 function goFull(){if(!TOUCH)return;const d=document.documentElement;try{const r=(d.requestFullscreen||d.webkitRequestFullscreen||function(){}).call(d);if(r&&r.catch)r.catch(()=>{});}catch(e){}}
 function fadeTo(fn){const f=$('fade');f.classList.add('on');setTimeout(()=>{fn();setTimeout(()=>f.classList.remove('on'),80);},360);}
 $('playBtn').addEventListener('click',()=>{goFull();audInit();sfxUi('pad');fadeTo(()=>newMatch());});
@@ -2716,7 +2754,7 @@ let last=performance.now(),hudT=0,miniT=0,menuA=0;
 function step(dt){
   time+=dt;
   if(state==='play'||state==='dead'||state==='won'){
-    simulate(dt);audTick(dt);updateSights();
+    simulate(dt);audTick(dt);updateSights();updatePings(dt);
     hudT-=dt;if(hudT<=0){hudT=0.1;hud();}
     miniT-=dt;if(miniT<=0){miniT=0.1;drawMini();}
     if(mapOpen)drawBigMap();
