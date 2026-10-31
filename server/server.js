@@ -91,14 +91,18 @@ wss.on('connection', ws => {
     if (msg.t === 'quick') {
       if (ws.roomCode) leave(ws);
       const mode = MODES.includes(msg.mode) ? msg.mode : 'solo';
-      let room = [...rooms.values()].find(r => r.public && !r.started && r.mode === mode && r.players.size < MAX_PLAYERS);
+      // primero una sala del mismo modo; si no hay, cualquier sala pública esperando (con poca gente es mejor jugar juntos)
+      const open = [...rooms.values()].filter(r => r.public && !r.started && r.players.size < MAX_PLAYERS);
+      let room = open.find(r => r.mode === mode) || open[0];
       if (!room) {
         const code = newCode();
         if (!code) return send(ws, { t: 'err', msg: 'No hay salas libres, prueba en un momento.' });
-        room = { code, hostId: null, players: new Map(), public: true, mode, started: false, startAt: Date.now() + QUICK_WAIT };
+        room = { code, hostId: null, players: new Map(), public: true, mode, started: false, created: Date.now(), startAt: Date.now() + QUICK_WAIT };
         rooms.set(code, room);
       }
       joinRoom(ws, room, msg);
+      // cada persona nueva da unos segundos más para que entren otros (máximo 30 s desde que se abrió la sala)
+      if (room.players.size > 1) room.startAt = Math.min(room.created + 30000, Math.max(room.startAt, Date.now() + 8000));
       if (room.players.size >= QUICK_ENOUGH) room.startAt = Math.min(room.startAt, Date.now() + QUICK_SHORT);
       if (room.players.size >= MAX_PLAYERS) room.startAt = Date.now();
       quickTick(room);
@@ -136,7 +140,7 @@ wss.on('connection', ws => {
 function quickTick(room) {
   if (!room.public || room.started) return;
   const left = Math.max(0, room.startAt - Date.now());
-  broadcast(room, { t: 'qwait', n: room.players.size, max: MAX_PLAYERS, secs: Math.ceil(left / 1000), mode: room.mode });
+  broadcast(room, { t: 'qwait', n: room.players.size, max: MAX_PLAYERS, secs: Math.ceil(left / 1000), mode: room.mode, names: [...room.players.values()].map(p => p.name) });
   if (left <= 0 && room.players.size > 0) {
     room.started = true;
     const seed = Math.floor(Math.random() * 2147483647);

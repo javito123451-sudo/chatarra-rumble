@@ -412,6 +412,7 @@ body.playing #nowPlaying{top:calc(44px + env(safe-area-inset-top))}body.touch.pl
   <p class="sub" id="qMode"></p>
   <div class="qRadar"><i></i><b></b></div>
   <p id="qCount" class="qCount">Conectando…</p>
+  <p class="hint" id="qNames" style="max-width:520px"></p>
   <p class="hint" id="qTime"></p>
   <button id="qCancel" class="btn alt">Cancelar</button>
 </div>
@@ -2343,7 +2344,7 @@ function entById(id){return ents.find(e=>e.netId===id);}
 function onNet(m){
   switch(m.t){
     case 'joined':NET.id=m.id;NET.code=m.code;NET.hostId=m.hostId;NET.players=m.players||[];if(NET.quick){$('qCount').textContent=NET.players.length+' / 24';break;}showRoom(true);renderLobby();cgInvite(m.code);break;
-    case 'qwait':if(NET.quick){$('qCount').textContent=m.n+' / '+m.max;$('qTime').textContent=m.secs>0?'Empieza en '+m.secs+' s · los huecos se rellenan con bots':'¡Empezando!';}break;
+    case 'qwait':if(NET.quick){$('qCount').textContent=m.n+' / '+m.max;if(m.mode&&MODE_NAME[m.mode])$('qMode').textContent='Modo '+MODE_NAME[m.mode];$('qNames').textContent=(m.names||[]).join(' · ');$('qTime').textContent=m.secs>0?'Empieza en '+m.secs+' s · los huecos se rellenan con bots':'¡Empezando!';}break;
     case 'lobby':NET.players=m.players||[];NET.hostId=m.hostId;if(NET.inLobby)renderLobby();if(NET.hostId===NET.id)netSend({t:'cfg',cfg:NET.cfg});break;
     case 'cfg':if(m.cfg&&MODE_TS[m.cfg.mode]){NET.cfg={mode:m.cfg.mode,rule:m.cfg.rule==='versus'?'versus':'together'};applyModeUI();}break;
     case 'err':lobbyStatus(m.msg||'Error');if(NET.quick)$('qTime').textContent=m.msg||'Error';break;
@@ -2391,7 +2392,7 @@ $('ruleBtn').addEventListener('click',()=>{if(!NET.host)return;NET.cfg.rule=NET.
 applyModeUI();
 $('mpBtn').addEventListener('click',openLobby);
 function quickMatch(){audInit();NET.quick=true;NET.inLobby=false;$('menu').classList.add('hidden');$('end').classList.add('hidden');$('lobby').classList.add('hidden');$('quick').classList.remove('hidden');
-  $('qMode').textContent='Modo '+MODE_NAME[MODE];$('qCount').textContent='Conectando…';$('qTime').textContent='Conectando con el servidor… la primera vez puede tardar hasta un minuto en despertar.';
+  $('qMode').textContent='Modo '+MODE_NAME[MODE];$('qCount').textContent='Conectando…';$('qNames').textContent='';$('qTime').textContent='Conectando con el servidor… la primera vez puede tardar hasta un minuto en despertar.';
   const go=()=>netSend({t:'quick',name:myName(),char:chosen,cos:myCos(),mode:MODE});if(NET.ws&&NET.ws.readyState===1)go();else netConnect(go);}
 function cancelQuick(){NET.quick=false;if(NET.ws)try{NET.ws.close();}catch(e){}NET.ws=null;NET.code=null;NET.on=false;$('quick').classList.add('hidden');toMenu();}
 $('quickBtn').addEventListener('click',quickMatch);$('qCancel').addEventListener('click',cancelQuick);
