@@ -21,10 +21,9 @@
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://chatarra-rumble-online-javito123451-sudos-projects.vercel.app/icons/og-image.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@500;700;800&display=swap" rel="stylesheet">
-<style>
+ <style>
+@font-face{font-family:'Bungee';src:url(fonts/bungee.woff2) format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:'Rubik';src:url(fonts/rubik.woff2) format('woff2');font-weight:300 900;font-display:swap}
 :root{--oil:#1E2A33;--oil2:#2A3944;--rust:#C8642B;--haz:#F2C230;--steel:#3E8E8A;--chalk:#EDE6D6;--mag:#D6457A;--ink:#151c22}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;overflow:hidden;background:var(--oil);color:var(--chalk);font-family:'Rubik',system-ui,-apple-system,'Segoe UI',sans-serif;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
@@ -280,13 +279,20 @@ body.playing #compass{display:block}
 .tier .lv{font-family:'Bungee',sans-serif;font-size:12px;color:var(--haz)}.tier .rw{font-weight:800;font-size:12px;min-height:30px}.tier .st{font-size:11px;opacity:.85}
 .tier.got{border-color:rgba(122,240,138,.8);background:rgba(122,240,138,.15)}.tier.next{border-color:rgba(255,226,140,.95);box-shadow:0 0 16px rgba(242,194,48,.4)}
 @media (orientation:portrait){.passCard{top:auto;bottom:calc(150px + env(safe-area-inset-bottom));right:12px;width:180px}}
-#nowPlaying{position:fixed;left:50%;top:calc(78px + env(safe-area-inset-top));z-index:9;display:flex;align-items:center;gap:10px;padding:7px 16px 7px 10px;border-radius:14px;pointer-events:none;
+#nowPlaying{position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top));z-index:9;display:flex;align-items:center;gap:10px;padding:7px 16px 7px 10px;border-radius:14px;pointer-events:none;
   background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.35);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:0 6px 20px rgba(0,0,0,.35);color:#fff;text-shadow:0 1px 2px #000;
   opacity:0;transform:translate(-50%,-14px);transition:opacity .45s,transform .45s}
 #nowPlaying.show{opacity:1;transform:translate(-50%,0)}
+body.playing #nowPlaying{top:calc(44px + env(safe-area-inset-top))}body.touch.playing #nowPlaying{top:calc(80px + env(safe-area-inset-top))}
 #nowPlaying .np{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;background:linear-gradient(135deg,var(--haz),var(--rust));color:#151c22;text-shadow:none;animation:npSpin 2.4s linear infinite}
 @keyframes npSpin{50%{transform:scale(1.12)}}
 #nowPlaying small{display:block;font:800 9px 'Rubik',sans-serif;letter-spacing:3px;opacity:.8}#nowPlaying b{font-family:'Bungee',sans-serif;font-weight:400;font-size:15px}
+#rotate{position:fixed;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;background:rgba(8,10,12,.82);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.rotCard{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;padding:24px}
+.rotCard b{font-family:'Bungee',sans-serif;font-weight:400;font-size:28px;color:var(--haz);text-shadow:3px 3px 0 #000}.rotCard p{margin:0;opacity:.85}
+.rotPhone{width:58px;height:98px;border:4px solid #fff;border-radius:12px;position:relative;animation:rotP 2.2s ease-in-out infinite}
+.rotPhone i{position:absolute;left:50%;bottom:6px;width:14px;height:4px;margin-left:-7px;border-radius:2px;background:#fff}
+@keyframes rotP{0%,25%{transform:rotate(0)}55%,85%{transform:rotate(-90deg)}100%{transform:rotate(0)}}
 @media (prefers-reduced-motion:reduce){.card,.btn,#cross{transition:none}}
 </style>
 </head>
@@ -330,7 +336,8 @@ body.playing #compass{display:block}
   <button id="swBtn" class="tbtn rb">Arma</button>
   <button id="pkBtn" class="tbtn hidden">Coger</button>
 </div>
-<div id="rotHint" class="hidden">Gira el móvil en horizontal para jugar mejor</div>
+<div id="rotHint" class="hidden"></div>
+<div id="rotate" class="hidden"><div class="rotCard"><div class="rotPhone"><i></i></div><b>GIRA EL MÓVIL</b><p>Chatarra Rumble se juega en horizontal</p><button id="rotGo" class="glassBtn wide">JUGAR IGUAL</button></div></div>
 
 <div id="hud" class="hidden">
   <div id="scope"></div>
@@ -371,6 +378,7 @@ body.playing #compass{display:block}
     <div class="spacer"></div>
     <div class="glassBox cur" title="Tuercas: se ganan jugando"><span class="ic nut"></span><b id="pCoins">0</b></div>
     <div class="glassBox cur" title="Chips: moneda premium"><span class="ic chip"></span><b id="pGems">0</b><button class="plus" id="gemPlus" aria-label="Conseguir Chips">+</button></div>
+    <button class="glassBtn sq" id="langBtn" aria-label="Idioma / Language">ES</button>
     <button class="glassBtn sq" id="setMenuBtn" aria-label="Ajustes">⚙</button>
   </div>
   <nav id="sideNav"><button class="navb on" data-p="home">Inicio</button><button class="navb" data-p="pass">Pase</button><button class="navb" data-p="locker">Taquilla</button><button class="navb" data-p="shop">Tienda</button><button class="navb" data-p="opts">Opciones</button></nav>
@@ -436,7 +444,7 @@ body.playing #compass{display:block}
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="lib/three.min.js"></script>
 <script src="lib/GLTFLoader.js"></script>
 <script src="lib/SkeletonUtils.js"></script>
 <script src="lib/post.js"></script>
@@ -444,6 +452,92 @@ body.playing #compass{display:block}
 (function(){
 'use strict';
 const $=id=>document.getElementById(id);
+// ---------- idiomas ES / EN: se traduce todo el texto visible (también el que cambia durante la partida)
+let LANG='es';try{LANG=localStorage.getItem('cr_lang')||((navigator.language||'es').toLowerCase().startsWith('es')?'es':'en');}catch(e){}
+const EN={
+'Saltar':'Jump','Disparar':'Fire','Rodar':'Roll','Agachar':'Crouch','mantén: tumbar':'hold: prone','Correr':'Sprint','Mira':'Aim','Recargar':'Reload','Arma':'Weapon','Coger':'Pick up','Habilidad':'Ability','Reanimar':'Revive',
+'Cámara':'Camera','en pie':'alive','elim.':'kills','Objetivo fijado':'Target locked','Haz clic para controlar la cámara con el ratón':'Click to control the camera with the mouse',
+'Disparo auto':'Auto fire','Apuntado auto':'Auto aim','AHORA SUENA':'NOW PLAYING','ELIMINADO':'ELIMINATED','DERRIBADO':'KNOCKED DOWN',
+'Cargando el desguace…':'Loading the scrapyard…','Montando robots…':'Assembling robots…','Listo':'Ready','TOCA PARA JUGAR':'TAP TO PLAY','TEMPORADA 1 · ÓXIDO':'SEASON 1 · RUST','TEMPORADA 1':'SEASON 1','ÓXIDO':'RUST',
+'Inicio':'Home','Pase':'Pass','Taquilla':'Locker','Tienda':'Shop','Opciones':'Options','JUGAR':'PLAY','Multijugador':'Multiplayer','Solo':'Solo','Dúo':'Duo','Trío':'Trio',
+'Elegir personaje':'Choose character','Arrastra para girar a tu robot':'Drag to rotate your robot','Nivel':'Level','Chatarrero':'Scrapper',
+'Personaje':'Character','Vestimenta':'Outfit','Armas':'Weapons','Mascota':'Pet','Ofertas':'Deals','Chips':'Chips','Tuercas':'Nuts',
+'Los pagos con tarjeta llegan pronto. Mientras tanto, gana Tuercas en cada partida y con la recompensa diaria.':'Card payments are coming soon. Meanwhile, earn Nuts every match and with the daily reward.',
+'Pase de temporada · Óxido':'Season pass · Rust','Sube de nivel jugando y desbloquea recompensas gratis. Se reclaman solas al alcanzar cada nivel.':'Level up by playing and unlock free rewards. They are claimed automatically at each level.',
+'Ajustes':'Settings','Música de fondo':'Background music','Efectos de sonido':'Sound effects','Sensibilidad de la cámara':'Camera sensitivity','Cerrar':'Close',
+'Música':'Music','Sonido':'Sound','Gráficos':'Graphics','Estilo':'Style',
+'Crea una sala y pasa el código a tus amigos, o escribe el que te hayan dado. Funciona en la misma Wi-Fi o cada uno desde su casa. Los huecos se rellenan con bots.':'Create a room and share the code with your friends, or type the one they gave you. Works on the same Wi-Fi or each from home. Empty slots are filled with bots.',
+'Crear sala':'Create room','Unirse':'Join','Código de la sala':'Room code','Empezar partida':'Start match','Salir':'Leave','Humanos juntos':'Humans together','Humanos enfrentados':'Humans versus',
+'eliminaciones':'eliminations','daño causado':'damage dealt','a la cabeza':'headshots','sobrevivido':'survived','Otra partida':'Play again','Cambiar personaje':'Change character','Volver a la sala':'Back to room','Salir al menú':'Main menu',
+'¡VICTORIA REAL!':'ROYAL VICTORY!','¡CASI LO TIENES!':'SO CLOSE!','FUERA DE COMBATE':'KNOCKED OUT',
+'GIRA EL MÓVIL':'ROTATE YOUR PHONE','Chatarra Rumble se juega en horizontal':'Chatarra Rumble is played in landscape','JUGAR IGUAL':'PLAY ANYWAY',
+'Marea total':'Final tide','Elige dónde saltar':'Choose where to jump','Cuerpo a tierra':'Prone','+45 vida':'+45 health','+40 escudo':'+40 shield',
+'Ahora eres el anfitrión':'You are now the host','Se perdió la conexión con la sala':'Connection to the room lost','Te han tumbado: sigues viendo a tu equipo':'You are out: spectating your team',
+'¡Derribado! Arrástrate a cubierto: tu equipo puede reanimarte':'Knocked down! Crawl to cover: your team can revive you','¡Te han reiniciado! Vuelves en paracaídas':'You have been rebooted! Parachuting back in',
+'¡Compañero reanimado!':'Teammate revived!','¡Te han reanimado! Cúrate con un botiquín o escudo':'You have been revived! Heal with a medkit or shield','¡Doble baja!':'Double kill!','¡Triple baja!':'Triple kill!','¡Imparable!':'Unstoppable!','¡Leyenda del desguace!':'Scrapyard legend!',
+'Recompensa diaria: +50 Tuercas':'Daily reward: +50 Nuts','¡Lo tienes todo! Pronto llegarán más objetos.':'You own everything! More items coming soon.','Próximamente':'Coming soon','¡Pase completado!':'Pass completed!',
+'Equipado':'Equipped','Equipar':'Equip','✓ Conseguido':'✓ Unlocked','Bloqueado':'Locked','Reclamando…':'Claiming…',
+'Conectando con el servidor… la primera vez puede tardar hasta un minuto en despertar.':'Connecting to the server… the first time it can take up to a minute to wake up.','Conectado.':'Connected.',
+'No se pudo conectar con el servidor.':'Could not connect to the server.','No se pudo conectar con el servidor. Inténtalo otra vez en unos segundos.':'Could not connect to the server. Try again in a few seconds.',
+'Se perdió la conexión. Vuelve a crear o unirte a una sala.':'Connection lost. Create or join a room again.','Escribe el código de 4 letras.':'Type the 4-letter code.',
+'Cuando estéis todos, pulsa Empezar partida.':'When everyone is in, press Start match.','Esperando a que el anfitrión empiece la partida…':'Waiting for the host to start the match…',
+'Pasa el código a tus amigos. Puedes empezar ya y jugar contra bots.':'Share the code with your friends. You can start now and play against bots.',
+'No existe ninguna sala con ese código.':'There is no room with that code.','La sala está llena (18 jugadores).':'The room is full.',
+'Tú':'You','Vacío':'Empty',
+// personajes y habilidades
+'Brasa':'Brasa','Garfio':'Garfio','Chispa':'Chispa','Bafle':'Bafle','Escudo térmico':'Heat shield','Gancho':'Hook','Turbo':'Turbo','Onda de graves':'Bass wave',
+'Soldadora con careta: se pone al rojo y recibe un 75% menos de daño durante 3 s.':'Welder with a mask: glows red hot and takes 75% less damage for 3 s.',
+'Gruista del desguace: lanza un gancho que atrapa al rival y lo arrastra hasta ti.':'Scrapyard crane operator: throws a hook that grabs a rival and pulls them to you.',
+'Mensajera con botas cohete: un dash rapidísimo hacia donde te mueves.':'Courier with rocket boots: a super-fast dash wherever you move.',
+'DJ con un altavoz a la espalda: un golpe de bajos que daña y aturde de cerca.':'DJ with a speaker on her back: a bass drop that damages and stuns nearby.',
+// armas
+'Remachadora':'Riveter','Rifle de tuercas':'Nut rifle','Escopeta de muelles':'Spring shotgun','Riel francotirador':'Rail sniper','Cañón de pilas':'Battery cannon','Pulsador de plasma':'Plasma pulser',
+'Pistola':'Pistol','Rifle':'Rifle','Escopeta':'Shotgun','Riel':'Rail','Cañón':'Cannon','Plasma':'Plasma',
+// cosméticos
+'Original':'Original','Óxido negro':'Black rust','Camuflaje desguace':'Scrapyard camo','Cromado':'Chrome','Oro viejo':'Old gold','Neón':'Neon',
+'Acero':'Steel','Óxido':'Rust','Camuflaje':'Camo','Carbono':'Carbon','Oro':'Gold','Plasma neón':'Neon plasma',
+'Sin mascota':'No pet','Dron-tuerca':'Nut drone','Perro chatarra':'Scrap dog','Cuervo mecánico':'Mech crow',
+'La pintura de fábrica, con su óxido de serie.':'Factory paint, rust included.','Chapa ennegrecida por el fuego.':'Plating blackened by fire.','Manchas verdes y pardas para esconderse.':'Green and brown patches to hide.',
+'Recién pulido. Brilla al sol.':'Freshly polished. Shines in the sun.','Chapado en oro gastado.':'Worn gold plating.','Chapa oscura con luces de su color.':'Dark plating with lights in its color.',
+'El acabado de serie.':'The stock finish.','Cañones corroídos que aún disparan.':'Corroded barrels that still fire.','Pintura de camuflaje militar.':'Military camo paint.','Fibra de carbono negra mate.':'Matte black carbon fiber.',
+'Todas tus armas chapadas en oro.':'All your weapons gold-plated.','Armas oscuras con vetas luminosas.':'Dark weapons with glowing veins.',
+'Vas por libre.':'Going solo.','Un dron diminuto que flota sobre tu hombro.':'A tiny drone hovering over your shoulder.','Te sigue a todas partes dando saltitos.':'Follows you everywhere, hopping along.','Vuela en círculos a tu alrededor.':'Flies in circles around you.',
+'Consejo: en dúo y trío puedes reanimar a tus compañeros derribados.':'Tip: in duo and trio you can revive knocked-down teammates.','Consejo: los trampolines te suben al tejado de las naves.':'Tip: jump pads launch you onto warehouse roofs.',
+'Consejo: agáchate o túmbate para que el francotirador no se mueva.':'Tip: crouch or go prone to steady the sniper.','Consejo: el cañón hace daño en área aunque falles por poco.':'Tip: the cannon deals area damage even on near misses.',
+'Consejo: recoge el chip de reinicio para traer de vuelta a un compañero.':'Tip: pick up the reboot chip to bring a teammate back.',
+'Juega en horizontal. Acrobacias: pulsa Saltar en el aire para un doble salto con voltereta; junto a una pared, salto de pared; corriendo, Agachar para deslizarte (y salta durante el deslizamiento para salir disparado); empuja contra un borde en el aire para trepar. Pulgar izquierdo: joystick, Arma y Correr. Pulgar derecho: Saltar, Disparar, Rodar, Agachar (mantén para tumbarte), Recargar, Mira y Habilidad.':'Play in landscape. Acrobatics: press Jump in the air for a flipping double jump; next to a wall, wall jump; while sprinting, Crouch to slide (jump during the slide to launch forward); push against a ledge in the air to climb. Left thumb: joystick, Weapon and Sprint. Right thumb: Jump, Fire, Roll, Crouch (hold to go prone), Reload, Aim and Ability.',
+'WASD moverte, ratón apuntar, clic disparar, clic derecho mira, Espacio saltar (otra vez en el aire: doble salto con voltereta; junto a una pared: salto de pared), C mientras corres: deslizarte (y Espacio para salir disparado), empujar contra un borde en el aire: trepar, Shift voltereta, Z cuerpo a tierra, X correr, R recargar, 1/2/3 armas, Q habilidad, E coger/reanimar, F disparo auto, G apuntado auto, V cámara, M mapa.':'WASD move, mouse aim, click fire, right click aim down sights, Space jump (again in the air: flipping double jump; next to a wall: wall jump), C while sprinting: slide (and Space to launch), push against a ledge in the air: climb, Shift roll, Z prone, X sprint, R reload, 1/2/3 weapons, Q ability, E pick up/revive, F auto fire, G auto aim, V camera, M map.'
+};
+const ENW={Tuercas:'Nuts',Chips:'Chips','sí':'on',no:'off',hombro:'shoulder','aérea':'aerial',Alta:'High',Media:'Medium',Baja:'Low',realista:'realistic',cartoon:'cartoon',Dúo:'Duo',Trío:'Trio',Solo:'Solo'};
+const w=x=>EN[x]||ENW[x]||x;
+const EN_RX=[
+ [/^La marea sube en (.+)$/,m=>'Tide rises in '+m[1]],[/^¡La marea avanza! (.+)$/,m=>'The tide is advancing! '+m[1]],
+ [/^(Disparo auto|Apuntado auto|Música|Sonido|Gráficos|Estilo|Cámara): (.+?)( \(V\))?$/,m=>w(m[1])+': '+w(m[2])+(m[3]||'')],
+ [/^(\d )?Vacío$/,m=>(m[1]||'')+'Empty'],[/^(\d )?(\S+) (\d+\/\d+|…)$/,m=>(m[1]||'')+w(m[2])+' '+m[3]],
+ [/^E: cambiar por (.+)$/,m=>'E: swap for '+w(m[1])],[/^Coger (.+)$/,m=>'Pick up '+w(m[1])],
+ [/^Mantén E: reanimar a (.+)$/,m=>'Hold E: revive '+m[1]],[/^Mantén: reanimar a (.+)$/,m=>'Hold: revive '+m[1]],
+ [/^(.+) eliminó a (.+)$/,m=>m[1]+' eliminated '+m[2]],[/^(.+) derribó a (.+)$/,m=>m[1]+' knocked down '+m[2]],[/^(.+) reanimó a (.+)$/,m=>m[1]+' revived '+m[2]],
+ [/^(.+) cayó derribado$/,m=>m[1]+' was knocked down'],[/^(.+) se hundió en la marea$/,m=>m[1]+' sank in the tide'],[/^(.+) ha vuelto al combate$/,m=>m[1]+' is back in the fight'],[/^(.+) se desconectó$/,m=>m[1]+' disconnected'],
+ [/^Te faltan (\d+) (\S+)$/,m=>'You need '+m[1]+' more '+w(m[2])],[/^(.+) desbloqueado$/,m=>w(m[1])+' unlocked'],[/^Chip recogido: (.+) vuelve al combate$/,m=>'Chip collected: '+m[1]+' is back in the fight'],
+ [/^de (\d+) chatarreros$/,m=>'of '+m[1]+' scrappers'],[/^de (\d+) equipos \((.+)\)$/,m=>'of '+m[1]+' teams ('+w(m[2])+')'],
+ [/^\+(\d+) XP$/,m=>'+'+m[1]+' XP'],[/^Nivel (\d+)$/,m=>'Level '+m[1]],[/^NIVEL (\d+)$/,m=>'LEVEL '+m[1]],[/^(\d+) XP para el (\d+)$/,m=>m[1]+' XP to level '+m[2]],
+ [/^Nivel (\d+) · Siguiente \(nv\. (\d+)\): (.+)$/,m=>'Level '+m[1]+' · Next (lv. '+m[2]+'): '+trRew(m[3])],
+ [/^(\d+) (Tuercas|Chips)$/,m=>m[1]+' '+w(m[2])],[/^(Armas|Traje|Mascota): (.+)$/,m=>({Armas:'Weapons',Traje:'Outfit',Mascota:'Pet'})[m[1]]+': '+w(m[2])],
+ [/^(.+) · (Vestimenta|Armas|Mascota)$/,m=>w(m[1])+' · '+w(m[2])],[/^(.+?): (.+\.)$/,m=>EN[m[1]]&&EN[m[2]]?w(m[1])+': '+w(m[2]):null],
+ [/^(.+) · Vida (\d+)$/,m=>w(m[1])+' · Health '+m[2]],[/^Vida (\d+)$/,m=>'Health '+m[1]],
+ [/^(Espacio\. )?Salto automático en (.+)$/,m=>(m[1]?'Space. ':'')+'Auto jump in '+m[2]],[/^Pase: (.+)$/,m=>'Pass: '+m[1].split(' · ').map(trRew).join(' · ')],
+ [/^¡Subes a nivel (\d+)! \+100 Tuercas(.*)$/,m=>'Level up to '+m[1]+'! +100 Nuts'+m[2].replace('Pase:','Pass:')],[/^Modo (\S+): (.+)$/,m=>'Mode '+w(m[1])+': '+({'todos contra todos.':'free for all.','cada humano en un equipo distinto, completado con bots.':'each human on a different team, filled with bots.','los humanos en el mismo equipo contra equipos de bots.':'humans on the same team against bot teams.'})[m[2]]||m[2]],
+ [/^\((.+?)(, anfitrión)?\)$/,m=>'('+w(m[1])+(m[2]?', host':'')+')'],
+ [/^(Rueda|Pellizca) para hacer zoom.+$/,m=>m[1]==='Rueda'?'Scroll to zoom, drag to move and click to place a marker':'Pinch to zoom, drag to move and tap to place a marker'],
+ [/^Mantén pulsado/,m=>null]];
+function trRew(r){let m;if((m=r.match(/^(\d+) (Tuercas|Chips)$/)))return m[1]+' '+w(m[2]);if((m=r.match(/^(Armas|Traje|Mascota): (.+)$/)))return({Armas:'Weapons',Traje:'Outfit',Mascota:'Pet'})[m[1]]+': '+w(m[2]);return r;}
+function trText(t){if(LANG!=='en'||!t)return t;const k=t.trim();if(!k)return t;if(EN[k])return t.replace(k,EN[k]);
+  for(const [rx,fn] of EN_RX){const m=k.match(rx);if(m){const r=fn(m);if(r!=null)return t.replace(k,r);}}return t;}
+function trNode(n){if(n.nodeType===3){const v=n.nodeValue,r=trText(v);if(r!==v)n.nodeValue=r;}else if(n.nodeType===1&&n.tagName!=='SCRIPT'&&n.tagName!=='STYLE'){
+  if(n.placeholder){const r=trText(n.placeholder);if(r!==n.placeholder)n.placeholder=r;}for(const c of n.childNodes)trNode(c);}}
+function startI18n(){document.documentElement.lang=LANG;if(LANG!=='en')return;trNode(document.body);
+  new MutationObserver(ms=>{for(const m of ms){if(m.type==='characterData')trNode(m.target);else for(const n of m.addedNodes)trNode(n);}}).observe(document.body,{subtree:true,childList:true,characterData:true});}
+
 const TOUCH=(window.matchMedia&&matchMedia('(pointer:coarse)').matches)||('ontouchstart' in window);
 if(TOUCH)document.body.classList.add('touch');
 // generador aleatorio del juego (se siembra igual en todos los jugadores al empezar una partida en red)
@@ -472,10 +566,11 @@ const WEAPONS={
   rifle:{adsMul:0.2,adsBloom:0.3,name:'Rifle de tuercas',short:'Rifle',dmg:9,rate:0.11,speed:52,range:32,spread:0.08,pellets:1,mag:30,reload:2.1,color:0xf2c230,size:0.13,score:3,len:1.1,thick:0.18,kick:0.011},
   escopeta:{name:'Escopeta de muelles',short:'Escopeta',dmg:10,rate:0.9,speed:36,range:13,spread:0.5,pellets:7,mag:5,reload:2,color:0x7fd4ff,size:0.12,score:2,len:0.95,thick:0.24,kick:0.05},
   riel:{adsMul:0.04,adsBloom:0.1,name:'Riel francotirador',short:'Riel',dmg:75,rate:1.5,speed:110,range:70,spread:0.012,pellets:1,mag:4,reload:2.6,color:0xb48cff,size:0.16,score:3,len:1.5,thick:0.15,scope:true,kick:0.07},
+  plasma:{name:'Pulsador de plasma',short:'Plasma',dmg:28,rate:0.42,speed:68,range:42,spread:0.03,pellets:1,mag:8,reload:1.8,color:0x8a5cff,own:0x32e6ff,size:0.24,score:3,len:0.9,thick:0.2,kick:0.03,adsMul:0.35,adsBloom:0.4},
   canon:{name:'Cañón de pilas',short:'Cañón',dmg:50,rate:1.3,speed:26,range:34,spread:0,pellets:1,mag:2,reload:2.5,color:0x8cff5a,size:0.32,splash:5,score:3,len:1.0,thick:0.32,kick:0.06}
 };
 const HEAD_MULT=1.6;
-const LOOT=['rifle','rifle','escopeta','riel','canon'];
+const LOOT=['rifle','rifle','escopeta','riel','canon','plasma'];
 const CHARS={
   brasa:{name:'Brasa',color:0xc8642b,hp:130,speed:5.9,ab:'Escudo térmico',desc:'Soldadora con careta: se pone al rojo y recibe un 75% menos de daño durante 3 s.',cd:10},
   garfio:{name:'Garfio',color:0xf2c230,hp:115,speed:6.1,ab:'Gancho',desc:'Gruista del desguace: lanza un gancho que atrapa al rival y lo arrastra hasta ti.',cd:7},
@@ -1037,7 +1132,7 @@ function decorate(){
 function clearWorld(){
   if(world){scene.remove(world);world.traverse(o=>{if(o.userData&&o.userData.own&&o.geometry)o.geometry.dispose();});for(const e of ents)for(const m of e.r.all)m.dispose();for(const b of buildings)b.wallMat.dispose();}
   for(const b of bullets)freeBullet(b);bullets=[];
-  for(const f of fxs){scene.remove(f.mesh);f.mesh.material.dispose();}fxs=[];
+  for(const f of fxs){scene.remove(f.mesh);f.mesh.material.dispose();}fxs=[];for(const d of DEC)d.m.visible=false;for(const t of TRC)t.m.visible=false;
   for(const d of dmgAct){d.el.style.opacity=0;dmgPool.push(d.el);}dmgAct.length=0;
   ents=[];player=null;world=null;
 }
@@ -1270,6 +1365,10 @@ function buildWeapon(key,skin){skin=skin||'acero';const pk=key+'|'+skin;if(_wpro
     B(cy,W.glass,0,0.155,0.397,0.04,0.006,0.04,PI2);B(cy,W.glass,0,0.155,-0.142,0.034,0.006,0.034,PI2);
     B(cy,W.metal,0,0.195,0.12,0.016,0.04,0.016);B(cy,W.metal,0.04,0.155,0.12,0.016,0.04,0.016,0,0,PI2);B(bx,W.metal,0,0.1,0.06,0.025,0.05,0.025);B(bx,W.metal,0,0.1,0.2,0.025,0.05,0.025);
     for(const x of [-0.02,0.02])B(bx,W.metal,x,0.0,0.86,0.012,0.012,0.2);tip=1.08;}
+  else if(key==='plasma'){B(bx,W.metal,0,0.03,0.12,0.08,0.12,0.4);B(cy,W.steel,0,0.05,0.5,0.03,0.42,0.03,PI2);
+    for(let k=0;k<3;k++){const t=B(G.torus,acc,0,0.05,0.38+k*0.11,0.045,0.045,0.045);t.castShadow=false;}B(cy,acc,0,0.05,0.73,0.04,0.05,0.04,PI2);
+    B(bx,W.rub,0,-0.08,0.0,0.05,0.13,0.07,-0.3);B(cy,acc,0,-0.09,0.18,0.035,0.16,0.035);B(bx,W.metal,0,0.0,-0.2,0.055,0.1,0.24);B(bx,W.rub,0,-0.01,-0.33,0.06,0.13,0.03);
+    B(bx,W.metal,0,0.11,0.12,0.05,0.04,0.16);B(bx,W.glass,0,0.135,0.12,0.04,0.018,0.12);tip=0.78;}
   else{B(cy,W.metal,0,0.06,0.36,0.085,0.72,0.085,PI2);B(cy,W.steel,0,0.06,0.73,0.1,0.07,0.1,PI2);B(cy,W.rust,0,0.06,0.0,0.095,0.05,0.095,PI2);
     for(let k=0;k<3;k++)B(cy,acc,0.105,0.06,0.18+k*0.15,0.035,0.11,0.035,PI2);B(bx,W.rub,0,-0.06,0.05,0.05,0.13,0.07,-0.3);B(bx,W.rub,0,-0.05,0.42,0.045,0.11,0.06,0.2);
     B(bx,W.rub,0,0.06,-0.07,0.11,0.15,0.05);B(bx,W.metal,0,0.16,0.3,0.03,0.04,0.2);tip=0.78;}
@@ -1359,7 +1458,7 @@ function spawnBullet(e,dx,dy,dz,o){
   {const u=mesh.userData,sz=o.size,len=o.hook?1.5:o.speed>80?16:o.speed>45?8:5;u.core.scale.set(sz*0.95,sz*0.95,sz*1.6);u.trail.scale.set(sz*0.85,sz*0.85,sz*len);u.trail.position.z=-sz*len*0.8;u.halo.scale.setScalar(sz*(o.splash?12:10));}
   _dir.set(dx,dy,dz);mesh.quaternion.setFromUnitVectors(_Z,_dir);
   if(b.hook){b.chain=new THREE.Mesh(G.box,M.dark);scene.add(b.chain);}
-  mesh.position.set(b.x,b.y,b.z);bullets.push(b);
+  mesh.position.set(b.x,b.y,b.z);bullets.push(b);if(!b.hook)tracer(b.x,b.y,b.z,dx,dy,dz,Math.min(o.range,26),o.color);
 }
 function startReload(e){const w=WEAPONS[e.weapon.key];if(e.weapon.reloadT<=0&&e.weapon.ammo<w.mag){e.weapon.reloadT=w.reload*PACE.reload;if(e===player)sfxUi('reload');}}
 function curSpread(e){const w=WEAPONS[e.weapon.key];if(w.pellets>1)return w.spread;const sm=(e.moving?1.35:0.85)*(e.prone?0.45:e.crouch?0.6:1)*(e.ads?(w.adsMul!=null?w.adsMul:0.6):1);return w.spread*sm+e.bloom*(e.ads&&w.adsBloom!=null?w.adsBloom:1);}
@@ -1379,7 +1478,7 @@ function shootBullets(e,dx,dy,dz,ghost){const w=WEAPONS[e.weapon.key];sfxShot(e)
     if(w.pellets>1){a=base+(i/(w.pellets-1)-0.5)*sp+rand(-0.04,0.04);p=pit+rand(-0.07,0.07);}
     else{a=base+(RNG()-0.5)*sp;p=pit+(RNG()-0.5)*sp*0.6;}
     const cp=Math.cos(p);
-    spawnBullet(e,Math.sin(a)*cp,Math.sin(p),Math.cos(a)*cp,{color:PLASMA[e.char]||w.color,size:w.size,speed:w.speed*PACE.bullet,range:w.range,dmg:w.dmg,splash:w.splash,ghost});}
+    spawnBullet(e,Math.sin(a)*cp,Math.sin(p),Math.cos(a)*cp,{color:w.own?(RNG()<0.5?w.color:w.own):(PLASMA[e.char]||w.color),size:w.size,speed:w.speed*PACE.bullet,range:w.range,dmg:w.dmg,splash:w.splash,ghost});}
 }
 function damage(t,amt,src,isZone,head){
   if(!t.alive||amt<=0)return;
@@ -1485,7 +1584,29 @@ function useAbility(e,ax,az){
 // ---------- efectos
 function ringFx(x,z,r,color,dur){const m=new THREE.Mesh(G.wave,new THREE.MeshBasicMaterial({color,transparent:true,opacity:0.9,side:THREE.DoubleSide,depthWrite:false}));
   m.rotation.x=-Math.PI/2;m.position.set(x,gH(x,z)+0.25,z);m.scale.setScalar(0.1);scene.add(m);fxs.push({mesh:m,t:0,dur,r});}
-function updateFx(dt){for(let i=fxs.length-1;i>=0;i--){const f=fxs[i];f.t+=dt;const k=f.t/f.dur;
+// trazadores: línea brillante muy breve desde la boca del arma
+const TRC=[],_tq=new THREE.Quaternion(),_tY=new THREE.Vector3(0,1,0),_tD=new THREE.Vector3();
+function tracer(x,y,z,dx,dy,dz,len,color){if(LQ)return;let t=TRC.find(q=>!q.m.visible);
+  if(!t){if(TRC.length>=24)t=TRC[0];else{const m=new THREE.Mesh(new THREE.CylinderGeometry(1,1,1,5,1,true),new THREE.MeshBasicMaterial({color,transparent:true,opacity:0.7,blending:THREE.AdditiveBlending,depthWrite:false}));scene.add(m);t={m,t:0};TRC.push(t);}}
+  const l=Math.hypot(dx,dy,dz)||1;_tD.set(dx/l,dy/l,dz/l);t.m.quaternion.setFromUnitVectors(_tY,_tD);t.m.scale.set(0.025,len,0.025);t.m.position.set(x+_tD.x*len/2,y+_tD.y*len/2,z+_tD.z*len/2);
+  t.m.material.color.setHex(color||0xffd27a);t.m.material.opacity=0.75;t.m.visible=true;t.t=0.08;}
+function updateTracers(dt){for(const t of TRC){if(!t.m.visible)continue;t.t-=dt;t.m.material.opacity=Math.max(0,t.t/0.08)*0.75;if(t.t<=0)t.m.visible=false;}}
+// marcas de impacto (quemadura con borde del color del disparo) que se desvanecen
+const DEC=[];let _decTex=null;
+function decTex(){if(_decTex)return _decTex;const c=document.createElement('canvas');c.width=c.height=64;const g=c.getContext('2d');
+  const gr=g.createRadialGradient(32,32,2,32,32,30);gr.addColorStop(0,'rgba(10,8,6,0.95)');gr.addColorStop(0.45,'rgba(20,14,10,0.75)');gr.addColorStop(0.8,'rgba(30,20,12,0.25)');gr.addColorStop(1,'rgba(0,0,0,0)');
+  g.fillStyle=gr;g.fillRect(0,0,64,64);for(let i=0;i<8;i++){g.strokeStyle='rgba(15,10,6,0.6)';g.beginPath();g.moveTo(32,32);const a=Math.random()*6.28,r=18+Math.random()*12;g.lineTo(32+Math.cos(a)*r,32+Math.sin(a)*r);g.stroke();}
+  return _decTex=new THREE.CanvasTexture(c);}
+const _dN=new THREE.Vector3(),_dZ=new THREE.Vector3(0,0,1);
+function decal(x,y,z,nx,ny,nz,color){if(LQ)return;let d=DEC.find(q=>!q.m.visible);
+  if(!d){if(DEC.length>=60){d=DEC.reduce((a,q)=>q.t<a.t?q:a,DEC[0]);}else{const m=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({map:decTex(),transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-4}));
+    const glow=new THREE.Mesh(new THREE.CircleGeometry(0.18,12),new THREE.MeshBasicMaterial({color:0xff8a3a,transparent:true,opacity:0.8,blending:THREE.AdditiveBlending,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-5}));m.add(glow);scene.add(m);d={m,glow,t:0};DEC.push(d);}}
+  _dN.set(nx,ny,nz).normalize();d.m.quaternion.setFromUnitVectors(_dZ,_dN);d.m.position.set(x+_dN.x*0.03,y+_dN.y*0.03,z+_dN.z*0.03);d.m.scale.setScalar(0.35+Math.random()*0.15);d.m.rotateZ(Math.random()*6.28);
+  d.glow.material.color.setHex(color||0xff8a3a);d.glow.material.opacity=0.85;d.m.material.opacity=0.9;d.m.visible=true;d.t=18;}
+function decalOnBox(b,o,ux,uz){const dx0=b.x-o.x0,dx1=o.x1-b.x,dz0=b.z-o.z0,dz1=o.z1-b.z,m=Math.min(dx0,dx1,dz0,dz1);let nx=0,nz=0,x=b.x,z=b.z;
+  if(m===dx0){nx=-1;x=o.x0;}else if(m===dx1){nx=1;x=o.x1;}else if(m===dz0){nz=-1;z=o.z0;}else{nz=1;z=o.z1;}decal(x,b.y,z,nx,0,nz,b.color);}
+function updateDecals(dt){for(const d of DEC){if(!d.m.visible)continue;d.t-=dt;d.glow.material.opacity=Math.max(0,(d.t-16.5)/1.5)*0.85;if(d.t<2)d.m.material.opacity=Math.max(0,d.t/2)*0.9;if(d.t<=0)d.m.visible=false;}}
+function updateFx(dt){updateTracers(dt);updateDecals(dt);for(let i=fxs.length-1;i>=0;i--){const f=fxs[i];f.t+=dt;const k=f.t/f.dur;
   if(k>=1){scene.remove(f.mesh);f.mesh.material.dispose();fxs.splice(i,1);continue;}f.mesh.scale.setScalar(0.1+f.r*k);f.mesh.material.opacity=0.9*(1-k);}}
 const sprs=[],sprPool=[];
 function puff(x,y,z,o){if(sprs.length>(HQ?160:90))return;let sp=sprPool.pop();
@@ -1854,15 +1975,15 @@ function separate(){for(let i=0;i<ents.length;i++){const a=ents[i];if(!onGround(
   const dx=b.x-a.x,dz=b.z-a.z,d2=dx*dx+dz*dz;if(d2<1.21&&d2>1e-6){const d=Math.sqrt(d2),p=(1.1-d)/2;a.x-=dx/d*p;a.z-=dz/d*p;b.x+=dx/d*p;b.z+=dz/d*p;}}}}
 // 0 = no toca, 1 = cuerpo, 2 = cabeza
 function entHit(e,b){const dx=e.x-b.x,dz=e.z-b.z;if(dx*dx+dz*dz>=0.42)return 0;const top=entTop(e);if(b.y<entBottom(e)||b.y>top)return 0;return b.y>top-0.42?2:1;}
-function bulletImpact(b,ux,uy,uz){sparks(b.x,b.y,b.z,b.color||0xffe7a0,5,3);puff(b.x-ux*0.3,b.y-uy*0.3,b.z-uz*0.3,{color:b.color||0xffd9a0,size:0.7,dur:0.12});if(HQ)puff(b.x-ux*0.3,b.y-uy*0.3,b.z-uz*0.3,{smoke:true,color:0x9a9184,size:0.5,grow:1.5,dur:0.6,op:0.5,vy:0.5});}
+function bulletImpact(b,ux,uy,uz){sparks(b.x,b.y,b.z,b.color||0xffe7a0,4,3);sparks(b.x,b.y,b.z,0xff9a3a,4,4);puff(b.x-ux*0.3,b.y-uy*0.3,b.z-uz*0.3,{color:b.color||0xffd9a0,size:0.7,dur:0.12});if(HQ)puff(b.x-ux*0.3,b.y-uy*0.3,b.z-uz*0.3,{smoke:true,color:0x9a9184,size:0.5,grow:1.5,dur:0.6,op:0.5,vy:0.5});}
 function updateBullets(dt){
   for(let i=bullets.length-1;i>=0;i--){
     const b=bullets[i],sp=Math.hypot(b.vx,b.vy,b.vz),ux=b.vx/sp,uy=b.vy/sp,uz=b.vz/sp;let rem=sp*dt,dead=false;
     while(rem>0&&!dead){const st=Math.min(0.45,rem);rem-=st;b.x+=ux*st;b.y+=uy*st;b.z+=uz*st;b.dist+=st;
-      if(b.y<=gH(b.x,b.z)+0.03){dead=true;if(b.splash)explode(b.x,b.z,b.owner,b.dmg,b.splash,b.ghost,b.y);else{sparks(b.x,b.y+0.1,b.z,0xffe7a0,3,2);puff(b.x,b.y+0.2,b.z,{smoke:true,color:0xb7a58f,size:0.6,grow:1.4,dur:0.5,op:0.55,vy:0.4});}break;}
-      let solid=false;for(const o of obstacles){const y0=o.y0||0;if(b.y>=y0&&b.y<y0+(o.h||3)&&inBox(b.x,b.z,o)){solid=true;break;}}
-      if(!solid)for(const r of ROOFS)if(b.y>=r.y0&&b.y<r.y0+r.h+0.05&&inBox(b.x,b.z,r)){solid=true;break;}
-      if(solid){dead=true;if(b.splash)explode(b.x,b.z,b.owner,b.dmg,b.splash,b.ghost,b.y);else bulletImpact(b,ux,uy,uz);break;}
+      if(b.y<=gH(b.x,b.z)+0.03){dead=true;if(b.splash)explode(b.x,b.z,b.owner,b.dmg,b.splash,b.ghost,b.y);else{sparks(b.x,b.y+0.1,b.z,0xff9a3a,4,2);decal(b.x,gH(b.x,b.z)+0.03,b.z,0,1,0,b.color);puff(b.x,b.y+0.2,b.z,{smoke:true,color:0xb7a58f,size:0.6,grow:1.4,dur:0.5,op:0.55,vy:0.4});}break;}
+      let solid=null;for(const o of obstacles){const y0=o.y0||0;if(b.y>=y0&&b.y<y0+(o.h||3)&&inBox(b.x,b.z,o)){solid=o;break;}}
+      if(!solid)for(const r of ROOFS)if(b.y>=r.y0&&b.y<r.y0+r.h+0.05&&inBox(b.x,b.z,r)){solid=r;break;}
+      if(solid){dead=true;if(b.splash)explode(b.x,b.z,b.owner,b.dmg,b.splash,b.ghost,b.y);else{bulletImpact(b,ux,uy,uz);decalOnBox(b,solid,ux,uz);}break;}
       let hitC=null;for(const c of crates)if(c.alive&&b.y>=c.y0&&b.y<c.y0+1.35&&inBox(b.x,b.z,c.box,0.05)){hitC=c;break;}
       if(hitC){dead=true;if(b.splash)explode(b.x,b.z,b.owner,b.dmg,b.splash,b.ghost,b.y);else if(!b.hook){if(!b.ghost)damageCrate(hitC,b.dmg);sparks(b.x,b.y,b.z,0xf2c230,3,3);}break;}
       if(b.splash&&!b.hook){let near=false;for(const e of ents){if(!onGround(e)||e===b.owner||mates(b.owner,e))continue;if(Math.hypot(e.x-b.x,e.z-b.z,chestY(e)-b.y)<1.7){near=true;break;}}
@@ -2011,7 +2132,7 @@ function updateDmg(dt){for(let i=dmgAct.length-1;i>=0;i--){const d=dmgAct[i];d.t
   d.el.style.opacity=d.t<0.6?1:(0.8-d.t)/0.2;d.el.style.transform=`translate(${(pv.x*0.5+0.5)*innerWidth}px,${(-pv.y*0.5+0.5)*innerHeight}px) translate(-50%,-50%) scale(${1+Math.max(0,0.15-d.t)*3})`;}}
 function slotTxt(s,i){if(!s)return (i+1)+' Vacío';const w=WEAPONS[s.key];return (TOUCH?'':(i+1)+' ')+w.short+' '+(s.reloadT>0?'…':s.ammo+'/'+w.mag);}
 let _sightMode='';
-const COMP_LBL={0:'N',45:'NE',90:'E',135:'SE',180:'S',225:'SO',270:'O',315:'NO'};
+const COMP_LBL=LANG==='en'?{0:'N',45:'NE',90:'E',135:'SE',180:'S',225:'SW',270:'W',315:'NW'}:{0:'N',45:'NE',90:'E',135:'SE',180:'S',225:'SO',270:'O',315:'NO'};
 {let h='';for(let k=0;k<3;k++)for(let d=0;d<360;d+=15){const L=COMP_LBL[d];h+='<span class="'+(L?'c':'t')+'">'+(L||'|')+'</span>';}$('compStrip').innerHTML=h;}
 function updateCompass(){if(!player)return;const yaw=camMode==='shoulder'?camYaw:player.face,hd=((Math.atan2(Math.sin(yaw),-Math.cos(yaw))*180/Math.PI)+360)%360,w=$('compass').clientWidth||240;
   $('compStrip').style.transform='translateX('+(w/2-((hd+360)/15)*20-10)+'px)';}
@@ -2033,7 +2154,7 @@ function hud(){
   H.abBtn.style.setProperty('--p',(k*360)+'deg');H.abBtn.classList.toggle('ready',ready);H.abBtnTxt.textContent=c.ab;
   H.crBtn.classList.toggle('on',player.crouch);H.crBtn.classList.toggle('prone',player.prone);
   H.rollBtn.classList.toggle('cd',player.rollCd>0);H.runBtn.classList.toggle('on',input.autoRun);
-  H.rotHint.classList.toggle('hidden',!(TOUCH&&innerHeight>innerWidth&&state==='play'&&matchTime<8));
+
   if(nearPick&&player.alive){const n=WEAPONS[nearPick.key].name;H.pickHint.textContent='E: cambiar por '+n;H.pickHint.classList.remove('hidden');H.pkBtn.textContent='Coger '+WEAPONS[nearPick.key].short;H.pkBtn.classList.remove('hidden');}
   else{H.pickHint.classList.add('hidden');H.pkBtn.classList.add('hidden');}
   const inPlane=player.phase==='plane'&&state==='play';H.jumpBtn.classList.toggle('hidden',!inPlane);
@@ -2145,7 +2266,7 @@ function renderLobby(){
   lobbyStatus(NET.host?(NET.players.length<2?'Pasa el código a tus amigos. Puedes empezar ya y jugar contra bots.':'Cuando estéis todos, pulsa Empezar partida.'):'Esperando a que el anfitrión empiece la partida…');
 }
 function openLobby(){NET.inLobby=true;$('menu').classList.add('hidden');$('end').classList.add('hidden');$('lobby').classList.remove('hidden');showRoom(!!NET.code);if(NET.code)renderLobby();else lobbyStatus('');}
-function leaveLobby(){NET.inLobby=false;if(NET.ws)try{NET.ws.close();}catch(e){}NET.ws=null;NET.code=null;NET.on=false;$('lobby').classList.add('hidden');$('menu').classList.remove('hidden');}
+function leaveLobby(){cgInvite(null);NET.inLobby=false;if(NET.ws)try{NET.ws.close();}catch(e){}NET.ws=null;NET.code=null;NET.on=false;$('lobby').classList.add('hidden');$('menu').classList.remove('hidden');}
 function r2(v){return Math.round(v*100)/100;}
 function packEnt(e){const f=(e.crouch?1:0)|(e.prone?2:0)|(e.rollT>0?4:0)|(e.moving?8:0)|(e.chute?16:0)|(e.heatT>0?32:0)|(e.stunT>0?64:0)|(e.alive?128:0)|(e.downed?256:0)|(e.flipT>0?512:0)|(e.slideT>0?1024:0);
   return [e.ix,r2(e.x),r2(e.y),r2(e.z),r2(e.face),r2(e.jy),f,WKEYS.indexOf(e.weapon.key),Math.round(e.hp),Math.round(e.shield),e.phase==='plane'?0:e.phase==='fall'?1:2,e.rollT>0?r2(e.rollT):0];}
@@ -2170,7 +2291,7 @@ function netTick(dt){if(!NET.on)return;
 function entById(id){return ents.find(e=>e.netId===id);}
 function onNet(m){
   switch(m.t){
-    case 'joined':NET.id=m.id;NET.code=m.code;NET.hostId=m.hostId;NET.players=m.players||[];showRoom(true);renderLobby();break;
+    case 'joined':NET.id=m.id;NET.code=m.code;NET.hostId=m.hostId;NET.players=m.players||[];showRoom(true);renderLobby();cgInvite(m.code);break;
     case 'lobby':NET.players=m.players||[];NET.hostId=m.hostId;if(NET.inLobby)renderLobby();if(NET.hostId===NET.id)netSend({t:'cfg',cfg:NET.cfg});break;
     case 'cfg':if(m.cfg&&MODE_TS[m.cfg.mode]){NET.cfg={mode:m.cfg.mode,rule:m.cfg.rule==='versus'?'versus':'together'};applyModeUI();}break;
     case 'err':lobbyStatus(m.msg||'Error');break;
@@ -2228,7 +2349,7 @@ try{$('nameIn').value=localStorage.getItem('cr_name')||'';}catch(e){}
 // La música es un rock-blues original en La (guitarras con distorsión, bajo y batería) que se intensifica en combate.
 const AUD={musVol:0.7,sfxVol:0.85,ctx:null,on:false,mus:true,sfx:true,master:null,musG:null,sfxG:null,gtr:null,lead:null,noise:null,step:0,next:0,bar:0,inten:0.15,timer:null,drone:null,droneG:null,footT:0,lastMode:''};
 try{AUD.mus=localStorage.getItem('cr_mus')!=='0';AUD.sfx=localStorage.getItem('cr_sfx')!=='0';const mv=parseFloat(localStorage.getItem('cr_musvol')),sv=parseFloat(localStorage.getItem('cr_sfxvol'));if(mv>=0)AUD.musVol=mv;if(sv>=0)AUD.sfxVol=sv;}catch(e){}
-const musLevel=()=>AUD.mus?0.5*AUD.musVol:0,sfxLevel=()=>AUD.sfx?0.95*AUD.sfxVol:0;
+const cgSilent=()=>typeof CG!=='undefined'&&(CG.mute||CG.adOn);const musLevel=()=>AUD.mus&&!cgSilent()?0.5*AUD.musVol:0,sfxLevel=()=>AUD.sfx&&!cgSilent()?0.95*AUD.sfxVol:0;
 function audApplyVol(){if(!AUD.ctx)return;AUD.musG.gain.setTargetAtTime(musLevel(),AUD.ctx.currentTime,0.08);AUD.sfxG.gain.setTargetAtTime(sfxLevel(),AUD.ctx.currentTime,0.05);}
 function audInit(){if(AUD.ctx){if(AUD.ctx.state==='suspended')AUD.ctx.resume();return;}
   const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;const c=new AC();AUD.ctx=c;
@@ -2336,12 +2457,33 @@ function audTick(dt){if(!AUD.ctx)return;
   if(state==='play'&&zone.mode!==AUD.lastMode){if(zone.mode==='shrink'&&AUD.lastMode)sfxUi('siren');AUD.lastMode=zone.mode;}}
 
 
+
+// ---------- CrazyGames: SDK v3 (carga, partidas, silencio, datos guardados, usuario, invitaciones y anuncios)
+const CG={sdk:null,ready:false,mute:false,env:'',inviteRoom:null};
+function cgWanted(){try{if(/crazygames/i.test(location.hostname)||/crazygames/i.test(document.referrer))return true;if(new URLSearchParams(location.search).has('cg'))return true;}catch(e){}return false;}
+function cgLoad(){if(window.CrazyGames&&window.CrazyGames.SDK){cgInit();return;}if(!cgWanted())return;const sc=document.createElement('script');sc.src='https://sdk.crazygames.com/crazygames-sdk-v3.js';sc.onload=cgInit;sc.onerror=()=>{};document.head.appendChild(sc);}
+async function cgInit(){try{const S=window.CrazyGames&&window.CrazyGames.SDK;if(!S)return;await S.init();CG.sdk=S;CG.ready=true;CG.env=S.environment||'';
+  try{S.game.loadingStart();}catch(e){}if(splashDone)try{S.game.loadingStop();}catch(e){}
+  const apply=st=>{CG.mute=!!(st&&st.muteAudio);audApplyVol();};apply(S.game.settings);S.game.addSettingsChangeListener(apply);
+  // perfil guardado en la cuenta de CrazyGames (si existe, manda sobre el del navegador)
+  try{const raw=S.data.getItem('cr_profile');if(raw){const p=JSON.parse(raw);Object.assign(PROFILE,p);PROFILE.owned=Object.assign({'o:orig':1,'w:acero':1,'p:none':1},p.owned||{});chosen=PROFILE.equip.char||chosen;buildLobbyChar();}else S.data.setItem('cr_profile',JSON.stringify(PROFILE));}catch(e){}
+  try{const u=await S.user.getUser();let cur='';try{cur=localStorage.getItem('cr_name')||'';}catch(e){}if(u&&u.username&&!cur){try{localStorage.setItem('cr_name',u.username.slice(0,12));}catch(e){}if($('nameIn'))$('nameIn').value=u.username.slice(0,12);}renderTop();}catch(e){}
+  try{const room=S.game.getInviteParam&&S.game.getInviteParam('roomId');if(room)CG.inviteRoom=String(room).toUpperCase();}catch(e){}
+  renderShop();}catch(e){CG.ready=false;}}
+function cgGameplay(on){if(!CG.ready)return;try{on?CG.sdk.game.gameplayStart():CG.sdk.game.gameplayStop();}catch(e){}}
+function cgHappy(){if(CG.ready)try{CG.sdk.game.happytime();}catch(e){}}
+function cgSave(){if(CG.ready)try{CG.sdk.data.setItem('cr_profile',JSON.stringify(PROFILE));}catch(e){}}
+function cgInvite(code){if(!CG.ready)return;try{code?CG.sdk.game.showInviteButton({roomId:code}):CG.sdk.game.hideInviteButton();}catch(e){}}
+// anuncio entre partidas (con el juego en silencio mientras dura); si no hay SDK, sigue directo
+function cgAd(type,done){if(!CG.ready){done&&done(false);return;}let fin=false;const end=ok=>{if(fin)return;fin=true;CG.adOn=false;audApplyVol();done&&done(ok);};
+  try{CG.sdk.ad.requestAd(type,{adStarted:()=>{CG.adOn=true;audApplyVol();},adFinished:()=>end(true),adError:()=>end(false)});}catch(e){end(false);}setTimeout(()=>end(false),90000);}
+let splashDone=false;
 // ---------- perfil, economía y pantalla de inicio con el robot en 3D
 const PROFILE=(()=>{let p=null;try{p=JSON.parse(localStorage.getItem('cr_profile')||'null');}catch(e){}
   p=Object.assign({coins:250,gems:0,xp:0,owned:{},equip:{},daily:''},p||{});p.owned=Object.assign({'o:orig':1,'w:acero':1,'p:none':1},p.owned);
   p.equip=Object.assign({char:'brasa',o:{},w:'acero',p:'none'},p.equip);if(!CHARS[p.equip.char])p.equip.char='brasa';return p;})();
 const levelOf=xp=>1+Math.floor(xp/500);
-function saveProfile(){try{localStorage.setItem('cr_profile',JSON.stringify(PROFILE));}catch(e){}renderTop();}
+function saveProfile(){try{localStorage.setItem('cr_profile',JSON.stringify(PROFILE));}catch(e){}cgSave();renderTop();}
 function myCos(){return cleanCos({o:PROFILE.equip.o[chosen]||'orig',w:PROFILE.equip.w,p:PROFILE.equip.p});}
 chosen=PROFILE.equip.char;
 function renderTop(){let nm='Chatarrero';try{nm=localStorage.getItem('cr_name')||nm;}catch(e){}$('pName').textContent=nm;const lv=levelOf(PROFILE.xp);$('pLvl').textContent=lv;
@@ -2373,6 +2515,9 @@ function renderLocker(){const g=$('lockGrid');g.innerHTML='';
   for(const id of Object.keys(CATS[lockTab]))g.appendChild(itemCard(lockTab,id,false));}
 function renderShop(){const g=$('shopGrid');g.innerHTML='';let n=0;for(const cat of ['o','w','p'])for(const id of Object.keys(CATS[cat]))if(!owned(cat,id)){g.appendChild(itemCard(cat,id,true));n++;}
   if(!n){const p=document.createElement('p');p.className='hint';p.textContent='¡Lo tienes todo! Pronto llegarán más objetos.';g.appendChild(p);}
+  if(CG.ready){const b=document.createElement('button');b.className='item';const sw=document.createElement('div');sw.className='sw';sw.style.background='linear-gradient(135deg,#f2c230,#ff6a1a)';
+    const t=document.createElement('b');t.textContent='+60 Tuercas';const d=document.createElement('small');d.textContent=LANG==='en'?'Watch a short ad and get 60 Nuts.':'Mira un anuncio corto y consigue 60 Tuercas.';const pr=document.createElement('div');pr.className='pr';pr.textContent=LANG==='en'?'Watch ad':'Ver anuncio';
+    b.append(sw,t,d,pr);b.addEventListener('click',()=>cgAd('rewarded',ok=>{if(ok){PROFILE.coins+=60;saveProfile();toast('+60 Tuercas',1400);sfxUi('pick');}}));g.prepend(b);}
   const gg=$('gemGrid');gg.innerHTML='';for(const [c,eur] of [[100,'0,99 €'],[550,'4,99 €'],[1200,'9,99 €']]){const b=document.createElement('button');b.className='item';b.disabled=true;
     const sw=document.createElement('div');sw.className='sw';sw.style.background='linear-gradient(135deg,#7af0ff,#5a2aff)';const t=document.createElement('b');t.textContent=c+' Chips';const d=document.createElement('small');d.textContent='Próximamente';
     const pr=document.createElement('div');pr.className='pr c';pr.textContent=eur;b.append(sw,t,d,pr);gg.appendChild(b);}}
@@ -2382,6 +2527,12 @@ function showPanel(pn){for(const b of document.querySelectorAll('.navb'))b.class
 for(const b of document.querySelectorAll('.navb'))b.addEventListener('click',()=>{audInit();showPanel(b.dataset.p);});
 for(const b of document.querySelectorAll('.tab'))b.addEventListener('click',()=>{lockTab=b.dataset.t;for(const x of document.querySelectorAll('.tab'))x.classList.toggle('on',x===b);renderLocker();});
 $('gemPlus').addEventListener('click',()=>showPanel('shop'));
+$('langBtn').textContent=LANG==='en'?'EN':'ES';$('langBtn').addEventListener('click',()=>{try{localStorage.setItem('cr_lang',LANG==='en'?'es':'en');}catch(e){}location.reload();});
+// aviso de girar el móvil: solo avisa, no bloquea
+let rotDismissed=false;try{rotDismissed=sessionStorage.getItem('cr_rot')==='1';}catch(e){}
+function checkRotate(){const show=TOUCH&&innerHeight>innerWidth&&!rotDismissed;$('rotate').classList.toggle('hidden',!show);}
+$('rotGo').addEventListener('click',()=>{rotDismissed=true;try{sessionStorage.setItem('cr_rot','1');}catch(e){}checkRotate();});
+addEventListener('resize',checkRotate);addEventListener('orientationchange',()=>setTimeout(checkRotate,200));checkRotate();
 // pase de temporada gratuito: recompensas por nivel
 var PASS=[[2,{t:150}],[3,{w:'camo'}],[4,{t:200}],[5,{p:'dron'}],[6,{t:250}],[8,{o:'negro'}],[10,{t:400}],[12,{w:'carbono'}],[14,{t:500}],[16,{o:'camo'}],[18,{t:600}],[20,{o:'cromo'}],[23,{t:800}],[25,{p:'perro'}],[30,{g:100}]];
 function rewName(r){return r.t?r.t+' Tuercas':r.g?r.g+' Chips':r.w?'Armas: '+WSKINS[r.w].name:r.o?'Traje: '+OUTFITS[r.o].name:r.p?'Mascota: '+PETS[r.p].name:'';}
@@ -2435,7 +2586,7 @@ function lobbyStep(dt){if(!LOBBY.r)return;LOBBY.t+=dt;
   addEventListener('pointermove',e=>{if(!LOBBY.drag)return;LOBBY.rot+=(e.clientX-px)*0.012;px=e.clientX;});addEventListener('pointerup',()=>{LOBBY.drag=false;});}
 
 // ---------- flujo
-function newMatch(net){document.body.classList.add('playing');
+function newMatch(net){document.body.classList.add('playing');cgGameplay(true);cgInvite(null);
   if(!net){NET.on=false;}
   const R0=RNG;if(net)RNG=mulberry32(net.seed);
   try{
@@ -2459,7 +2610,7 @@ function newMatch(net){document.body.classList.add('playing');
   updateCamera(0,true);hud();drawMini();toast('Elige dónde saltar',1600);
 }
 function showEnd(){
-  if(state==='end'||state==='menu')return;document.body.classList.remove('playing');state='end';aimLine.visible=false;unlock();input.fireHeld=false;closeMap();
+  if(state==='end'||state==='menu')return;document.body.classList.remove('playing');cgGameplay(false);if(player&&player.place===1)cgHappy();state='end';aimLine.visible=false;unlock();input.fireHeld=false;closeMap();
   $('hud').classList.add('hidden');$('touch').classList.add('hidden');$('jumpBtn').classList.add('hidden');
   const win=player.place===1;$('end').classList.toggle('win',win);
   $('endTitle').textContent=win?'¡VICTORIA REAL!':player.place<=3?'¡CASI LO TIENES!':'FUERA DE COMBATE';
@@ -2477,14 +2628,14 @@ function showEnd(){
       c.style.animationDuration=(2+Math.random()*2.5)+'s';c.style.animationDelay=(Math.random()*0.8)+'s';document.body.appendChild(c);setTimeout(()=>c.remove(),5200);}}}
   $('end').classList.remove('hidden');
 }
-function toMenu(){document.body.classList.remove('playing');state='menu';showPanel('home');buildLobbyChar();unlock();closeMap();scene.fog.near=150;scene.fog.far=420;camera.fov=58;camera.updateProjectionMatrix();$('end').classList.add('hidden');$('hud').classList.add('hidden');$('touch').classList.add('hidden');$('menu').classList.remove('hidden');}
+function toMenu(){document.body.classList.remove('playing');cgGameplay(false);state='menu';showPanel('home');buildLobbyChar();unlock();closeMap();scene.fog.near=150;scene.fog.far=420;camera.fov=58;camera.updateProjectionMatrix();$('end').classList.add('hidden');$('hud').classList.add('hidden');$('touch').classList.add('hidden');$('menu').classList.remove('hidden');}
 $('ctrlHint').textContent=TOUCH?'Juega en horizontal. Acrobacias: pulsa Saltar en el aire para un doble salto con voltereta; junto a una pared, salto de pared; corriendo, Agachar para deslizarte (y salta durante el deslizamiento para salir disparado); empuja contra un borde en el aire para trepar. Pulgar izquierdo: joystick, Arma y Correr. Pulgar derecho: Saltar, Disparar, Rodar, Agachar (mantén para tumbarte), Recargar, Mira y Habilidad.'
   :'WASD moverte, ratón apuntar, clic disparar, clic derecho mira, Espacio saltar (otra vez en el aire: doble salto con voltereta; junto a una pared: salto de pared), C mientras corres: deslizarte (y Espacio para salir disparado), empujar contra un borde en el aire: trepar, Shift voltereta, Z cuerpo a tierra, X correr, R recargar, 1/2/3 armas, Q habilidad, E coger/reanimar, F disparo auto, G apuntado auto, V cámara, M mapa.';
 function goFull(){if(!TOUCH)return;const d=document.documentElement;try{const r=(d.requestFullscreen||d.webkitRequestFullscreen||function(){}).call(d);if(r&&r.catch)r.catch(()=>{});}catch(e){}}
 function fadeTo(fn){const f=$('fade');f.classList.add('on');setTimeout(()=>{fn();setTimeout(()=>f.classList.remove('on'),80);},360);}
 $('playBtn').addEventListener('click',()=>{goFull();audInit();sfxUi('pad');fadeTo(()=>newMatch());});
-$('againBtn').addEventListener('click',()=>{if(NET.ws&&NET.code){NET.on=false;openLobby();return;}goFull();newMatch();});
-$('changeBtn').addEventListener('click',()=>{if(NET.ws){NET.inLobby=false;try{NET.ws.close();}catch(e){}NET.ws=null;NET.code=null;NET.on=false;}toMenu();});
+$('againBtn').addEventListener('click',()=>cgAd('midgame',()=>{if(NET.ws&&NET.code){NET.on=false;openLobby();return;}goFull();newMatch();}));
+$('changeBtn').addEventListener('click',()=>cgAd('midgame',()=>{if(NET.ws){NET.inLobby=false;try{NET.ws.close();}catch(e){}NET.ws=null;NET.code=null;NET.on=false;}toMenu();}));
 {const S=$('settings'),mv=$('musVol'),sv=$('sfxVol'),se=$('sensVol'),
   upd=()=>{mv.value=Math.round(AUD.musVol*100);sv.value=Math.round(AUD.sfxVol*100);se.value=Math.round(SENS*100);$('musVal').textContent=mv.value+'%';$('sfxVal').textContent=sv.value+'%';$('sensVal').textContent=se.value+'%';};
   const open=()=>{audInit();unlock();upd();S.classList.remove('hidden');},close=()=>S.classList.add('hidden');
@@ -2527,14 +2678,14 @@ function adaptRes(dt){PERF.t+=dt;PERF.n++;if(PERF.t<2.5)return;const fps=PERF.n/
   if(pr!==PERF.pr){PERF.pr=pr;renderer.setPixelRatio(pr);renderer.setSize(innerWidth,innerHeight,false);if(composer){composer.setPixelRatio(pr);composer.setSize(innerWidth,innerHeight);}}}
 function frame(now){requestAnimationFrame(frame);const dt=Math.min(0.05,Math.max(0,(now-last)/1000));last=now;musUpdate();if(document.visibilityState==='visible')adaptRes(dt);step(dt);GRASS_U.time.value=time;if(state==='menu'&&!$('menu').classList.contains('hidden')){lobbyStep(dt);renderer.render(LOBBY.scene,LOBBY.cam);return;}if(composer){if(gradePass)gradePass.uniforms.uTime.value=time;composer.render();}else renderer.render(scene,camera);}
 addEventListener('resize',resize);
-setupPost();loadCharModel();zoneStart();buildLobbyChar();showPanel('home');
+cgLoad();setupPost();loadCharModel();zoneStart();buildLobbyChar();showPanel('home');
 {const TIPS=['Consejo: en dúo y trío puedes reanimar a tus compañeros derribados.','Consejo: los trampolines te suben al tejado de las naves.','Consejo: agáchate o túmbate para que el francotirador no se mueva.','Consejo: el cañón hace daño en área aunque falles por poco.','Consejo: recoge el chip de reinicio para traer de vuelta a un compañero.'];
   $('spTip').textContent=pick(TIPS);let pr=0,fontsOk=false,t0=performance.now();if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>fontsOk=true);else fontsOk=true;
   const tick=()=>{const el=(performance.now()-t0)/1000,modelOk=!!CHAR_MODEL.gltf||!REAL||LQ,target=Math.min(100,(fontsOk?25:10)+(modelOk?65:Math.min(55,el*9))+(el>0.8?10:0));
     pr+=(target-pr)*0.12;$('spFill').style.width=pr+'%';
-    if((modelOk&&fontsOk&&el>1.2)||el>14){$('spFill').style.width='100%';$('spTxt').textContent='Listo';$('spGo').classList.remove('hidden');return;}
+    if((modelOk&&fontsOk&&el>1.2)||el>14){$('spFill').style.width='100%';$('spTxt').textContent='Listo';$('spGo').classList.remove('hidden');splashDone=true;if(CG.ready)try{CG.sdk.game.loadingStop();}catch(e){}return;}
     $('spTxt').textContent=!modelOk?'Montando robots…':'Cargando el desguace…';requestAnimationFrame(tick);};tick();
-  const go=()=>{audInit();sfxUi('pad');$('splash').classList.add('out');setTimeout(()=>$('splash').remove(),700);};$('spGo').addEventListener('click',go);}resize();applyCamUI();applyAutoUI();requestAnimationFrame(frame);
+  const go=()=>{audInit();sfxUi('pad');$('splash').classList.add('out');setTimeout(()=>$('splash').remove(),700);if(CG.inviteRoom){const c=CG.inviteRoom;CG.inviteRoom=null;openLobby();$('codeIn').value=c;setTimeout(()=>$('joinBtn').click(),300);}};$('spGo').addEventListener('click',go);}resize();applyCamUI();applyAutoUI();requestAnimationFrame(frame);startI18n();
 window.__CR={step,newMatch,get state(){return state;},get player(){return player;},get ents(){return ents;},get zone(){return zone;},get buildings(){return buildings;},mouse,input,toggleCam,settings,NET,TUNE,CHAR_MODEL,JPADS,ROOFS,get obstacles(){return obstacles;},get MUS(){return MUS;},get cam(){return camMode;},
   setChosen:k=>{chosen=k;},counts:()=>({bullets:bullets.length,pickups:pickups.length,crates:crates.filter(c=>c.alive).length,fx:fxs.length,parts:parts.length})};
 })();
