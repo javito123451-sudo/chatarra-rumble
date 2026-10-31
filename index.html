@@ -308,6 +308,12 @@ body.playing #nowPlaying{top:calc(44px + env(safe-area-inset-top))}body.touch.pl
 .ping.enemy i{background:rgba(255,60,50,.9);box-shadow:0 0 14px rgba(255,60,50,.95)}.ping.item i{background:rgba(122,240,255,.85);box-shadow:0 0 12px rgba(122,240,255,.9)}
 .ping.edge{opacity:.85}.ping small{font-size:10px;opacity:.9}
 @keyframes pingIn{from{transform:rotate(45deg) scale(2.2);opacity:0}}
+#slots .slot{display:flex;align-items:center;gap:4px;justify-content:flex-start;height:34px}
+.slot .sn{font-family:'Bungee',sans-serif;font-size:11px;opacity:.8}.slot .am{margin-left:auto;font-weight:800;font-size:11px}
+.wthumb{height:24px;width:auto;max-width:72px;object-fit:contain;filter:drop-shadow(0 1px 2px rgba(0,0,0,.7))}.wthumb.big{height:30px;max-width:84px;vertical-align:middle}
+.wthumb.toastw{height:64px;max-width:180px}
+#pkBtn{display:flex;align-items:center;gap:6px}
+body.touch #slots .slot{height:30px;gap:3px;padding:3px 5px}body.touch .wthumb{height:18px;max-width:46px}body.touch .slot .sn{font-size:9px}
 @media (prefers-reduced-motion:reduce){.card,.btn,#cross{transition:none}}
 </style>
 </head>
@@ -1456,7 +1462,7 @@ function applyPickup(e,p){
   if(p.type==='heal'){if(e.hp>=e.maxHp)return false;e.hp=Math.min(e.maxHp,e.hp+45);if(e===player){toast('+45 vida',700);sfxUi('pick');}}
   else if(p.type==='shield'){if(e.shield>=SHIELD_MAX)return false;e.shield=Math.min(SHIELD_MAX,e.shield+40);if(e===player){toast('+40 escudo',700);sfxUi('pick');}}
   else{removePickup(p);takePickupNet(p);const old=giveWeapon(e,p.key);if(old)netSpawnPickup('weapon',old,p.x+rand(-0.4,0.4),p.z+rand(-0.4,0.4));
-    if(e===player){toast(WEAPONS[p.key].name,900);sfxUi('pick');}sparks(p.x,gH(p.x,p.z)+1,p.z,WEAPONS[p.key].color,8,4);return true;}
+    if(e===player){toastImg(p.key);sfxUi('pick');}sparks(p.x,gH(p.x,p.z)+1,p.z,WEAPONS[p.key].color,8,4);return true;}
   removePickup(p);takePickupNet(p);sparks(p.x,gH(p.x,p.z)+1,p.z,p.type==='heal'?0x7af08a:0x5ab8ff,8,4);return true;
 }
 const wScore=e=>{let m=0;for(const s of e.slots)if(s)m=Math.max(m,WEAPONS[s.key].score);return m;};
@@ -2203,6 +2209,7 @@ const H={alive:$('alive'),kills:$('kills'),zone:$('zoneTxt'),feed:$('feed'),slot
   toast:$('toast'),vig:$('vig'),autoTag:$('autoTag'),cross:$('cross'),rl:$('rl'),rlFill:$('rlFill'),lockHint:$('lockHint'),rlBtn:$('rlBtn'),scBtn:$('scBtn'),mini:$('mini'),scope:$('scope'),jumpBtn:$('jumpBtn'),jumpSub:$('jumpSub')};
 const mctx=H.mini.getContext('2d');
 let toastT=null,vigA=0;
+function toastImg(key){H.toast.innerHTML=wImg(key,'wthumb toastw');H.toast.style.opacity=1;clearTimeout(toastT);toastT=setTimeout(()=>H.toast.style.opacity=0,900);}
 function toast(t,ms){H.toast.textContent=t;H.toast.style.opacity=1;clearTimeout(toastT);toastT=setTimeout(()=>H.toast.style.opacity=0,ms||1100);}
 function feed(t,me){const d=document.createElement('div');d.textContent=t;if(me)d.className='me';H.feed.prepend(d);while(H.feed.children.length>4)H.feed.lastChild.remove();
   setTimeout(()=>{d.style.opacity=0;setTimeout(()=>d.remove(),450);},4200);}
@@ -2214,6 +2221,15 @@ function dmgNum(x,y,z,amt,big){const el=dmgPool.length?dmgPool.pop():dmgAct.shif
 function updateDmg(dt){for(let i=dmgAct.length-1;i>=0;i--){const d=dmgAct[i];d.t+=dt;if(d.t>0.8){d.el.style.opacity=0;dmgPool.push(d.el);dmgAct.splice(i,1);continue;}
   pv.set(d.x,d.y+d.t*1.4,d.z).project(camera);if(pv.z>1){d.el.style.opacity=0;continue;}
   d.el.style.opacity=d.t<0.6?1:(0.8-d.t)/0.2;d.el.style.transform=`translate(${(pv.x*0.5+0.5)*innerWidth}px,${(-pv.y*0.5+0.5)*innerHeight}px) translate(-50%,-50%) scale(${1+Math.max(0,0.15-d.t)*3})`;}}
+const _thumbs={};let _tr=null;
+function weaponThumb(key,skin){skin=skin||'acero';const k=key+'|'+skin;if(_thumbs[k])return _thumbs[k];
+  try{if(!_tr){const c=document.createElement('canvas');c.width=200;c.height=90;_tr={r:new THREE.WebGLRenderer({canvas:c,alpha:true,antialias:true,preserveDrawingBuffer:true}),s:new THREE.Scene(),cam:new THREE.OrthographicCamera(-1,1,0.45,-0.45,0.1,10)};
+      _tr.r.setClearColor(0x000000,0);if(REAL){_tr.r.toneMapping=THREE.ACESFilmicToneMapping;_tr.r.toneMappingExposure=1.5;}
+      _tr.s.add(new THREE.HemisphereLight(0xffffff,0x667788,2.4));_tr.s.add(new THREE.AmbientLight(0xffffff,0.5));const d=new THREE.DirectionalLight(0xffffff,2.2);d.position.set(1,2,3);_tr.s.add(d);if(scene.environment)_tr.s.environment=scene.environment;_tr.cam.position.set(0,0,5);}
+    const m=buildWeapon(key,skin).clone();m.rotation.set(0,Math.PI/2,0);m.updateMatrixWorld(true);const bb=new THREE.Box3().setFromObject(m),sz=bb.getSize(new THREE.Vector3()),ct=bb.getCenter(new THREE.Vector3());
+    const sc=Math.min(1.8/sz.x,0.75/sz.y);m.scale.setScalar(sc);m.position.set(-ct.x*sc,-ct.y*sc,-ct.z*sc);const g=new THREE.Group();g.add(m);g.rotation.x=0.18;_tr.s.add(g);
+    _tr.r.render(_tr.s,_tr.cam);_thumbs[k]=_tr.r.domElement.toDataURL('image/png');_tr.s.remove(g);}catch(e){_thumbs[k]='';}return _thumbs[k];}
+function wImg(key,cls){const src=weaponThumb(key,player&&player.cos&&player.cos.w);return src?'<img class="'+(cls||'wthumb')+'" src="'+src+'" alt="">':'';}
 function slotTxt(s,i){if(!s)return (i+1)+' Vacío';const w=WEAPONS[s.key];return (TOUCH?'':(i+1)+' ')+w.short+' '+(s.reloadT>0?'…':s.ammo+'/'+w.mag);}
 let _sightMode='';
 const COMP_LBL=LANG==='en'?{0:'N',45:'NE',90:'E',135:'SE',180:'S',225:'SW',270:'W',315:'NW'}:{0:'N',45:'NE',90:'E',135:'SE',180:'S',225:'SO',270:'O',315:'NO'};
@@ -2227,7 +2243,10 @@ function hud(){
   if(zone.mode==='wait'){H.zone.textContent='La marea sube en '+fmt(zone.t);H.zone.classList.remove('shrink');}
   else if(zone.mode==='shrink'){H.zone.textContent='¡La marea avanza! '+fmt(zone.t);H.zone.classList.add('shrink');}
   else{H.zone.textContent='Marea total';H.zone.classList.add('shrink');}
-  for(let i=0;i<3;i++){const el=H['slot'+i];el.textContent=slotTxt(player.slots[i],i);el.classList.toggle('on',player.cur===i);el.classList.toggle('empty',!player.slots[i]);}
+  for(let i=0;i<3;i++){const el=H['slot'+i],sl=player.slots[i],key=sl?sl.key+'|'+(sl.reloadT>0?'r':sl.ammo):'-';
+    if(el.dataset.k!==key){el.dataset.k=key;if(!sl)el.innerHTML='<span class="sn">'+(i+1)+'</span>';
+      else{const w=WEAPONS[sl.key];el.innerHTML='<span class="sn">'+(i+1)+'</span>'+wImg(sl.key)+'<span class="am">'+(sl.reloadT>0?'…':TOUCH?sl.ammo:sl.ammo+'/'+w.mag)+'</span>';}}
+    el.classList.toggle('on',player.cur===i);el.classList.toggle('empty',!sl);}
   if(player.downed){H.hpBar.style.width=Math.max(0,player.downHp)+'%';H.hpTxt.textContent='DERRIBADO';H.hpWrap.classList.add('low');}
   else{H.hpBar.style.width=(100*player.hp/player.maxHp)+'%';H.hpTxt.textContent=Math.ceil(player.hp);H.hpWrap.classList.toggle('low',player.hp<player.maxHp*0.3);}
   {const rb=$('revBtn'),show=(!!revTarget||!!rebootTarget)&&player.alive&&!player.downed&&state==='play';rb.classList.toggle('hidden',!show);
@@ -2241,8 +2260,8 @@ function hud(){
   H.crBtn.classList.toggle('on',player.crouch);H.crBtn.classList.toggle('prone',player.prone);
   H.rollBtn.classList.toggle('cd',player.rollCd>0);H.runBtn.classList.toggle('on',input.autoRun);
 
-  if(nearPick&&player.alive){const n=WEAPONS[nearPick.key].name;H.pickHint.textContent='E: cambiar por '+n;H.pickHint.classList.remove('hidden');H.pkBtn.textContent='Coger '+WEAPONS[nearPick.key].short;H.pkBtn.classList.remove('hidden');}
-  else{H.pickHint.classList.add('hidden');H.pkBtn.classList.add('hidden');}
+  if(nearPick&&player.alive){const k=nearPick.key;if(H.pkBtn.dataset.k!==k){H.pkBtn.dataset.k=k;H.pickHint.innerHTML='E: '+(LANG==='en'?'swap':'cambiar')+' '+wImg(k,'wthumb big');H.pkBtn.innerHTML=wImg(k,'wthumb big')+'<span>'+(LANG==='en'?'Pick up':'Coger')+'</span>';}H.pickHint.classList.remove('hidden');H.pkBtn.classList.remove('hidden');}
+  else{H.pickHint.classList.add('hidden');H.pkBtn.classList.add('hidden');H.pkBtn.dataset.k='';}
   const inPlane=player.phase==='plane'&&state==='play';H.jumpBtn.classList.toggle('hidden',!inPlane);
   if(inPlane)H.jumpSub.textContent=(TOUCH?'':'Espacio. ')+'Salto automático en '+fmt(Math.max(0,(plane.len-25)/plane.speed-plane.t));
   const sw=WEAPONS[player.weapon.key];H.scope.style.opacity=_sightMode==='holo'?0.45:0;
