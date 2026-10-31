@@ -396,7 +396,7 @@ body.playing #nowPlaying{top:calc(44px + env(safe-area-inset-top))}body.touch.pl
     <div class="row"><button id="qBtn" class="tg">Gráficos</button><button id="stBtn" class="tg">Estilo</button></div>
     <div class="row"><button id="afMenu" class="tg" aria-pressed="false">Disparo auto</button><button id="aaMenu" class="tg" aria-pressed="false">Apuntado auto</button></div></div>
     <p class="hint" id="ctrlHint" style="text-align:left"></p></div>
-  <div id="playBox"><div class="row modes"><button class="tg mode" data-m="solo">Solo</button><button class="tg mode" data-m="duo">Dúo</button><button class="tg mode" data-m="trio">Trío</button></div>
+  <div id="playBox"><div class="row modes"><button class="tg mode" data-m="solo">Solo</button><button class="tg mode" data-m="duo">Dúo</button><button class="tg mode" data-m="trio">Trío</button><button class="tg mode" data-m="squad">Escuadrón</button></div>
     <button id="playBtn" class="btn big">JUGAR</button><button id="mpBtn" class="glassBtn wide">Multijugador</button></div>
 </div>
 
@@ -411,7 +411,7 @@ body.playing #nowPlaying{top:calc(44px + env(safe-area-inset-top))}body.touch.pl
   </div>
   <div id="roomBox" class="hidden">
     <div class="roomcode">Código de la sala<b id="roomCode"></b></div>
-    <div id="cfgBox" class="row" style="justify-content:center;align-items:center"><button class="tg lmode" data-m="solo">Solo</button><button class="tg lmode" data-m="duo">Dúo</button><button class="tg lmode" data-m="trio">Trío</button><button class="tg" id="ruleBtn">Humanos juntos</button></div>
+    <div id="cfgBox" class="row" style="justify-content:center;align-items:center"><button class="tg lmode" data-m="solo">Solo</button><button class="tg lmode" data-m="duo">Dúo</button><button class="tg lmode" data-m="trio">Trío</button><button class="tg lmode" data-m="squad">Escuadrón</button><button class="tg" id="ruleBtn">Humanos juntos</button></div>
     <p class="hint" id="cfgTxt"></p>
     <ul id="lobbyList"></ul>
     <button id="startBtn" class="btn hidden">Empezar partida</button>
@@ -461,7 +461,7 @@ const EN={
 'Cámara':'Camera','en pie':'alive','elim.':'kills','Objetivo fijado':'Target locked','Haz clic para controlar la cámara con el ratón':'Click to control the camera with the mouse',
 'Disparo auto':'Auto fire','Apuntado auto':'Auto aim','AHORA SUENA':'NOW PLAYING','ELIMINADO':'ELIMINATED','DERRIBADO':'KNOCKED DOWN',
 'Cargando el desguace…':'Loading the scrapyard…','Montando robots…':'Assembling robots…','Listo':'Ready','TOCA PARA JUGAR':'TAP TO PLAY','TEMPORADA 1 · ÓXIDO':'SEASON 1 · RUST','TEMPORADA 1':'SEASON 1','ÓXIDO':'RUST',
-'Inicio':'Home','Pase':'Pass','Taquilla':'Locker','Tienda':'Shop','Opciones':'Options','JUGAR':'PLAY','Multijugador':'Multiplayer','Solo':'Solo','Dúo':'Duo','Trío':'Trio',
+'Inicio':'Home','Pase':'Pass','Taquilla':'Locker','Tienda':'Shop','Opciones':'Options','JUGAR':'PLAY','Multijugador':'Multiplayer','Solo':'Solo','Dúo':'Duo','Trío':'Trio','Escuadrón':'Squad',
 'Elegir personaje':'Choose character','Arrastra para girar a tu robot':'Drag to rotate your robot','Nivel':'Level','Chatarrero':'Scrapper',
 'Personaje':'Character','Vestimenta':'Outfit','Armas':'Weapons','Mascota':'Pet','Ofertas':'Deals','Chips':'Chips','Tuercas':'Nuts',
 'Los pagos con tarjeta llegan pronto. Mientras tanto, gana Tuercas en cada partida y con la recompensa diaria.':'Card payments are coming soon. Meanwhile, earn Nuts every match and with the daily reward.',
@@ -504,13 +504,13 @@ const EN={
 'El acabado de serie.':'The stock finish.','Cañones corroídos que aún disparan.':'Corroded barrels that still fire.','Pintura de camuflaje militar.':'Military camo paint.','Fibra de carbono negra mate.':'Matte black carbon fiber.',
 'Todas tus armas chapadas en oro.':'All your weapons gold-plated.','Armas oscuras con vetas luminosas.':'Dark weapons with glowing veins.',
 'Vas por libre.':'Going solo.','Un dron diminuto que flota sobre tu hombro.':'A tiny drone hovering over your shoulder.','Te sigue a todas partes dando saltitos.':'Follows you everywhere, hopping along.','Vuela en círculos a tu alrededor.':'Flies in circles around you.',
-'Consejo: en dúo y trío puedes reanimar a tus compañeros derribados.':'Tip: in duo and trio you can revive knocked-down teammates.','Consejo: los trampolines te suben al tejado de las naves.':'Tip: jump pads launch you onto warehouse roofs.',
+'Consejo: en dúo, trío y escuadrón puedes reanimar a tus compañeros derribados.':'Tip: in duo, trio and squad you can revive knocked-down teammates.','Consejo: los trampolines te suben al tejado de las naves.':'Tip: jump pads launch you onto warehouse roofs.',
 'Consejo: agáchate o túmbate para que el francotirador no se mueva.':'Tip: crouch or go prone to steady the sniper.','Consejo: el cañón hace daño en área aunque falles por poco.':'Tip: the cannon deals area damage even on near misses.',
 'Consejo: recoge el chip de reinicio para traer de vuelta a un compañero.':'Tip: pick up the reboot chip to bring a teammate back.',
 'Juega en horizontal. Acrobacias: pulsa Saltar en el aire para un doble salto con voltereta; junto a una pared, salto de pared; corriendo, Agachar para deslizarte (y salta durante el deslizamiento para salir disparado); empuja contra un borde en el aire para trepar. Pulgar izquierdo: joystick, Arma y Correr. Pulgar derecho: Saltar, Disparar, Rodar, Agachar (mantén para tumbarte), Recargar, Mira y Habilidad.':'Play in landscape. Acrobatics: press Jump in the air for a flipping double jump; next to a wall, wall jump; while sprinting, Crouch to slide (jump during the slide to launch forward); push against a ledge in the air to climb. Left thumb: joystick, Weapon and Sprint. Right thumb: Jump, Fire, Roll, Crouch (hold to go prone), Reload, Aim and Ability.',
 'WASD moverte, ratón apuntar, clic disparar, clic derecho mira, Espacio saltar (otra vez en el aire: doble salto con voltereta; junto a una pared: salto de pared), C mientras corres: deslizarte (y Espacio para salir disparado), empujar contra un borde en el aire: trepar, Shift voltereta, Z cuerpo a tierra, X correr, R recargar, 1/2/3 armas, Q habilidad, E coger/reanimar, F disparo auto, G apuntado auto, V cámara, M mapa.':'WASD move, mouse aim, click fire, right click aim down sights, Space jump (again in the air: flipping double jump; next to a wall: wall jump), C while sprinting: slide (and Space to launch), push against a ledge in the air: climb, Shift roll, Z prone, X sprint, R reload, 1/2/3 weapons, Q ability, E pick up/revive, F auto fire, G auto aim, V camera, M map.'
 };
-const ENW={Tuercas:'Nuts',Chips:'Chips','sí':'on',no:'off',hombro:'shoulder','aérea':'aerial',Alta:'High',Media:'Medium',Baja:'Low',realista:'realistic',cartoon:'cartoon',Dúo:'Duo',Trío:'Trio',Solo:'Solo'};
+const ENW={Tuercas:'Nuts',Chips:'Chips','sí':'on',no:'off',hombro:'shoulder','aérea':'aerial',Alta:'High',Media:'Medium',Baja:'Low',realista:'realistic',cartoon:'cartoon',Dúo:'Duo',Trío:'Trio',Solo:'Solo','Escuadrón':'Squad'};
 const w=x=>EN[x]||ENW[x]||x;
 const EN_RX=[
  [/^La marea sube en (.+)$/,m=>'Tide rises in '+m[1]],[/^¡La marea avanza! (.+)$/,m=>'The tide is advancing! '+m[1]],
@@ -600,7 +600,7 @@ function cleanCos(c){c=c||{};return {o:OUTFITS[c.o]?c.o:'orig',w:WSKINS[c.w]?c.w
 function botCos(){return {o:RNG()<0.55?'orig':pick(Object.keys(OUTFITS)),w:RNG()<0.5?'acero':pick(Object.keys(WSKINS)),p:RNG()<0.12?pick(['dron','perro','cuervo']):'none'};}
 // modos: solo (todos contra todos), dúo y trío (equipos); en red, los humanos van juntos o enfrentados
 let MODE='solo';try{MODE=localStorage.getItem('cr_mode')||'solo';}catch(e){}
-const MODE_TS={solo:1,duo:2,trio:3},MODE_NAME={solo:'Solo',duo:'Dúo',trio:'Trío'};
+const MODE_TS={solo:1,duo:2,trio:3,squad:4},MODE_NAME={solo:'Solo',duo:'Dúo',trio:'Trío',squad:'Escuadrón'};
 const MATCH={ts:1,mode:'solo'};
 const mates=(a,b)=>MATCH.ts>1&&a&&b&&a.team===b.team;
 const PLASMA={brasa:0xff6a1a,garfio:0xffd21a,chispa:0x32e6ff,bafle:0xff3fd2};
@@ -2714,7 +2714,7 @@ function adaptRes(dt){PERF.t+=dt;PERF.n++;if(PERF.t<2.5)return;const fps=PERF.n/
 function frame(now){requestAnimationFrame(frame);const dt=Math.min(0.05,Math.max(0,(now-last)/1000));last=now;musUpdate();if(document.visibilityState==='visible')adaptRes(dt);step(dt);GRASS_U.time.value=time;if(state==='menu'&&!$('menu').classList.contains('hidden')){lobbyStep(dt);renderer.render(LOBBY.scene,LOBBY.cam);return;}if(composer){if(gradePass)gradePass.uniforms.uTime.value=time;composer.render();}else renderer.render(scene,camera);}
 addEventListener('resize',resize);
 cgLoad();setupPost();loadCharModel();zoneStart();buildLobbyChar();showPanel('home');
-{const TIPS=['Consejo: en dúo y trío puedes reanimar a tus compañeros derribados.','Consejo: los trampolines te suben al tejado de las naves.','Consejo: agáchate o túmbate para que el francotirador no se mueva.','Consejo: el cañón hace daño en área aunque falles por poco.','Consejo: recoge el chip de reinicio para traer de vuelta a un compañero.'];
+{const TIPS=['Consejo: en dúo, trío y escuadrón puedes reanimar a tus compañeros derribados.','Consejo: los trampolines te suben al tejado de las naves.','Consejo: agáchate o túmbate para que el francotirador no se mueva.','Consejo: el cañón hace daño en área aunque falles por poco.','Consejo: recoge el chip de reinicio para traer de vuelta a un compañero.'];
   $('spTip').textContent=pick(TIPS);let pr=0,fontsOk=false,t0=performance.now();if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>fontsOk=true);else fontsOk=true;
   const tick=()=>{const el=(performance.now()-t0)/1000,modelOk=!!CHAR_MODEL.gltf||!REAL||LQ,target=Math.min(100,(fontsOk?25:10)+(modelOk?65:Math.min(55,el*9))+(el>0.8?10:0));
     pr+=(target-pr)*0.12;$('spFill').style.width=pr+'%';
