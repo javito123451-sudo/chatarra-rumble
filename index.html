@@ -2626,7 +2626,7 @@ function audTick(dt){if(!AUD.ctx)return;
 
 
 // ---------- CrazyGames: SDK v3 (carga, partidas, silencio, datos guardados, usuario, invitaciones y anuncios)
-const CG={sdk:null,ready:false,mute:false,env:'',inviteRoom:null};
+const CG={sdk:null,ready:false,mute:false,env:'',inviteRoom:null,instant:false};
 function cgWanted(){try{if(/crazygames/i.test(location.hostname)||/crazygames/i.test(document.referrer))return true;if(new URLSearchParams(location.search).has('cg'))return true;}catch(e){}return false;}
 function cgLoad(){if(window.CrazyGames&&window.CrazyGames.SDK){cgInit();return;}if(!cgWanted())return;const sc=document.createElement('script');sc.src='https://sdk.crazygames.com/crazygames-sdk-v3.js';sc.onload=cgInit;sc.onerror=()=>{};document.head.appendChild(sc);}
 async function cgInit(){try{const S=window.CrazyGames&&window.CrazyGames.SDK;if(!S)return;await S.init();CG.sdk=S;CG.ready=true;CG.env=S.environment||'';
@@ -2636,6 +2636,8 @@ async function cgInit(){try{const S=window.CrazyGames&&window.CrazyGames.SDK;if(
   try{const raw=S.data.getItem('cr_profile');if(raw){const p=JSON.parse(raw);Object.assign(PROFILE,p);PROFILE.owned=Object.assign({'o:orig':1,'w:acero':1,'p:none':1},p.owned||{});chosen=PROFILE.equip.char||chosen;buildLobbyChar();}else S.data.setItem('cr_profile',JSON.stringify(PROFILE));}catch(e){}
   try{const u=await S.user.getUser();let cur='';try{cur=localStorage.getItem('cr_name')||'';}catch(e){}if(u&&u.username&&!cur){try{localStorage.setItem('cr_name',u.username.slice(0,12));}catch(e){}if($('nameIn'))$('nameIn').value=u.username.slice(0,12);}renderTop();}catch(e){}
   try{const room=S.game.getInviteParam&&S.game.getInviteParam('roomId');if(room)CG.inviteRoom=String(room).toUpperCase();}catch(e){}
+  try{CG.instant=!!(S.game.isInstantMultiplayer||S.game.isInstantJoin);}catch(e){}
+  if(splashDone&&(CG.instant||CG.inviteRoom)&&$('splash'))$('spGo').click();
   renderShop();}catch(e){CG.ready=false;}}
 function cgGameplay(on){if(!CG.ready)return;try{on?CG.sdk.game.gameplayStart():CG.sdk.game.gameplayStop();}catch(e){}}
 function cgHappy(){if(CG.ready)try{CG.sdk.game.happytime();}catch(e){}}
@@ -2851,13 +2853,14 @@ cgLoad();setupPost();loadCharModel();zoneStart();buildLobbyChar();showPanel('hom
   $('spTip').textContent=pick(TIPS);let pr=0,fontsOk=false,t0=performance.now();if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>fontsOk=true);else fontsOk=true;
   const tick=()=>{const el=(performance.now()-t0)/1000,modelOk=!!CHAR_MODEL.gltf||!REAL||LQ,target=Math.min(100,(fontsOk?25:10)+(modelOk?65:Math.min(55,el*9))+(el>0.8?10:0));
     pr+=(target-pr)*0.12;$('spFill').style.width=pr+'%';
-    if((modelOk&&fontsOk&&el>1.2)||el>14){$('spFill').style.width='100%';$('spTxt').textContent='Listo';$('spGo').classList.remove('hidden');splashDone=true;if(CG.ready)try{CG.sdk.game.loadingStop();}catch(e){}return;}
+    if((modelOk&&fontsOk&&el>1.2)||el>14){$('spFill').style.width='100%';$('spTxt').textContent='Listo';$('spGo').classList.remove('hidden');splashDone=true;if(CG.ready)try{CG.sdk.game.loadingStop();}catch(e){}if(CG.instant||CG.inviteRoom)setTimeout(()=>$('spGo')&&$('spGo').click(),150);return;}
     $('spTxt').textContent=!modelOk?'Montando robots…':'Cargando el desguace…';requestAnimationFrame(tick);};tick();
   const go=()=>{audInit();sfxUi('pad');$('splash').classList.add('out');setTimeout(()=>$('splash').remove(),700);
     // CrazyGames "Instant Multiplayer": el líder del grupo entra directo a una sala nueva con el botón de invitar visible
     let instant=false;try{instant=!!(CG.ready&&CG.sdk.game.isInstantMultiplayer);}catch(e){}
     if(instant&&!CG.inviteRoom){openLobby();setTimeout(()=>$('createBtn').click(),300);return;}
-    let played=false;try{played=localStorage.getItem('cr_played')==='1';}catch(e){}if(cgWanted()&&!played&&!CG.inviteRoom){goFull();fadeTo(()=>newMatch());return;}
+    let played=false;try{played=localStorage.getItem('cr_played')==='1';}catch(e){}if(cgWanted()&&!played&&!CG.inviteRoom&&!CG.instant){goFull();fadeTo(()=>newMatch());return;}
+    if(CG.instant&&!CG.inviteRoom){CG.instant=false;openLobby();setTimeout(()=>$('createBtn').click(),300);return;}
     if(CG.inviteRoom){const c=CG.inviteRoom;CG.inviteRoom=null;openLobby();$('codeIn').value=c;setTimeout(()=>$('joinBtn').click(),300);}};$('spGo').addEventListener('click',go);}resize();applyCamUI();applyAutoUI();requestAnimationFrame(frame);startI18n();
 window.__CR={step,newMatch,get state(){return state;},get player(){return player;},get ents(){return ents;},get zone(){return zone;},get buildings(){return buildings;},mouse,input,toggleCam,settings,NET,TUNE,CHAR_MODEL,JPADS,ROOFS,get obstacles(){return obstacles;},get MUS(){return MUS;},REBOOTS,get cam(){return camMode;},
   setChosen:k=>{chosen=k;},counts:()=>({bullets:bullets.length,pickups:pickups.length,crates:crates.filter(c=>c.alive).length,fx:fxs.length,parts:parts.length})};
