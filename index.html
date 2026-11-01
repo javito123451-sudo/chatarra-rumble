@@ -459,6 +459,7 @@ body.pad #touch{display:none!important}body.pad #lockHint{display:none!important
   <h3>Ajustes</h3>
   <label class="setRow"><span>Música de fondo</span><b id="musVal"></b><input type="range" id="musVol" min="0" max="100" step="1"></label>
   <label class="setRow"><span>Efectos de sonido</span><b id="sfxVal"></b><input type="range" id="sfxVol" min="0" max="100" step="1"></label>
+  <div class="setRow" id="padTest"><span>Mando</span><b id="padState"></b><small id="padLive" style="grid-column:1/3;opacity:.85;font-weight:600;min-height:16px"></small></div>
   <label class="setRow"><span>Sensibilidad de la cámara</span><b id="sensVal"></b><input type="range" id="sensVol" min="30" max="200" step="5"></label>
   <button class="btn" id="setClose">Cerrar</button>
 </div></div>
@@ -1965,7 +1966,7 @@ function clearPings(){for(const g of PINGS)g.el.remove();PINGS.length=0;}
 const PAD={idx:null,prev:[],active:false,lx:0,ly:0,fire:false,ads:false,bT:0,proned:false,navT:0,focus:null};
 addEventListener('gamepadconnected',e=>{PAD.idx=e.gamepad.index;PAD.active=true;document.body.classList.add('pad');toast(LANG==='en'?'Controller connected':'Mando conectado',1600);});
 addEventListener('gamepaddisconnected',e=>{if(PAD.idx===e.gamepad.index){PAD.idx=null;PAD.active=false;document.body.classList.remove('pad');if(PAD.fire){PAD.fire=false;input.fireHeld=false;}PAD.lx=PAD.ly=0;padFocus(null);}});
-function padRumble(strong,ms){try{const g=navigator.getGamepads()[PAD.idx];if(g&&g.vibrationActuator)g.vibrationActuator.playEffect('dual-rumble',{duration:ms||120,strongMagnitude:strong,weakMagnitude:Math.min(1,strong*0.7)});}catch(e){}}
+function padRumble(strong,ms){try{const g=navigator.getGamepads?navigator.getGamepads()[PAD.idx]:null;if(g&&g.vibrationActuator)g.vibrationActuator.playEffect('dual-rumble',{duration:ms||120,strongMagnitude:strong,weakMagnitude:Math.min(1,strong*0.7)});}catch(e){}}
 function padFocus(el){if(PAD.focus)PAD.focus.classList.remove('padFocus');PAD.focus=el;if(el){el.classList.add('padFocus');el.scrollIntoView&&el.scrollIntoView({block:'nearest',inline:'nearest'});}}
 function padRoot(){for(const id of ['rotate','settings','splash']){const e=$(id);if(e&&!e.classList.contains('hidden')&&e.style.display!=='none'&&!e.classList.contains('out'))return e;}
   for(const id of ['end','quick','lobby','menu']){const e=$(id);if(e&&!e.classList.contains('hidden'))return e;}return null;}
@@ -1981,8 +1982,23 @@ function padBack(){const S=$('settings');if(S&&!S.classList.contains('hidden')){
   if(!$('quick').classList.contains('hidden')){$('qCancel').click();return;}
   if(!$('lobby').classList.contains('hidden')){const b=[...$('lobby').querySelectorAll('button')].find(x=>/Salir|Volver|Leave|Back/i.test(x.textContent)&&x.offsetParent);if(b)b.click();return;}
   if(state==='menu'&&!$('pHome').classList.contains('hidden'))return;if(state==='menu')showPanel('home');}
-function padPoll(dt){const gps=navigator.getGamepads?navigator.getGamepads():[];let g=PAD.idx!=null?gps[PAD.idx]:null;
-  if(!g){for(const x of gps)if(x&&x.connected){g=x;PAD.idx=x.index;break;}}if(!g)return;
+// convierte un mando sin mapeo estándar (p. ej. DualSense en Firefox o algunos Android) al orden estándar
+function padStd(g){if(g.mapping==='standard')return g;const id=(g.id||'').toLowerCase(),ps=/054c|dualsense|dualshock|wireless controller|playstation/.test(id);
+  const bt=i=>g.buttons[i]||{pressed:false,value:0},mk=(p,v)=>({pressed:p,value:v!=null?v:(p?1:0)});
+  if(!ps)return g;
+  const ax=g.axes,hat=ax.length>9?ax[9]:null,hu=hat!=null&&hat>-1.05&&hat<-0.7||hat>0.95&&hat<1.05,hr=hat!=null&&hat>-0.5&&hat<-0.1,hd=hat!=null&&hat>0.1&&hat<0.5,hl=hat!=null&&hat>0.5&&hat<0.9;
+  const b=[bt(1),bt(2),bt(0),bt(3),bt(4),bt(5),mk(bt(6).pressed,(ax[3]!=null?(ax[3]+1)/2:bt(6).value)),mk(bt(7).pressed,(ax[4]!=null?(ax[4]+1)/2:bt(7).value)),bt(8),bt(9),bt(10),bt(11),
+    mk(hu||bt(12).pressed&&g.buttons.length>16),mk(hd),mk(hl),mk(hr),bt(12)];
+  return {id:g.id,index:g.index,connected:g.connected,mapping:'remap',buttons:b,axes:[ax[0]||0,ax[1]||0,ax[2]||0,ax[5]!=null?ax[5]:(ax[3]||0)],vibrationActuator:g.vibrationActuator};}
+function padGet(){const gps=navigator.getGamepads?[...navigator.getGamepads()]:[];let g=PAD.idx!=null?gps[PAD.idx]:null;
+  if(!g||!g.connected){g=null;for(const x of gps)if(x&&x.connected){g=x;PAD.idx=x.index;break;}}return g?padStd(g):null;}
+const PADNAMES=['X / A','Círculo / B','Cuadrado / X','Triángulo / Y','L1','R1','L2','R2','Share','Options','L3','R3','Arriba','Abajo','Izquierda','Derecha','PS'];
+function padTestUpdate(g){const S=$('settings');if(!S||S.classList.contains('hidden'))return;
+  if(!navigator.getGamepads){$('padState').textContent=LANG==='en'?'Not supported by this browser':'Este navegador no admite mandos';$('padLive').textContent='';return;}
+  if(!g){$('padState').textContent=LANG==='en'?'Not detected':'No detectado';$('padLive').textContent=LANG==='en'?'Press any button on the controller…':'Pulsa cualquier botón del mando…';return;}
+  $('padState').textContent='✓ '+(g.mapping==='standard'?'OK':'OK*');const pr=g.buttons.map((b,i)=>b.pressed||b.value>0.45?PADNAMES[i]||('B'+i):null).filter(Boolean);
+  const mv=g.axes.slice(0,4).map(v=>Math.abs(v)>0.3?'●':'·').join('');$('padLive').textContent=(g.id||'').slice(0,40)+' · '+(pr.length?pr.join(', '):(LANG==='en'?'press buttons':'pulsa botones'))+' · '+mv;}
+function padPoll(dt){const g=padGet();padTestUpdate(g);if(!g)return;
   const B=i=>!!(g.buttons[i]&&(g.buttons[i].pressed||g.buttons[i].value>0.45)),D=i=>B(i)&&!PAD.prev[i],U=i=>!B(i)&&PAD.prev[i],dz=v=>Math.abs(v)<0.16?0:(v-Math.sign(v)*0.16)/0.84;
   const ax=g.axes.map(dz);if(!PAD.active&&(g.buttons.some(b=>b.pressed)||ax.some(v=>v))){PAD.active=true;document.body.classList.add('pad');}
   const S=$('settings'),settingsOpen=S&&!S.classList.contains('hidden'),playing=state==='play'&&player&&!settingsOpen;
