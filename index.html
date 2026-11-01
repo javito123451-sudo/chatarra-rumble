@@ -314,6 +314,8 @@ body.playing #nowPlaying{top:calc(44px + env(safe-area-inset-top))}body.touch.pl
 .wthumb.toastw{height:64px;max-width:180px}
 #pkBtn{display:flex;align-items:center;gap:6px}
 body.touch #slots .slot{height:30px;gap:3px;padding:3px 5px}body.touch .wthumb{height:18px;max-width:46px}body.touch .slot .sn{font-size:9px}
+button.padFocus,input.padFocus{outline:3px solid #f2c230!important;outline-offset:3px;box-shadow:0 0 18px rgba(242,194,48,.7)!important}
+body.pad #touch{display:none!important}body.pad #lockHint{display:none!important}
 @media (prefers-reduced-motion:reduce){.card,.btn,#cross{transition:none}}
 </style>
 </head>
@@ -417,7 +419,8 @@ body.touch #slots .slot{height:30px;gap:3px;padding:3px 5px}body.touch .wthumb{h
     <div class="row"><button class="tg" id="musBtn">Música</button><button class="tg" id="sfxBtn">Sonido</button></div>
     <div class="row"><button id="qBtn" class="tg">Gráficos</button><button id="stBtn" class="tg">Estilo</button></div>
     <div class="row"><button id="afMenu" class="tg" aria-pressed="false">Disparo auto</button><button id="aaMenu" class="tg" aria-pressed="false">Apuntado auto</button></div></div>
-    <p class="hint" id="ctrlHint" style="text-align:left"></p></div>
+    <p class="hint" id="ctrlHint" style="text-align:left"></p>
+    <p class="hint" id="padHint" style="text-align:left">Mando (PS4/PS5, Xbox o Bluetooth): stick izquierdo moverte, stick derecho cámara, R2 disparar, L2 apuntar, X saltar (otra vez en el aire: doble salto), Círculo agacharte o deslizarte (mantén: tumbarte), Cuadrado recargar / coger (mantén: reanimar o reiniciar), Triángulo cambiar arma, L1 habilidad, R1 rodar, L3 correr, R3 marcar, cruceta arriba mapa, abajo cámara, Options ajustes. En los menús: cruceta o stick para moverte, X para elegir y Círculo para volver.</p></div>
   <div id="playBox"><div class="row modes"><button class="tg mode" data-m="solo">Solo</button><button class="tg mode" data-m="duo">Dúo</button><button class="tg mode" data-m="trio">Trío</button><button class="tg mode" data-m="squad">Escuadrón</button></div>
     <button id="playBtn" class="btn big">JUGAR</button><div class="row" style="gap:8px"><button id="quickBtn" class="glassBtn">⚡ Partida rápida</button><button id="mpBtn" class="glassBtn">Con amigos</button></div></div>
 </div>
@@ -517,7 +520,8 @@ const EN={
 'Cuando estéis todos, pulsa Empezar partida.':'When everyone is in, press Start match.','Esperando a que el anfitrión empiece la partida…':'Waiting for the host to start the match…',
 'Pasa el código a tus amigos. Puedes empezar ya y jugar contra bots.':'Share the code with your friends. You can start now and play against bots.',
 'No existe ninguna sala con ese código.':'There is no room with that code.','La sala está llena (18 jugadores).':'The room is full.',
-'Tú':'You','Vacío':'Empty','Marcar':'Ping','Partida rápida':'Quick match','⚡ Partida rápida':'⚡ Quick match','Con amigos':'With friends','Conectando…':'Connecting…','Cancelar':'Cancel','¡Empezando!':'Starting!','Esa partida ya ha empezado.':'That match has already started.',
+'Tú':'You','Vacío':'Empty','Mando conectado':'Controller connected',
+'Mando (PS4/PS5, Xbox o Bluetooth): stick izquierdo moverte, stick derecho cámara, R2 disparar, L2 apuntar, X saltar (otra vez en el aire: doble salto), Círculo agacharte o deslizarte (mantén: tumbarte), Cuadrado recargar / coger (mantén: reanimar o reiniciar), Triángulo cambiar arma, L1 habilidad, R1 rodar, L3 correr, R3 marcar, cruceta arriba mapa, abajo cámara, Options ajustes. En los menús: cruceta o stick para moverte, X para elegir y Círculo para volver.':'Controller (PS4/PS5, Xbox or Bluetooth): left stick move, right stick camera, R2 fire, L2 aim, Cross/A jump (again in the air: double jump), Circle/B crouch or slide (hold: prone), Square/X reload / pick up (hold: revive or reboot), Triangle/Y swap weapon, L1 ability, R1 roll, L3 sprint, R3 ping, D-pad up map, down camera, Options settings. In menus: D-pad or stick to move, Cross/A to select and Circle/B to go back.','Marcar':'Ping','Partida rápida':'Quick match','⚡ Partida rápida':'⚡ Quick match','Con amigos':'With friends','Conectando…':'Connecting…','Cancelar':'Cancel','¡Empezando!':'Starting!','Esa partida ya ha empezado.':'That match has already started.',
 // personajes y habilidades
 'Brasa':'Brasa','Garfio':'Garfio','Chispa':'Chispa','Bafle':'Bafle','Escudo térmico':'Heat shield','Gancho':'Hook','Turbo':'Turbo','Onda de graves':'Bass wave',
 'Soldadora con careta: se pone al rojo y recibe un 75% menos de daño durante 3 s.':'Welder with a mask: glows red hot and takes 75% less damage for 3 s.',
@@ -1528,7 +1532,7 @@ function tryFire(e,dx,dy,dz){
   if(e===player&&camMode==='shoulder'){const kk=w.kick*(e.ads&&w.adsMul!=null?0.45:1);camPitch=clamp(camPitch-kk,PITCH_MIN,PITCH_MAX);camYaw+=rand(-kk,kk)*0.35;}
   if(e.weapon.ammo<=0)startReload(e);
 }
-function shootBullets(e,dx,dy,dz,ghost){const w=WEAPONS[e.weapon.key];sfxShot(e);
+function shootBullets(e,dx,dy,dz,ghost){const w=WEAPONS[e.weapon.key];sfxShot(e);if(e===player&&PAD.active)padRumble(w.key==='canon'||w.key==='escopeta'?0.55:0.18,w.key==='riel'?140:50);
   const base=Math.atan2(dx,dz),pit=Math.atan2(dy,Math.hypot(dx,dz)),sp=curSpread(e);
   for(let i=0;i<w.pellets;i++){let a,p;
     if(w.pellets>1){a=base+(i/(w.pellets-1)-0.5)*sp+rand(-0.04,0.04);p=pit+rand(-0.07,0.07);}
@@ -1956,6 +1960,53 @@ function updatePings(dt){const W=innerWidth,H=innerHeight;for(let i=PINGS.length
   g.el.classList.toggle('edge',edge);g.el.style.transform='translate('+sx.toFixed(0)+'px,'+sy.toFixed(0)+'px) translate(-50%,-100%)';g.el.style.opacity=g.t<1?g.t:'';
   const d=player?Math.round(Math.hypot(g.x-player.x,g.z-player.z)):0;g.el.querySelector('small').textContent=d+' m'+(g.who?' · '+g.who:'');}}
 function clearPings(){for(const g of PINGS)g.el.remove();PINGS.length=0;}
+
+// ---------- mando (PlayStation 4/5, Xbox o cualquier mando Bluetooth con mapeo estándar del navegador)
+const PAD={idx:null,prev:[],active:false,lx:0,ly:0,fire:false,ads:false,bT:0,proned:false,navT:0,focus:null};
+addEventListener('gamepadconnected',e=>{PAD.idx=e.gamepad.index;PAD.active=true;document.body.classList.add('pad');toast(LANG==='en'?'Controller connected':'Mando conectado',1600);});
+addEventListener('gamepaddisconnected',e=>{if(PAD.idx===e.gamepad.index){PAD.idx=null;PAD.active=false;document.body.classList.remove('pad');if(PAD.fire){PAD.fire=false;input.fireHeld=false;}PAD.lx=PAD.ly=0;padFocus(null);}});
+function padRumble(strong,ms){try{const g=navigator.getGamepads()[PAD.idx];if(g&&g.vibrationActuator)g.vibrationActuator.playEffect('dual-rumble',{duration:ms||120,strongMagnitude:strong,weakMagnitude:Math.min(1,strong*0.7)});}catch(e){}}
+function padFocus(el){if(PAD.focus)PAD.focus.classList.remove('padFocus');PAD.focus=el;if(el){el.classList.add('padFocus');el.scrollIntoView&&el.scrollIntoView({block:'nearest',inline:'nearest'});}}
+function padRoot(){for(const id of ['rotate','settings','splash']){const e=$(id);if(e&&!e.classList.contains('hidden')&&e.style.display!=='none'&&!e.classList.contains('out'))return e;}
+  for(const id of ['end','quick','lobby','menu']){const e=$(id);if(e&&!e.classList.contains('hidden'))return e;}return null;}
+function padItems(root){return [...root.querySelectorAll('button,input')].filter(b=>!b.disabled&&b.offsetParent!==null&&b.getBoundingClientRect().width>0);}
+function padMove(dx,dy){const root=padRoot();if(!root)return;const its=padItems(root);if(!its.length)return;
+  if(!PAD.focus||!its.includes(PAD.focus)){padFocus(its.find(b=>b.id==='playBtn'||b.id==='spGo'||b.id==='againBtn'||b.id==='rotGo')||its[0]);return;}
+  const a=PAD.focus.getBoundingClientRect(),ax=a.left+a.width/2,ay=a.top+a.height/2;let best=null,bs=1e9;
+  for(const b of its){if(b===PAD.focus)continue;const r=b.getBoundingClientRect(),bx=r.left+r.width/2,by=r.top+r.height/2,vx=bx-ax,vy=by-ay,along=vx*dx+vy*dy;if(along<=4)continue;
+    const across=Math.abs(vx*dy-vy*dx),sc=along+across*2.2;if(sc<bs){bs=sc;best=b;}}
+  if(best)padFocus(best);}
+function padBack(){const S=$('settings');if(S&&!S.classList.contains('hidden')){$('setClose').click();return;}
+  if(mapOpen){closeMap();return;}
+  if(!$('quick').classList.contains('hidden')){$('qCancel').click();return;}
+  if(!$('lobby').classList.contains('hidden')){const b=[...$('lobby').querySelectorAll('button')].find(x=>/Salir|Volver|Leave|Back/i.test(x.textContent)&&x.offsetParent);if(b)b.click();return;}
+  if(state==='menu'&&!$('pHome').classList.contains('hidden'))return;if(state==='menu')showPanel('home');}
+function padPoll(dt){const gps=navigator.getGamepads?navigator.getGamepads():[];let g=PAD.idx!=null?gps[PAD.idx]:null;
+  if(!g){for(const x of gps)if(x&&x.connected){g=x;PAD.idx=x.index;break;}}if(!g)return;
+  const B=i=>!!(g.buttons[i]&&(g.buttons[i].pressed||g.buttons[i].value>0.45)),D=i=>B(i)&&!PAD.prev[i],U=i=>!B(i)&&PAD.prev[i],dz=v=>Math.abs(v)<0.16?0:(v-Math.sign(v)*0.16)/0.84;
+  const ax=g.axes.map(dz);if(!PAD.active&&(g.buttons.some(b=>b.pressed)||ax.some(v=>v))){PAD.active=true;document.body.classList.add('pad');}
+  const S=$('settings'),settingsOpen=S&&!S.classList.contains('hidden'),playing=state==='play'&&player&&!settingsOpen;
+  if(playing){padFocus(null);
+    PAD.lx=ax[0]||0;PAD.ly=ax[1]||0;
+    const rx=ax[2]||0,ry=ax[3]||0;if((rx||ry)&&camMode==='shoulder')lookDelta(rx*Math.abs(rx)*1100*dt,ry*Math.abs(ry)*800*dt);
+    if(B(7)!==PAD.fire){PAD.fire=B(7);input.fireHeld=PAD.fire;}
+    if(B(6)!==PAD.ads){PAD.ads=B(6);input.adsToggle=PAD.ads;}
+    if(D(0)){if(player.phase==='plane')input.jump=true;else input.hop=true;}
+    if(D(1)){PAD.bT=0;PAD.proned=false;}if(B(1)){PAD.bT+=dt;if(PAD.bT>0.45&&!PAD.proned){PAD.proned=true;input.prone=true;}}if(U(1)&&!PAD.proned)input.crouch=true;
+    if(D(2)){if(nearPick)input.pickup=true;else if(!revTarget&&!rebootTarget)input.reload=true;}input.reviveHold=B(2)&&(!!revTarget||!!rebootTarget);
+    if(D(3)||D(15))input.sw=-1;if(D(14)){const p=player;for(let k=p.slots.length-1;k>=1;k--){const j=(p.cur+k)%p.slots.length;if(p.slots[j]){input.sw=j;break;}}}
+    if(D(4))input.ability=true;if(D(5))input.roll=true;if(D(10))input.autoRun=!input.autoRun;if(D(11))doPing(player);
+    if(D(12)||D(8)){mapOpen?closeMap():openMap();}if(D(13))toggleCam();if(D(9))$('setBtn').click();
+  }else{PAD.lx=PAD.ly=0;if(PAD.fire){PAD.fire=false;input.fireHeld=false;}
+    PAD.navT-=dt;const nx=(B(15)?1:B(14)?-1:0)||(Math.abs(ax[0])>0.5?Math.sign(ax[0]):0),ny=(B(13)?1:B(12)?-1:0)||(Math.abs(ax[1])>0.5?Math.sign(ax[1]):0);
+    if((nx||ny)&&PAD.navT<=0){padMove(nx,ny);PAD.navT=0.2;}if(!nx&&!ny)PAD.navT=0;
+    if(D(0)){if(!PAD.focus||!padRoot()||!padRoot().contains(PAD.focus))padMove(0,0);else{const f=PAD.focus;if(f.tagName==='INPUT'&&f.type!=='range')f.focus();else f.click();}}
+    if(PAD.focus&&PAD.focus.type==='range'&&nx){PAD.focus.value=+PAD.focus.value+nx*5;PAD.focus.dispatchEvent(new Event('input'));}
+    if(D(1))padBack();if(D(9)&&state==='menu')$('setMenuBtn').click();
+    if(state==='menu'&&typeof LOBBY!=='undefined'&&Math.abs(ax[2])>0)LOBBY.rot+=ax[2]*dt*2.5;
+    if(state==='menu'&&D(4))cycleChar(-1);if(state==='menu'&&D(5))cycleChar(1);
+    if(mapOpen&&(D(12)||D(8)))closeMap();}
+  PAD.prev=g.buttons.map((_,i)=>B(i));}
 function playerControl(dt){
   const p=player,sh=camMode==='shoulder';
   if(p.phase==='plane'){if(input.jump||input.hop){input.jump=input.hop=false;jump(p);camYaw=Math.atan2(plane.dx,plane.dz);}aimLine.visible=false;return;}
@@ -1963,6 +2014,7 @@ function playerControl(dt){
   let ix=0,iz=0;
   if(keys.KeyW||keys.ArrowUp)iz+=1;if(keys.KeyS||keys.ArrowDown)iz-=1;if(keys.KeyA||keys.ArrowLeft)ix-=1;if(keys.KeyD||keys.ArrowRight)ix+=1;
   if(sticks.L.id!==null){ix+=sticks.L.x;iz-=sticks.L.y;}
+  if(PAD.lx||PAD.ly){ix+=PAD.lx;iz-=PAD.ly;}
   if(input.autoRun){if(iz<-0.6||p.phase!=='ground'&&p.phase!=='fall'){input.autoRun=false;}else if(Math.hypot(ix,iz)<0.3){iz=1;}}
   const ml=Math.hypot(ix,iz);if(ml>1){ix/=ml;iz/=ml;}if(ml<0.12){ix=iz=0;}
   let mx,mz;
@@ -2213,7 +2265,7 @@ function toastImg(key){H.toast.innerHTML=wImg(key,'wthumb toastw');H.toast.style
 function toast(t,ms){H.toast.textContent=t;H.toast.style.opacity=1;clearTimeout(toastT);toastT=setTimeout(()=>H.toast.style.opacity=0,ms||1100);}
 function feed(t,me){const d=document.createElement('div');d.textContent=t;if(me)d.className='me';H.feed.prepend(d);while(H.feed.children.length>4)H.feed.lastChild.remove();
   setTimeout(()=>{d.style.opacity=0;setTimeout(()=>d.remove(),450);},4200);}
-function hurt(a){vigA=Math.max(vigA,a);sfxUi('hurt');AUD.inten=Math.min(1,AUD.inten+0.35);camShake=Math.max(camShake,0.12);}
+function hurt(a){vigA=Math.max(vigA,a);if(PAD.active)padRumble(Math.min(1,0.3+a),160);sfxUi('hurt');AUD.inten=Math.min(1,AUD.inten+0.35);camShake=Math.max(camShake,0.12);}
 let hitT=null;function hitMark(head){sfxUi(head?'head':'hit');AUD.inten=Math.min(1,AUD.inten+0.3);const h=$('hitm');h.classList.toggle('hd',!!head);h.classList.add('on');clearTimeout(hitT);hitT=setTimeout(()=>h.classList.remove('on'),head?160:110);}
 const dmgPool=[],dmgAct=[],pv=new THREE.Vector3();
 for(let i=0;i<14;i++){const d=document.createElement('div');d.className='dmg';d.style.opacity=0;$('dmgs').appendChild(d);dmgPool.push(d);}
@@ -2792,7 +2844,7 @@ const PERF={t:0,n:0,max:renderer.getPixelRatio(),pr:renderer.getPixelRatio(),min
 function adaptRes(dt){PERF.t+=dt;PERF.n++;if(PERF.t<2.5)return;const fps=PERF.n/PERF.t;PERF.t=0;PERF.n=0;let pr=PERF.pr;
   if(fps<45&&pr>PERF.min)pr=Math.max(PERF.min,pr-0.15);else if(fps>57&&pr<PERF.max)pr=Math.min(PERF.max,pr+0.1);
   if(pr!==PERF.pr){PERF.pr=pr;renderer.setPixelRatio(pr);renderer.setSize(innerWidth,innerHeight,false);if(composer){composer.setPixelRatio(pr);composer.setSize(innerWidth,innerHeight);}}}
-function frame(now){requestAnimationFrame(frame);const dt=Math.min(0.05,Math.max(0,(now-last)/1000));last=now;musUpdate();if(document.visibilityState==='visible')adaptRes(dt);step(dt);GRASS_U.time.value=time;if(state==='menu'&&!$('menu').classList.contains('hidden')){lobbyStep(dt);renderer.render(LOBBY.scene,LOBBY.cam);return;}if(composer){if(gradePass)gradePass.uniforms.uTime.value=time;composer.render();}else renderer.render(scene,camera);}
+function frame(now){requestAnimationFrame(frame);const dt=Math.min(0.05,Math.max(0,(now-last)/1000));last=now;musUpdate();padPoll(dt);if(document.visibilityState==='visible')adaptRes(dt);step(dt);GRASS_U.time.value=time;if(state==='menu'&&!$('menu').classList.contains('hidden')){lobbyStep(dt);renderer.render(LOBBY.scene,LOBBY.cam);return;}if(composer){if(gradePass)gradePass.uniforms.uTime.value=time;composer.render();}else renderer.render(scene,camera);}
 addEventListener('resize',resize);
 cgLoad();setupPost();loadCharModel();zoneStart();buildLobbyChar();showPanel('home');
 {const TIPS=['Consejo: en dúo, trío y escuadrón puedes reanimar a tus compañeros derribados.','Consejo: los trampolines te suben al tejado de las naves.','Consejo: agáchate o túmbate para que el francotirador no se mueva.','Consejo: el cañón hace daño en área aunque falles por poco.','Consejo: recoge el chip de reinicio para traer de vuelta a un compañero.'];
