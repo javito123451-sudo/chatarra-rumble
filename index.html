@@ -2802,6 +2802,9 @@ cgLoad();setupPost();loadCharModel();zoneStart();buildLobbyChar();showPanel('hom
     if((modelOk&&fontsOk&&el>1.2)||el>14){$('spFill').style.width='100%';$('spTxt').textContent='Listo';$('spGo').classList.remove('hidden');splashDone=true;if(CG.ready)try{CG.sdk.game.loadingStop();}catch(e){}return;}
     $('spTxt').textContent=!modelOk?'Montando robots…':'Cargando el desguace…';requestAnimationFrame(tick);};tick();
   const go=()=>{audInit();sfxUi('pad');$('splash').classList.add('out');setTimeout(()=>$('splash').remove(),700);
+    // CrazyGames "Instant Multiplayer": el líder del grupo entra directo a una sala nueva con el botón de invitar visible
+    let instant=false;try{instant=!!(CG.ready&&CG.sdk.game.isInstantMultiplayer);}catch(e){}
+    if(instant&&!CG.inviteRoom){openLobby();setTimeout(()=>$('createBtn').click(),300);return;}
     let played=false;try{played=localStorage.getItem('cr_played')==='1';}catch(e){}if(cgWanted()&&!played&&!CG.inviteRoom){goFull();fadeTo(()=>newMatch());return;}
     if(CG.inviteRoom){const c=CG.inviteRoom;CG.inviteRoom=null;openLobby();$('codeIn').value=c;setTimeout(()=>$('joinBtn').click(),300);}};$('spGo').addEventListener('click',go);}resize();applyCamUI();applyAutoUI();requestAnimationFrame(frame);startI18n();
 window.__CR={step,newMatch,get state(){return state;},get player(){return player;},get ents(){return ents;},get zone(){return zone;},get buildings(){return buildings;},mouse,input,toggleCam,settings,NET,TUNE,CHAR_MODEL,JPADS,ROOFS,get obstacles(){return obstacles;},get MUS(){return MUS;},REBOOTS,get cam(){return camMode;},
