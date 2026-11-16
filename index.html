@@ -1276,42 +1276,231 @@ function rustMat(paint,opts){const k=paint+'|'+(opts?JSON.stringify(opts):'');if
   return _rustMat[k]=new THREE.MeshStandardMaterial(Object.assign({map:rustTex(paint),metalness:0.55,roughness:0.72},opts||{}));}
 const _glowMat={};function glowMat(c){return _glowMat[c]||(_glowMat[c]=new THREE.MeshStandardMaterial({color:0x111111,emissive:c,emissiveIntensity:1.8,roughness:0.4}));}
 const DARK_METAL=()=>rustMat(0x3a3c40);
-function boneHolder(mdl,name){const b=mdl.getObjectByName('mixamorig'+name);if(!b)return null;mdl.updateMatrixWorld(true);
-  const q=new THREE.Quaternion(),s=new THREE.Vector3(),root=new THREE.Quaternion();b.getWorldQuaternion(q);b.getWorldScale(s);mdl.parent?mdl.parent.getWorldQuaternion(root):root.identity();
-  const h=new THREE.Group();h.quaternion.copy(q.invert().multiply(root));h.scale.setScalar(1/(s.x||1));b.add(h);return h;}
-function P(parent,geo,mat,x,y,z,sx,sy,sz,rx,ry,rz){const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.scale.set(sx,sy,sz);if(rx||ry||rz)m.rotation.set(rx||0,ry||0,rz||0);m.castShadow=true;parent.add(m);return m;}
 function outfitBodyMat(ck,oid){const O=OUTFITS[oid]||OUTFITS.orig,k='ob|'+ck+'|'+oid;if(_rustMat[k])return _rustMat[k];let m;
   if(O.chrome)m=new THREE.MeshStandardMaterial({color:0xd9dde2,metalness:0.96,roughness:0.16,map:rustTex(0xffffff,'light')});
   else if(O.gold)m=new THREE.MeshStandardMaterial({color:0xd8ad4a,metalness:0.93,roughness:0.3,map:rustTex(0xffffff,'light')});
   else if(O.neon)m=new THREE.MeshStandardMaterial({map:rustTex(O.paint,'light'),metalness:0.6,roughness:0.5,emissive:PLASMA[ck]||0xffaa33,emissiveIntensity:0.08});
   else m=new THREE.MeshStandardMaterial({map:rustTex(O.paint!=null?O.paint:(ROBOT_PAINT[ck]||0x888888),O.camo?'camo':''),metalness:0.55,roughness:0.72});
   return _rustMat[k]=m;}
-function dressRobot(mdl,ck,oid){
-  const O=OUTFITS[oid]||OUTFITS.orig,paint=O.paint!=null?O.paint:(ROBOT_PAINT[ck]||0x888888),body=outfitBodyMat(ck,oid),dark=O.chrome||O.gold?body:DARK_METAL(),eye=glowMat(PLASMA[ck]||0xffaa33),box=new THREE.BoxGeometry(1,1,1),cyl=new THREE.CylinderGeometry(1,1,1,12),sph=new THREE.SphereGeometry(1,14,10),cone=new THREE.ConeGeometry(1,1,12),tor=new THREE.TorusGeometry(1,0.25,8,18);
-  mdl.traverse(o=>{if(!o.isMesh)return;if(/visor/i.test(o.name)){o.material=eye;}else{const m=o.material.clone(),B=body;m.map=B.map;m.color.copy(B.color);m.metalness=B.metalness;m.roughness=B.roughness;m.emissive.copy(B.emissive);m.emissiveIntensity=B.emissiveIntensity;o.material=m;}});
-  const head=boneHolder(mdl,'Head'),chest=boneHolder(mdl,'Spine2'),kL=boneHolder(mdl,'LeftLeg'),kR=boneHolder(mdl,'RightLeg'),aL=boneHolder(mdl,'LeftForeArm'),aR=boneHolder(mdl,'RightForeArm'),sL=boneHolder(mdl,'LeftArm'),sR=boneHolder(mdl,'RightArm');
-  // piezas comunes: rodilleras, hombreras y tubos en antebrazos
-  for(const k of [kL,kR])if(k){P(k,sph,dark,0,0.02,0.07,0.075,0.075,0.06);}
-  for(const [s,sg] of [[sL,1],[sR,-1]])if(s){P(s,box,body,0,0.04,0,0.17,0.07,0.17);P(s,cyl,dark,0,0.09,0,0.03,0.04,0.03);}
-  for(const a of [aL,aR])if(a){P(a,cyl,dark,0.04,0.12,-0.03,0.022,0.24,0.022);P(a,box,body,0,0.14,0.02,0.09,0.16,0.09);}
-  if(chest){P(chest,box,body,0,0.02,0.12,0.3,0.24,0.05);for(const x of [-0.1,0.1])P(chest,sph,dark,x,0.1,0.15,0.018,0.018,0.018);}
-  if(ck==='brasa'){ // soldadora: careta de soldar con rendija brillante y bombonas a la espalda
-    if(head){P(head,box,body,0,0.12,0.03,0.3,0.32,0.3);P(head,box,dark,0,0.14,0.185,0.26,0.1,0.02);P(head,box,eye,0,0.14,0.197,0.2,0.025,0.01);P(head,cyl,dark,0,0.3,0,0.04,0.04,0.04);}
-    if(chest){for(const x of [-0.09,0.09])P(chest,cyl,rustMat(0x9a2e22),x,0.0,-0.2,0.075,0.42,0.075);P(chest,tor,dark,0,0.18,-0.2,0.08,0.08,0.08,Math.PI/2);P(chest,cyl,dark,0.17,0.2,-0.18,0.03,0.3,0.03);}
-  }else if(ck==='garfio'){ // gruista: casco de obra, ojo-cámara y brazo de grúa con gancho
-    if(head){P(head,sph,body,0,0.12,0.02,0.17,0.16,0.17);P(head,new THREE.SphereGeometry(1,14,8,0,Math.PI*2,0,Math.PI/2),rustMat(0xf0c020),0,0.2,0.01,0.21,0.13,0.21);P(head,cyl,rustMat(0xf0c020),0,0.2,0.01,0.24,0.012,0.24);
-      P(head,cyl,dark,0,0.11,0.17,0.05,0.06,0.05,Math.PI/2);P(head,cyl,eye,0,0.11,0.2,0.035,0.01,0.035,Math.PI/2);}
-    if(chest){P(chest,box,dark,0.12,0.25,-0.2,0.06,0.55,0.06,0,0,-0.25);P(chest,box,rustMat(0xf0c020),0.22,0.5,-0.2,0.32,0.06,0.06);P(chest,cyl,dark,0.36,0.38,-0.2,0.006,0.25,0.006);
-      P(chest,tor,dark,0.36,0.24,-0.2,0.045,0.045,0.045,0,Math.PI/2);}
-  }else if(ck==='chispa'){ // mensajera: cabeza redonda con antena y ojo cian, propulsores a la espalda
-    if(head){P(head,sph,body,0,0.12,0.02,0.15,0.15,0.15);P(head,tor,dark,0,0.12,0.15,0.06,0.06,0.04);P(head,sph,eye,0,0.12,0.16,0.045,0.045,0.02);
-      P(head,cyl,dark,0.07,0.33,0,0.008,0.2,0.008);P(head,sph,eye,0.07,0.44,0,0.022,0.022,0.022);}
-    if(chest){for(const x of [-0.1,0.1]){P(chest,cyl,body,x,0.02,-0.2,0.06,0.26,0.06);P(chest,cone,dark,x,-0.15,-0.2,0.07,0.1,0.07,Math.PI);P(chest,cone,eye,x,-0.21,-0.2,0.045,0.06,0.045,Math.PI);}}
-  }else{ // bafle: cabeza-altavoz con auriculares y altavoz grande a la espalda
-    if(head){P(head,box,body,0,0.13,0.02,0.32,0.32,0.28);P(head,cyl,dark,0,0.13,0.165,0.11,0.02,0.11,Math.PI/2);P(head,cyl,rustMat(0x222222),0,0.13,0.175,0.06,0.02,0.06,Math.PI/2);
-      P(head,box,eye,0,0.26,0.165,0.18,0.02,0.01);P(head,tor,dark,0,0.2,0,0.19,0.19,0.2,0,Math.PI/2);for(const x of [-0.18,0.18])P(head,cyl,dark,x,0.13,0,0.07,0.05,0.07,0,0,Math.PI/2);}
-    if(chest){P(chest,box,body,0,0.02,-0.23,0.38,0.42,0.22);for(const y of [0.1,-0.08])P(chest,cyl,dark,0,y,-0.35,0.09,0.02,0.09,Math.PI/2);}
+// ---------- modelos 3D propios de cada personaje: un cuerpo de robot distinto por personaje (piezas rígidas pesadas a cada hueso del esqueleto animado, fundidas en una sola malla)
+const ROBOT_ACC={brasa:0x9a2e22,garfio:0xe9e4d8,chispa:0xe86a24,bafle:0xe8e2d6};
+const _robotGeo={};
+function rbox(w,h,d,r){const g=new THREE.BoxGeometry(w,h,d,3,3,3),p=g.attributes.position,n=g.attributes.normal,H=[w/2,h/2,d/2];r=Math.min(r,H[0],H[1],H[2]);
+  for(let i=0;i<p.count;i++){const v=[p.getX(i),p.getY(i),p.getZ(i)],c=[0,0,0],dd=[0,0,0];let L=0;
+    for(let k=0;k<3;k++){const a=Math.abs(v[k]),s=v[k]<0?-1:1,inner=H[k]-r;if(a>H[k]*0.9){c[k]=s*inner;dd[k]=s*r;}else if(a>H[k]*0.2)c[k]=s*inner;L+=dd[k]*dd[k];}
+    L=Math.sqrt(L);if(L>1e-6){p.setXYZ(i,c[0]+dd[0]/L*r,c[1]+dd[1]/L*r,c[2]+dd[2]/L*r);n.setXYZ(i,dd[0]/L,dd[1]/L,dd[2]/L);}else p.setXYZ(i,c[0],c[1],c[2]);}
+  return g;}
+function robotGeo(ck,mdl,src){
+  if(_robotGeo[ck])return _robotGeo[ck];
+  const root=mdl.parent||mdl;root.updateMatrixWorld(true);
+  const sk=src.skeleton,bufs=[0,1,2,3].map(()=>({p:[],n:[],u:[],s:[],i:[]})),bmc={};
+  const _v=new THREE.Vector3(),_n=new THREE.Vector3(),_nm=new THREE.Matrix3(),UP=new THREE.Vector3(0,1,0);
+  const bInfo=name=>{if(bmc[name])return bmc[name];const bi=sk.bones.findIndex(b=>b.name==='mixamorig'+name);if(bi<0)return bmc[name]={bi:-1};
+    const m=new THREE.Matrix4().copy(src.bindMatrix).invert().multiply(new THREE.Matrix4().copy(sk.boneInverses[bi]).invert()).multiply(new THREE.Matrix4().copy(sk.bones[bi].matrixWorld).invert()).multiply(root.matrixWorld);
+    return bmc[name]={bi,m,n:new THREE.Matrix3().getNormalMatrix(m)};};
+  const jp=name=>{const b=mdl.getObjectByName('mixamorig'+name),v=new THREE.Vector3();if(b){b.getWorldPosition(v);root.worldToLocal(v);}return [v.x,v.y,v.z];};
+  const put=(bone,mi,geo,mat,mirror)=>{const B=bInfo(bone);if(B.bi<0)return;const buf=bufs[mi],base=buf.p.length/3,P=geo.attributes.position,N=geo.attributes.normal,U=geo.attributes.uv;_nm.getNormalMatrix(mat);
+    for(let i=0;i<P.count;i++){_v.fromBufferAttribute(P,i).applyMatrix4(mat);_n.fromBufferAttribute(N,i).applyMatrix3(_nm).normalize();if(mirror){_v.x=-_v.x;_n.x=-_n.x;}
+      _v.applyMatrix4(B.m);_n.applyMatrix3(B.n).normalize();buf.p.push(_v.x,_v.y,_v.z);buf.n.push(_n.x,_n.y,_n.z);buf.u.push(U?U.getX(i):0,U?U.getY(i):0);buf.s.push(B.bi);}
+    const I=geo.index,cnt=I?I.count:P.count;for(let k=0;k<cnt;k+=3){const a=I?I.getX(k):k,b=I?I.getX(k+1):k+1,c=I?I.getX(k+2):k+2;if(mirror)buf.i.push(base+a,base+c,base+b);else buf.i.push(base+a,base+b,base+c);}
+    geo.dispose();};
+  const TM=(pos,rot,scl)=>new THREE.Matrix4().compose(new THREE.Vector3(pos[0],pos[1],pos[2]),rot&&rot.isQuaternion?rot:new THREE.Quaternion().setFromEuler(new THREE.Euler(rot?rot[0]:0,rot?rot[1]:0,rot?rot[2]:0)),scl?new THREE.Vector3(scl[0],scl[1],scl[2]):new THREE.Vector3(1,1,1));
+  // A: pieza suelta · LR: la misma pieza en los dos lados (espejo) · SG/SGLR: pieza estirada entre dos puntos (eje Y de la pieza)
+  const A=(bone,mi,geo,pos,rot,scl)=>put(bone,mi,geo,TM(pos,rot,scl),false);
+  const LR=(name,mi,mk,pos,rot,scl)=>{const m=TM(pos,rot,scl);put('Left'+name,mi,mk(),m,false);put('Right'+name,mi,mk(),m,true);};
+  const segM=(a,b)=>{const d=new THREE.Vector3(b[0]-a[0],b[1]-a[1],b[2]-a[2]),L=d.length();return TM([(a[0]+b[0])/2,(a[1]+b[1])/2,(a[2]+b[2])/2],new THREE.Quaternion().setFromUnitVectors(UP,d.normalize()),[1,L,1]);};
+  const SG=(bone,mi,geo,a,b)=>put(bone,mi,geo,segM(a,b),false);
+  const SGLR=(name,mi,mk,a,b)=>{const m=segM(a,b);put('Left'+name,mi,mk(),m,false);put('Right'+name,mi,mk(),m,true);};
+  const cyl=(rt,rb,h,s)=>new THREE.CylinderGeometry(rt,rb==null?rt:rb,h||1,s||12);
+  const sph=(r,s)=>new THREE.SphereGeometry(r,s||12,s?Math.max(6,s-4):8);
+  const dome=(r,s)=>new THREE.SphereGeometry(r,s||14,7,0,Math.PI*2,0,Math.PI/2);
+  const cone=(r,h,s)=>new THREE.ConeGeometry(r,h,s||12);
+  const tor=(r,t,arc)=>new THREE.TorusGeometry(r,t,7,18,arc||Math.PI*2);
+  const lathe=(pts,s)=>new THREE.LatheGeometry(pts.map(q=>new THREE.Vector2(q[0],q[1])),s||14);
+  const tube=(pts,r,s)=>new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts.map(q=>new THREE.Vector3(q[0],q[1],q[2]))),s||14,r,6,false);
+  const X=Math.PI/2; // giro de un cuarto de vuelta
+  const hip=jp('Hips'),ch=jp('Spine2'),nk=jp('Neck'),sh=jp('LeftArm'),el=jp('LeftForeArm'),wr=jp('LeftHand'),th=jp('LeftUpLeg'),kn=jp('LeftLeg'),an=jp('LeftFoot'),toe=jp('LeftToeBase');
+  const hc=[0,nk[1]+0.17,nk[2]+0.035]; // centro de la cabeza
+  const BODY=0,DARK=1,ACC=2,GLOW=3;
+  // chasis común con proporciones propias de cada personaje
+  const frame=o=>{
+    A('Hips',BODY,rbox(o.pw,0.17,o.td*0.85,0.05),[0,hip[1]-0.04,0]);
+    A('Hips',DARK,rbox(o.pw+0.03,0.05,o.td*0.85+0.03,0.02),[0,hip[1]+0.055,0]);
+    A('Spine',DARK,lathe([[0,0],[0.1,0],[0.115,0.03],[0.095,0.06],[0.115,0.09],[0.095,0.12],[0.115,0.15],[0.1,0.18],[0,0.18]]),[0,hip[1]+0.07,-0.01],null,[o.tw/0.42,1,o.td/0.24]);
+    A('Spine2',BODY,rbox(o.tw,o.th,o.td,0.07),[0,ch[1]+0.01,ch[2]+0.03]);
+    A('Spine2',BODY,rbox(o.tw*0.76,0.13,o.td*0.9,0.05),[0,ch[1]-o.th/2,ch[2]+0.03]);
+    A('Neck',DARK,cyl(0.055,0.075,0.11),[0,nk[1]+0.02,nk[2]+0.015]);
+    LR('Arm',DARK,()=>sph(o.ar*1.45),sh);
+    SGLR('Arm',BODY,()=>cyl(o.ar*0.9,o.ar),[sh[0]+0.05,sh[1],sh[2]],[el[0]-0.03,el[1],el[2]]);
+    LR('ForeArm',DARK,()=>sph(o.ar*1.1),el);
+    SGLR('ForeArm',BODY,()=>cyl(o.fr,o.fr*0.82),[el[0]+0.035,el[1],el[2]],[wr[0]-0.02,wr[1],wr[2]]);
+    LR('ForeArm',DARK,()=>cyl(o.fr*1.12,o.fr*1.12,0.028),[wr[0]-0.035,wr[1],wr[2]],[0,0,X]);
+    LR('Hand',DARK,()=>rbox(0.1,0.07,0.09,0.025),[wr[0]+0.05,wr[1],wr[2]]);
+    LR('Hand',DARK,()=>rbox(0.07,0.03,0.1,0.012),[wr[0]+0.12,wr[1]-0.012,wr[2]]);
+    LR('UpLeg',DARK,()=>sph(o.tr*1.08),th);
+    SGLR('UpLeg',BODY,()=>cyl(o.tr,o.tr*0.8),[kn[0],kn[1]+0.05,kn[2]],[th[0],th[1]-0.03,th[2]]);
+    LR('Leg',DARK,()=>sph(o.tr*0.85),kn);
+    LR('Leg',BODY,()=>rbox(o.tr*1.5,0.12,0.05,0.022),[kn[0],kn[1]+0.005,kn[2]+o.tr*0.78]);
+    SGLR('Leg',BODY,()=>cyl(o.sr*0.8,o.sr),[an[0],an[1]+0.02,an[2]],[kn[0],kn[1]-0.05,kn[2]]);
+    LR('Leg',BODY,()=>rbox(o.sr*1.75,0.26,o.sr*1.2,0.03),[an[0],an[1]+0.2,an[2]+o.sr*0.55]);
+    LR('UpLeg',BODY,()=>rbox(o.tr*1.7,0.24,o.tr*1.1,0.03),[th[0]+0.005,(th[1]+kn[1])/2+0.03,th[2]+o.tr*0.6]);
+    LR('Foot',DARK,()=>sph(o.sr*0.7),an);
+    LR('Foot',BODY,()=>rbox(o.fw,o.fh,0.2,0.03),[an[0]+0.008,o.fh/2+0.004,an[2]+0.03]);
+    LR('ToeBase',BODY,()=>rbox(o.fw,o.fh*0.8,0.13,0.03),[toe[0]-0.004,o.fh*0.4+0.004,toe[2]+0.03]);
+  };
+  if(ck==='chispa'){ // mensajera: ligera, casco redondo con antena, bandolera y botas cohete
+    frame({tw:0.34,th:0.3,td:0.2,pw:0.27,ar:0.042,fr:0.048,tr:0.078,sr:0.072,fw:0.115,fh:0.12});
+    A('Head',BODY,sph(0.155,16),hc,null,[1,0.96,1]);
+    A('Head',ACC,dome(0.162,16),[hc[0],hc[1]+0.035,hc[2]-0.005],[-0.12,0,0],[1,0.8,1.02]); // gorra
+    A('Head',ACC,rbox(0.2,0.018,0.13,0.008),[0,hc[1]+0.055,hc[2]+0.17],[0.2,0,0]); // visera
+    A('Head',DARK,cyl(0.082,0.09,0.05,16),[0,hc[1]-0.012,hc[2]+0.13],[X,0,0]);
+    A('Head',GLOW,sph(0.058,14),[0,hc[1]-0.012,hc[2]+0.148],null,[1,1,0.45]);
+    LR('Head',DARK,()=>cyl(0.045,0.05,0.04),[0.152,hc[1]-0.01,hc[2]],[0,0,X]);
+    SG('Head',DARK,cyl(0.007,0.01,1,6),[0.1,hc[1]+0.1,hc[2]-0.05],[0.13,hc[1]+0.36,hc[2]-0.1]);
+    A('Head',GLOW,sph(0.026),[0.13,hc[1]+0.37,hc[2]-0.1]);
+    // bandolera y bolsa de mensajera
+    A('Spine2',ACC,rbox(0.055,0.5,0.02,0.008),[0,ch[1]-0.02,ch[2]+0.136],[0,0,0.72]);
+    A('Spine2',ACC,rbox(0.055,0.5,0.02,0.008),[0,ch[1]-0.02,ch[2]-0.078],[0,0,-0.72]);
+    A('Spine2',GLOW,rbox(0.05,0.035,0.012,0.005),[0.03,ch[1]+0.01,ch[2]+0.148],[0,0,0.72]);
+    A('Hips',ACC,rbox(0.1,0.19,0.22,0.035),[0.2,hip[1]-0.03,0.0]);
+    A('Hips',DARK,rbox(0.108,0.07,0.228,0.025),[0.2,hip[1]+0.035,0.0]);
+    A('Hips',GLOW,rbox(0.012,0.03,0.04,0.004),[0.256,hip[1]-0.01,0.0]);
+    // propulsores a la espalda
+    for(const s of [-1,1]){A('Spine2',BODY,cyl(0.05,0.055,0.24),[s*0.085,ch[1]+0.0,ch[2]-0.13]);A('Spine2',DARK,dome(0.05),[s*0.085,ch[1]+0.12,ch[2]-0.13]);
+      A('Spine2',DARK,cyl(0.045,0.068,0.07),[s*0.085,ch[1]-0.15,ch[2]-0.13]);A('Spine2',GLOW,cyl(0.05,0.05,0.012),[s*0.085,ch[1]-0.186,ch[2]-0.13]);}
+    A('Spine2',DARK,rbox(0.1,0.06,0.04,0.012),[0,ch[1]+0.02,ch[2]-0.13]);
+    // pantalla de reparto en el antebrazo
+    A('LeftForeArm',DARK,rbox(0.13,0.02,0.085,0.008),[(el[0]+wr[0])/2,el[1]+0.05,el[2]]);
+    A('LeftForeArm',GLOW,rbox(0.1,0.008,0.06,0.003),[(el[0]+wr[0])/2,el[1]+0.062,el[2]]);
+    // botas cohete: campana, aletas y tobera encendida
+    LR('Leg',ACC,()=>lathe([[0.07,0.05],[0.095,0],[0.115,0],[0.1,0.08],[0.084,0.2],[0.076,0.3]]),[an[0],an[1]-0.02,an[2]-0.005]);
+    LR('Leg',DARK,()=>rbox(0.012,0.2,0.09,0.004),[an[0]+0.098,an[1]+0.1,an[2]-0.04],[0.25,0,0]);
+    LR('Leg',DARK,()=>rbox(0.012,0.2,0.09,0.004),[an[0]-0.098,an[1]+0.1,an[2]-0.04],[0.25,0,0]);
+    LR('Leg',DARK,()=>cyl(0.04,0.058,0.09),[an[0],an[1]+0.07,an[2]-0.1],[-0.35,0,0]);
+    LR('Leg',GLOW,()=>cyl(0.046,0.046,0.012),[an[0],an[1]+0.024,an[2]-0.117],[-0.35,0,0]);
+    LR('ToeBase',ACC,()=>rbox(0.12,0.04,0.08,0.015),[toe[0]-0.004,0.1,toe[2]+0.055]);
+  }else if(ck==='garfio'){ // gruista: ancho, casco de obra, ojo-cámara y pluma de grúa con gancho
+    frame({tw:0.46,th:0.34,td:0.27,pw:0.34,ar:0.058,fr:0.07,tr:0.102,sr:0.096,fw:0.15,fh:0.135});
+    A('Head',BODY,sph(0.145,16),hc,null,[1,0.92,1]);
+    A('Head',DARK,rbox(0.21,0.085,0.19,0.03),[0,hc[1]-0.1,hc[2]+0.02]);
+    A('Head',DARK,cyl(0.062,0.07,0.1,14),[0.02,hc[1]-0.005,hc[2]+0.12],[X,0,0]);
+    A('Head',GLOW,cyl(0.044,0.044,0.012,14),[0.02,hc[1]-0.005,hc[2]+0.172],[X,0,0]);
+    A('Head',DARK,cyl(0.026,0.03,0.06),[-0.085,hc[1]-0.04,hc[2]+0.11],[X,0,0]);
+    A('Head',GLOW,cyl(0.016,0.016,0.008),[-0.085,hc[1]-0.04,hc[2]+0.142],[X,0,0]);
+    A('Head',ACC,dome(0.172,16),[0,hc[1]+0.035,hc[2]],null,[1,0.82,1.05]); // casco de obra
+    A('Head',ACC,cyl(0.2,0.205,0.016,18),[0,hc[1]+0.04,hc[2]+0.02],null,[1,1,1.12]);
+    A('Head',ACC,rbox(0.035,0.03,0.32,0.012),[0,hc[1]+0.172,hc[2]]);
+    A('Head',DARK,rbox(0.06,0.03,0.012,0.005),[0,hc[1]+0.09,hc[2]+0.176]);
+    // peto con franjas de aviso y cinturón de herramientas
+    A('Spine2',DARK,rbox(0.32,0.13,0.02,0.008),[0,ch[1]+0.04,ch[2]+0.168]);
+    for(const x of [-0.1,-0.03,0.04,0.11])A('Spine2',ACC,rbox(0.03,0.15,0.012,0.004),[x,ch[1]+0.04,ch[2]+0.178],[0,0,-0.6]);
+    A('Spine2',GLOW,sph(0.02),[0.16,ch[1]+0.13,ch[2]+0.16]);
+    for(const x of [-0.14,0.02,0.15])A('Hips',DARK,rbox(0.085,0.1,0.05,0.015),[x,hip[1]+0.0,0.135]);
+    A('Hips',ACC,rbox(0.03,0.13,0.03,0.008),[-0.19,hip[1]-0.03,0.05]);
+    // grúa a la espalda: contrapeso, torno, mástil, pluma, cable y gancho
+    A('Spine2',DARK,rbox(0.34,0.3,0.1,0.03),[0,ch[1]+0.0,ch[2]-0.15]);
+    A('Spine2',ACC,cyl(0.062,0.062,0.17,14),[-0.06,ch[1]-0.05,ch[2]-0.23],[0,0,X]);
+    LR('Spine2',DARK,()=>cyl(0.078,0.078,0.014,14),[0.03,ch[1]-0.05,ch[2]-0.23],[0,0,X]);
+    A('Spine2',DARK,cyl(0.078,0.078,0.014,14),[-0.15,ch[1]-0.05,ch[2]-0.23],[0,0,X]);
+    const mt=[0.27,ch[1]+0.52,ch[2]-0.2],tip=[0.27,ch[1]+0.62,ch[2]+0.27];
+    SG('Spine2',BODY,rbox(0.07,1,0.07,0.012),[0.2,ch[1]-0.08,ch[2]-0.2],mt);
+    SG('Spine2',BODY,rbox(0.06,1,0.06,0.012),[mt[0],mt[1]-0.02,mt[2]-0.06],tip);
+    SG('Spine2',DARK,cyl(0.012,0.012,1,6),[0.21,ch[1]+0.12,ch[2]-0.2],[0.27,ch[1]+0.58,ch[2]+0.05]);
+    A('Spine2',DARK,cyl(0.05,0.05,0.09,12),mt,[0,0,X]);
+    A('Spine2',DARK,cyl(0.04,0.04,0.05,12),tip,[0,0,X]);
+    SG('Spine2',DARK,cyl(0.005,0.005,1,5),[tip[0],tip[1]-0.03,tip[2]+0.02],[tip[0],tip[1]-0.24,tip[2]+0.02]);
+    A('Spine2',ACC,rbox(0.045,0.06,0.045,0.012),[tip[0],tip[1]-0.26,tip[2]+0.02]);
+    A('Spine2',DARK,tube([[0,-0.29,0],[0,-0.34,0],[0.035,-0.385,0],[0.075,-0.36,0],[0.08,-0.32,0]],0.012,12),[tip[0],tip[1],tip[2]+0.02],[0,X,0]);
+    A('Spine2',GLOW,sph(0.022),[mt[0],mt[1]+0.07,mt[2]]);
+    // hombreras de chapa, guantelete con torno y punteras de acero
+    LR('Arm',BODY,()=>rbox(0.17,0.06,0.19,0.025),[sh[0]+0.03,sh[1]+0.075,sh[2]]);
+    LR('ForeArm',DARK,()=>rbox(0.15,0.035,0.11,0.012),[(el[0]+wr[0])/2+0.02,el[1]+0.07,el[2]]);
+    LR('ToeBase',ACC,()=>rbox(0.156,0.09,0.085,0.03),[toe[0]-0.004,0.06,toe[2]+0.058]);
+    LR('Leg',DARK,()=>cyl(0.104,0.104,0.035,14),[an[0],an[1]+0.06,an[2]]);
+  }else if(ck==='brasa'){ // soldadora: la más corpulenta, careta de soldar, bombonas, manguera y soplete
+    frame({tw:0.5,th:0.36,td:0.29,pw:0.36,ar:0.062,fr:0.072,tr:0.108,sr:0.102,fw:0.155,fh:0.14});
+    A('Head',DARK,sph(0.125,14),[hc[0],hc[1],hc[2]-0.01]);
+    A('Head',BODY,dome(0.14,16),[0,hc[1]+0.01,hc[2]-0.01],null,[1,0.95,1.05]);
+    A('Head',BODY,rbox(0.25,0.24,0.07,0.03),[0,hc[1]+0.0,hc[2]+0.105],[-0.06,0,0]); // careta
+    A('Head',BODY,rbox(0.2,0.12,0.07,0.03),[0,hc[1]-0.15,hc[2]+0.085],[0.3,0,0]);
+    LR('Head',BODY,()=>rbox(0.035,0.22,0.17,0.014),[0.125,hc[1]-0.01,hc[2]+0.03]);
+    A('Head',DARK,rbox(0.19,0.075,0.02,0.008),[0,hc[1]+0.03,hc[2]+0.14]);
+    A('Head',GLOW,rbox(0.15,0.034,0.012,0.004),[0,hc[1]+0.03,hc[2]+0.15]);
+    LR('Head',DARK,()=>cyl(0.035,0.035,0.035,10),[0.15,hc[1]+0.07,hc[2]+0.0],[0,0,X]);
+    for(const [x,y] of [[-0.1,0.1],[0.1,0.1],[-0.1,-0.09],[0.1,-0.09]])A('Head',DARK,sph(0.012,6),[x,hc[1]+y,hc[2]+0.143]);
+    for(const y of [-0.13,-0.165])A('Head',DARK,rbox(0.1,0.012,0.012,0.004),[0,hc[1]+y,hc[2]+0.132-(y+0.13)*-0.3]);
+    // peto pesado con rejillas al rojo y mandil
+    A('Spine2',BODY,rbox(0.38,0.24,0.05,0.02),[0,ch[1]+0.03,ch[2]+0.17]);
+    for(const [x,y] of [[-0.16,0.12],[0.16,0.12],[-0.16,-0.06],[0.16,-0.06]])A('Spine2',DARK,sph(0.016,6),[x,ch[1]+y,ch[2]+0.197]);
+    for(const y of [0.07,0.03,-0.01])A('Spine2',GLOW,rbox(0.13,0.016,0.01,0.004),[0,ch[1]+y,ch[2]+0.197]);
+    A('Hips',ACC,rbox(0.3,0.26,0.03,0.012),[0,hip[1]-0.03,0.135]);
+    A('Hips',DARK,rbox(0.33,0.04,0.04,0.012),[0,hip[1]+0.09,0.135]);
+    // bombonas con válvula, cinchas y manguera hasta el soplete del brazo izquierdo
+    for(const s of [-1,1]){A('Spine2',ACC,lathe([[0,0],[0.07,0],[0.08,0.03],[0.08,0.36],[0.06,0.43],[0.028,0.46],[0.028,0.5],[0,0.5]]),[s*0.095,ch[1]-0.27,ch[2]-0.21]);
+      A('Spine2',DARK,cyl(0.022,0.022,0.07,8),[s*0.095,ch[1]+0.255,ch[2]-0.21],[0,0,X]);}
+    for(const y of [0.08,-0.14])A('Spine2',DARK,rbox(0.37,0.035,0.2,0.03),[0,ch[1]+y,ch[2]-0.2]);
+    A('Spine2',DARK,tube([[0.095,ch[1]+0.27,ch[2]-0.21],[0.16,ch[1]+0.33,ch[2]-0.14],[0.24,ch[1]+0.25,ch[2]-0.02],[0.27,ch[1]+0.13,ch[2]+0.03],[sh[0]+0.03,sh[1]+0.02,sh[2]+0.07]],0.018,18),[0,0,0]);
+    SG('LeftForeArm',DARK,cyl(0.026,0.03,1,10),[el[0]+0.0,el[1]+0.085,el[2]],[wr[0]+0.05,wr[1]+0.085,wr[2]]);
+    A('LeftForeArm',ACC,cyl(0.04,0.04,0.05,10),[el[0]+0.06,el[1]+0.085,el[2]],[0,0,X]);
+    SG('LeftForeArm',DARK,cyl(0.012,0.022,1,8),[wr[0]+0.05,wr[1]+0.085,wr[2]],[wr[0]+0.13,wr[1]+0.085,wr[2]]);
+    A('LeftForeArm',GLOW,sph(0.02),[wr[0]+0.14,wr[1]+0.085,wr[2]]);
+    A('RightForeArm',BODY,rbox(0.17,0.04,0.13,0.014),[-(el[0]+wr[0])/2,el[1]+0.07,el[2]]);
+    // hombreras atornilladas, rodilleras y botas de trabajo
+    LR('Arm',BODY,()=>rbox(0.2,0.09,0.22,0.035),[sh[0]+0.03,sh[1]+0.08,sh[2]]);
+    LR('Arm',DARK,()=>cyl(0.022,0.022,0.03,8),[sh[0]+0.03,sh[1]+0.13,sh[2]]);
+    LR('Leg',DARK,()=>rbox(0.19,0.07,0.07,0.02),[kn[0],kn[1]+0.0,kn[2]+0.1]);
+    LR('Leg',DARK,()=>cyl(0.11,0.11,0.04,14),[an[0],an[1]+0.07,an[2]]);
+    LR('ToeBase',DARK,()=>rbox(0.162,0.035,0.14,0.012),[toe[0]-0.004,0.02,toe[2]+0.03]);
+    LR('Foot',DARK,()=>rbox(0.162,0.035,0.21,0.012),[an[0]+0.008,0.02,an[2]+0.03]);
+  }else{ // bafle: DJ con cabeza de radiocasete, auriculares, ecualizador y bafle a la espalda
+    frame({tw:0.4,th:0.32,td:0.23,pw:0.3,ar:0.05,fr:0.056,tr:0.088,sr:0.082,fw:0.13,fh:0.115});
+    A('Head',BODY,rbox(0.33,0.25,0.21,0.045),[0,hc[1],hc[2]]);
+    for(const s of [-1,1]){A('Head',DARK,cyl(0.066,0.066,0.02,16),[s*0.083,hc[1]+0.03,hc[2]+0.105],[X,0,0]);
+      A('Head',DARK,lathe([[0.058,0.012],[0.04,0.004],[0.02,0],[0,0]],14),[s*0.083,hc[1]+0.03,hc[2]+0.105],[X,0,0]);
+      A('Head',GLOW,sph(0.022),[s*0.083,hc[1]+0.03,hc[2]+0.112],null,[1,1,0.6]);}
+    [0.022,0.04,0.03,0.045,0.026].forEach((h,k)=>A('Head',GLOW,rbox(0.022,h,0.01,0.004),[(k-2)*0.034,hc[1]-0.085+h/2-0.015,hc[2]+0.108]));
+    A('Head',DARK,rbox(0.2,0.065,0.012,0.006),[0,hc[1]-0.078,hc[2]+0.102]);
+    A('Head',ACC,tor(0.195,0.02,Math.PI),[0,hc[1]+0.02,hc[2]]); // auriculares
+    LR('Head',ACC,()=>cyl(0.085,0.075,0.055,16),[0.19,hc[1]+0.0,hc[2]],[0,0,-X]);
+    LR('Head',DARK,()=>tor(0.07,0.02),[0.168,hc[1]+0.0,hc[2]],[0,X,0]);
+    LR('Head',GLOW,()=>cyl(0.03,0.03,0.01,12),[0.22,hc[1]+0.0,hc[2]],[0,0,X]);
+    SG('Head',DARK,cyl(0.006,0.008,1,6),[-0.13,hc[1]+0.12,hc[2]-0.06],[-0.17,hc[1]+0.3,hc[2]-0.09]);
+    // ecualizador en el pecho y disco en la cadera
+    A('Spine2',DARK,rbox(0.26,0.13,0.02,0.008),[0,ch[1]+0.04,ch[2]+0.148]);
+    [0.04,0.08,0.055,0.1,0.07,0.035].forEach((h,k)=>A('Spine2',GLOW,rbox(0.026,h,0.01,0.004),[(k-2.5)*0.04,ch[1]-0.015+h/2,ch[2]+0.158]));
+    A('Hips',DARK,cyl(0.1,0.1,0.014,20),[0.165,hip[1]-0.03,0.02],[0,0,X]);
+    A('Hips',ACC,cyl(0.036,0.036,0.018,12),[0.167,hip[1]-0.03,0.02],[0,0,X]);
+    // bafle a la espalda: caja, altavoz grave con aro de luz, agudo y asas
+    const bz=ch[2]-0.25;A('Spine2',DARK,rbox(0.44,0.54,0.22,0.035),[0,ch[1]-0.02,bz]);
+    A('Spine2',BODY,rbox(0.46,0.05,0.24,0.02),[0,ch[1]+0.24,bz]);A('Spine2',BODY,rbox(0.46,0.05,0.24,0.02),[0,ch[1]-0.28,bz]);
+    A('Spine2',ACC,lathe([[0.15,0.02],[0.13,0.012],[0.06,-0.03],[0.045,-0.012],[0,-0.004]],18),[0,ch[1]-0.1,bz-0.115],[-X,0,0]);
+    A('Spine2',GLOW,tor(0.155,0.01),[0,ch[1]-0.1,bz-0.118]);
+    A('Spine2',ACC,lathe([[0.065,0.014],[0.05,0.006],[0.02,-0.012],[0,-0.004]],14),[0,ch[1]+0.14,bz-0.115],[-X,0,0]);
+    A('Spine2',GLOW,tor(0.07,0.007),[0,ch[1]+0.14,bz-0.116]);
+    LR('Spine2',DARK,()=>tube([[0.225,0.1,0.05],[0.265,0.07,0.05],[0.265,-0.07,0.05],[0.225,-0.1,0.05]],0.012,10),[0,ch[1],bz-0.05]);
+    for(const s of [-1,1])A('Spine2',DARK,rbox(0.05,0.2,0.03,0.01),[s*0.12,ch[1]+0.1,ch[2]-0.11]);
+    // muñequeras, mando de mezclas en el antebrazo y zapatillas de suela gruesa
+    LR('ForeArm',ACC,()=>cyl(0.066,0.066,0.045,12),[wr[0]-0.07,wr[1],wr[2]],[0,0,X]);
+    A('LeftForeArm',DARK,rbox(0.13,0.02,0.08,0.008),[(el[0]+wr[0])/2-0.02,el[1]+0.055,el[2]]);
+    for(const k of [-1,0,1])A('LeftForeArm',GLOW,rbox(0.012,0.012,0.045,0.003),[(el[0]+wr[0])/2-0.02+k*0.035,el[1]+0.068,el[2]+k*0.008]);
+    LR('Foot',ACC,()=>rbox(0.14,0.04,0.215,0.015),[an[0]+0.008,0.022,an[2]+0.03]);
+    LR('ToeBase',ACC,()=>rbox(0.14,0.04,0.145,0.015),[toe[0]-0.004,0.022,toe[2]+0.03]);
+    LR('ToeBase',ACC,()=>rbox(0.11,0.03,0.06,0.012),[toe[0]-0.004,0.098,toe[2]+0.06]);
+    LR('Leg',ACC,()=>cyl(0.09,0.09,0.03,14),[an[0],an[1]+0.06,an[2]]);
   }
+  const g=new THREE.BufferGeometry(),p=[],n=[],u=[],si=[],sw=[],ix=[];let vo=0;
+  bufs.forEach((b,mi)=>{g.addGroup(ix.length,b.i.length,mi);for(const k of b.i)ix.push(k+vo);for(const x of b.p)p.push(x);for(const x of b.n)n.push(x);for(const x of b.u)u.push(x);for(const s of b.s){si.push(s,0,0,0);sw.push(1,0,0,0);}vo+=b.p.length/3;});
+  g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('normal',new THREE.Float32BufferAttribute(n,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(u,2));
+  g.setAttribute('skinIndex',new THREE.Uint16BufferAttribute(si,4));g.setAttribute('skinWeight',new THREE.Float32BufferAttribute(sw,4));g.setIndex(ix);
+  return _robotGeo[ck]=g;}
+function dressRobot(mdl,ck,oid){
+  const O=OUTFITS[oid]||OUTFITS.orig;let src=null;const olds=[];
+  mdl.traverse(o=>{if(o.isSkinnedMesh){olds.push(o);if(!/visor/i.test(o.name)&&!src)src=o;}});if(!src)return;
+  const body=outfitBodyMat(ck,oid).clone(),dark=(O.chrome||O.gold?outfitBodyMat(ck,oid):DARK_METAL()).clone(),acc=rustMat(ROBOT_ACC[ck]||0xcccccc).clone(),glow=glowMat(PLASMA[ck]||0xffaa33).clone();glow.userData.glow=true;
+  for(const m of [body,dark,acc,glow])m.skinning=true;
+  const sm=new THREE.SkinnedMesh(robotGeo(ck,mdl,src),[body,dark,acc,glow]);sm.name='robot_'+ck;sm.position.copy(src.position);sm.quaternion.copy(src.quaternion);sm.scale.copy(src.scale);
+  src.parent.add(sm);sm.bind(src.skeleton,src.bindMatrix);sm.castShadow=true;sm.receiveShadow=true;sm.frustumCulled=false;
+  for(const o of olds)o.parent.remove(o);
 }
 
 function makeModelHuman(ck,isPlayer,cos){cos=cleanCos(cos);
@@ -1319,8 +1508,8 @@ function makeModelHuman(ck,isPlayer,cos){cos=cleanCos(cos);
   const upper=new THREE.Group(),legs=[new THREE.Group(),new THREE.Group()],arms=[new THREE.Group(),new THREE.Group()];g.add(upper);for(const l of legs)g.add(l);for(const a of arms)upper.add(a);
   const mdl=THREE.SkeletonUtils.clone(CHAR_MODEL.gltf.scene);mdl.rotation.y=Math.PI;mdl.scale.setScalar(CHAR_MODEL.scale);g.add(mdl);
   dressRobot(mdl,ck,cos.o);
-  mdl.traverse(o=>{if(!o.isMesh)return;o.frustumCulled=false;const bodyMesh=o.isSkinnedMesh&&!/visor/i.test(o.name);
-    if(isPlayer){o.material=o.material.clone();o.material.transparent=true;all.push(o.material);}else if(bodyMesh)all.push(o.material);if(bodyMesh)flash.push(o.material);});
+  mdl.traverse(o=>{if(!o.isMesh)return;o.frustumCulled=false;
+    for(const m of (Array.isArray(o.material)?o.material:[o.material])){if(isPlayer)m.transparent=true;all.push(m);if(!m.userData.glow)flash.push(m);}});
   const mixer=new THREE.AnimationMixer(mdl),clip=n=>THREE.AnimationClip.findByName(CHAR_MODEL.gltf.animations,n);
   const acts=['Idle','Walk','Run'].map(n=>{const a=mixer.clipAction(clip(n));a.play();a.setEffectiveWeight(n==='Idle'?1:0);return a;});
   const bone=n=>mdl.getObjectByName('mixamorig'+n);
