@@ -654,14 +654,14 @@ const renderer=new THREE.WebGLRenderer({canvas,antialias:!TOUCH&&!LQ,powerPrefer
 renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,HQ?1.75:QUALITY==='medium'?1.5:1));
 renderer.shadowMap.enabled=!LQ;
 renderer.shadowMap.type=REAL&&!LQ?THREE.PCFSoftShadowMap:THREE.PCFShadowMap;
-if(REAL){renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=0.78;}
+if(REAL){renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.08;}
 const scene=new THREE.Scene();
-const SKY=REAL?0x5f676d:0xa9dcf0;scene.background=new THREE.Color(SKY);
+const SKY=REAL?0x9aa6ae:0xa9dcf0;scene.background=new THREE.Color(SKY);
 scene.fog=new THREE.Fog(SKY,150,420);
 const camera=new THREE.PerspectiveCamera(58,1,0.3,CAM_FAR);
-scene.add(new THREE.HemisphereLight(REAL?0x8d9aa6:0xdff4ff,REAL?0x2a2219:0x8a6a40,REAL?0.16:0.5));
+scene.add(new THREE.HemisphereLight(REAL?0xb9cbdc:0xdff4ff,REAL?0x5a4c3a:0x8a6a40,REAL?0.46:0.5));
 const SUN_OFF=REAL?new THREE.Vector3(62,34,30):new THREE.Vector3(38,70,26);
-const sun=new THREE.DirectionalLight(REAL?0xffb57a:0xfff0d0,REAL?1.05:0.68);
+const sun=new THREE.DirectionalLight(REAL?0xffd3a4:0xfff0d0,REAL?1.3:0.68);
 sun.castShadow=!LQ;
 sun.shadow.mapSize.set(HQ?(REAL?4096:2048):1024,HQ?(REAL?4096:2048):1024);if(REAL)sun.shadow.radius=3;
 Object.assign(sun.shadow.camera,{left:-42,right:42,top:42,bottom:-42,near:1,far:160});
@@ -669,7 +669,7 @@ sun.shadow.camera.updateProjectionMatrix();
 sun.shadow.bias=-0.0015;
 scene.add(sun);scene.add(sun.target);
 // cielo real: degradado del horizonte (color de la niebla) al cenit, con el sol y su resplandor; va pegado a la cámara
-if(REAL&&!LQ){const sm=new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,fog:false,uniforms:{hor:{value:new THREE.Color(SKY)},top:{value:new THREE.Color(0x27384f)},glow:{value:new THREE.Color(0xffa860)},sd:{value:SUN_OFF.clone().normalize()}},
+if(REAL&&!LQ){const sm=new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,fog:false,uniforms:{hor:{value:new THREE.Color(SKY)},top:{value:new THREE.Color(0x4a6f9c)},glow:{value:new THREE.Color(0xffa860)},sd:{value:SUN_OFF.clone().normalize()}},
   vertexShader:'varying vec3 vd;void main(){vd=position;vec4 p=projectionMatrix*vec4(mat3(viewMatrix)*position,1.0);gl_Position=p.xyww;}',
   fragmentShader:'uniform vec3 hor;uniform vec3 top;uniform vec3 glow;uniform vec3 sd;varying vec3 vd;void main(){vec3 d=normalize(vd);float h=clamp(d.y,0.0,1.0);vec3 c=mix(hor,top,pow(h,0.45));float s=max(dot(d,sd),0.0);c+=glow*(pow(s,6.0)*0.22+pow(s,48.0)*0.5+smoothstep(0.9993,0.9997,s)*2.5);c=mix(c,hor,smoothstep(0.06,-0.02,d.y));gl_FragColor=vec4(c,1.0);\n#include <tonemapping_fragment>\n#include <encodings_fragment>\n}'});
   const sky=new THREE.Mesh(new THREE.SphereGeometry(1,32,16),sm);sky.frustumCulled=false;sky.renderOrder=-10;scene.add(sky);}
@@ -786,7 +786,7 @@ const sky=(()=>{const g=new THREE.SphereGeometry(600,24,12),P=g.attributes.posit
   for(let i=0;i<P.count;i++){const t=clamp(P.getY(i)/600,0,1);c.copy(hor).lerp(top,Math.pow(t,0.6));col[i*3]=c.r;col[i*3+1]=c.g;col[i*3+2]=c.b;}
   g.setAttribute('color',new THREE.BufferAttribute(col,3));const m=new THREE.Mesh(g,new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.BackSide,fog:false,depthWrite:false}));
   m.renderOrder=-1;m.frustumCulled=false;scene.add(m);return m;})();
-if(REAL){try{const pm=new THREE.PMREMGenerator(renderer),es=new THREE.Scene(),eg=new THREE.SphereGeometry(10,32,16),P=eg.attributes.position,col=new Float32Array(P.count*3),c=new THREE.Color(),top=new THREE.Color(0x2a3442),hor=new THREE.Color(0x9a8a78),gnd=new THREE.Color(0x221c16);
+if(REAL){try{const pm=new THREE.PMREMGenerator(renderer),es=new THREE.Scene(),eg=new THREE.SphereGeometry(10,32,16),P=eg.attributes.position,col=new Float32Array(P.count*3),c=new THREE.Color(),top=new THREE.Color(0x4f6c92),hor=new THREE.Color(0xc2b8aa),gnd=new THREE.Color(0x3a3128);
   for(let i=0;i<P.count;i++){const t=P.getY(i)/10;if(t>=0)c.copy(hor).lerp(top,Math.pow(t,0.5));else c.copy(hor).lerp(gnd,Math.min(1,-t*3));col[i*3]=c.r;col[i*3+1]=c.g;col[i*3+2]=c.b;}
   eg.setAttribute('color',new THREE.BufferAttribute(col,3));es.add(new THREE.Mesh(eg,new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.BackSide})));
   const sunGlow=new THREE.Mesh(new THREE.SphereGeometry(1.2,12,8),new THREE.MeshBasicMaterial({color:0xffc890}));sunGlow.position.copy(SUN_OFF).normalize().multiplyScalar(8);es.add(sunGlow);
