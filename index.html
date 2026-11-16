@@ -1249,7 +1249,7 @@ function makeHuman(ck,isPlayer,cos){
   const stunM=new THREE.MeshBasicMaterial({color:0xf2c230});all.push(stunM);
   const stun=new THREE.Mesh(G.stun,stunM);stun.rotation.x=Math.PI/2;stun.position.y=2.4;stun.visible=false;g.add(stun);
   if(isPlayer){const rm=new THREE.MeshBasicMaterial({color:0xf2c230,transparent:true,opacity:0.8,side:THREE.DoubleSide,depthWrite:false});all.push(rm);
-    const ring=new THREE.Mesh(G.ring,rm);ring.rotation.x=-Math.PI/2;ring.position.y=0.06;ring.scale.setScalar(1.1);g.add(ring);}
+    const ring=new THREE.Mesh(G.ring,rm);ring.rotation.x=-Math.PI/2;ring.position.y=0.06;ring.scale.setScalar(1.1);g.add(ring);g.userData.ring=ring;}
   if(LQ){const bs=new THREE.Mesh(G.flat,AOM);bs.scale.set(1.3,1,1.3);bs.position.y=0.03;bs.renderOrder=1;g.add(bs);}
   const cb=new Batch();A(cb,G.dome,out,0,4,0,2,1.1,2);A(cb,G.cyl8,0xfff6e8,0,4.02,0,2.02,0.12,2.02,0,0,0,false);
   for(const [x,z] of [[-1.4,-1.4],[1.4,-1.4],[-1.4,1.4],[1.4,1.4]])cb.add(G.cyl8,lineMX(x*0.18,1.75,z*0.12,x,4,z,0.02),dark,false);
@@ -1513,7 +1513,9 @@ function makeModelHuman(ck,isPlayer,cos){cos=cleanCos(cos);
   const mixer=new THREE.AnimationMixer(mdl),clip=n=>THREE.AnimationClip.findByName(CHAR_MODEL.gltf.animations,n);
   const acts=['Idle','Walk','Run'].map(n=>{const a=mixer.clipAction(clip(n));a.play();a.setEffectiveWeight(n==='Idle'?1:0);return a;});
   const bone=n=>mdl.getObjectByName('mixamorig'+n);
-  const bones={armR:bone('RightArm'),foreR:bone('RightForeArm'),armL:bone('LeftArm'),foreL:bone('LeftForeArm'),hand:bone('RightHand'),spine:bone('Spine2')};
+  const bones={armR:bone('RightArm'),foreR:bone('RightForeArm'),armL:bone('LeftArm'),foreL:bone('LeftForeArm'),hand:bone('RightHand'),handL:bone('LeftHand'),spine:bone('Spine2'),hips:bone('Hips'),sp0:bone('Spine'),sp1:bone('Spine1'),neck:bone('Neck'),head:bone('Head'),
+    upL:bone('LeftUpLeg'),legL:bone('LeftLeg'),footL:bone('LeftFoot'),upR:bone('RightUpLeg'),legR:bone('RightLeg'),footR:bone('RightFoot')};
+  const pose={list:['hips','sp0','sp1','neck','head','upL','legL','footL','upR','legR','footR'].map(k=>bones[k]).filter(Boolean),q:[],hp:new THREE.Vector3(),on:false,c:0,p:0};for(const b of pose.list)pose.q.push(new THREE.Quaternion());
   const gunMat=MAT({color:0xd9d9d9,roughness:0.45,metalness:0.55});if(isPlayer)gunMat.transparent=true;all.push(gunMat);flash.push(gunMat);
   const gun=new THREE.Group();
   const gunMesh=null;
@@ -1524,11 +1526,11 @@ function makeModelHuman(ck,isPlayer,cos){cos=cleanCos(cos);
   const stunM=new THREE.MeshBasicMaterial({color:0xf2c230});all.push(stunM);
   const stun=new THREE.Mesh(G.stun,stunM);stun.rotation.x=Math.PI/2;stun.position.y=2.4;stun.visible=false;g.add(stun);
   if(isPlayer){const rm=new THREE.MeshBasicMaterial({color:0xf2c230,transparent:true,opacity:0.8,side:THREE.DoubleSide,depthWrite:false});all.push(rm);
-    const ring=new THREE.Mesh(G.ring,rm);ring.rotation.x=-Math.PI/2;ring.position.y=0.06;ring.scale.setScalar(1.1);g.add(ring);}
+    const ring=new THREE.Mesh(G.ring,rm);ring.rotation.x=-Math.PI/2;ring.position.y=0.06;ring.scale.setScalar(1.1);g.add(ring);g.userData.ring=ring;}
   const cb=new Batch();cb.add(G.dome,MX(0,4,0,0,0,0,2,1.1,2),c.color,false);cb.add(G.cyl8,MX(0,4.02,0,0,0,0,2.02,0.12,2.02),0xfff6e8,false);
   for(const [x,z] of [[-1.4,-1.4],[1.4,-1.4],[-1.4,1.4],[1.4,1.4]])cb.add(G.cyl8,lineMX(x*0.18,1.75,z*0.12,x,4,z,0.02),0x2f3138,false);
   const chute=new THREE.Group();chute.add(cb.build(MAT({vertexColors:true}),0.035,true));chute.visible=false;g.add(chute);
-  return {g,upper,legs,arms,flash,all,gunMat,gun,gunMesh,shield,stun,chute,muzzle,mdl,mixer,acts,bones,wt:[1,0,0]};
+  return {g,upper,legs,arms,flash,all,gunMat,gun,gunMesh,shield,stun,chute,muzzle,mdl,mixer,acts,bones,pose,wt:[1,0,0]};
 }
 // pose de apuntar: orienta brazos hacia delante (como sujetando un arma larga) y alinea el arma con la mirada
 const _pa=new THREE.Vector3(),_pb=new THREE.Vector3(),_pd=new THREE.Vector3(),_q1=new THREE.Quaternion(),_q2=new THREE.Quaternion(),_q3=new THREE.Quaternion(),_gq=new THREE.Quaternion();
@@ -1539,6 +1541,31 @@ function poseAim(r,e){const b=r.bones;if(!b.armR||!b.foreR||!b.hand||!b.armL||!b
   const reload=e.weapon&&e.weapon.reloadT>0,D=v=>_pd.set(v[0],v[1]-(reload?0.6:0),v[2]).normalize().applyQuaternion(_gq);
   if(TUNE.aim){pointBone(b.armR,b.foreR,D(TUNE.dUR));pointBone(b.foreR,b.hand,D(TUNE.dFR));const lh=b.armL.parent.getObjectByName('mixamorigLeftHand');
     pointBone(b.armL,b.foreL,D(TUNE.dUL));if(lh)pointBone(b.foreL,lh,D(TUNE.dFL));}
+  b.hand.getWorldQuaternion(_q2);r.gun.quaternion.copy(_q2.invert().multiply(_gq));}
+// posturas reales sobre el esqueleto: agacharse dobla caderas, rodillas y tobillos; cuerpo a tierra tumba al robot boca abajo, con los codos apoyados y el arma al frente
+const _ax=new THREE.Vector3(),_ay=new THREE.Vector3(),_az=new THREE.Vector3(),_hp=new THREE.Vector3(),_YUP=new THREE.Vector3(0,1,0);
+function rotBoneW(bone,ax,ang){if(!bone||!ang)return;_q1.setFromAxisAngle(ax,ang);bone.getWorldQuaternion(_q2);_q2.premultiply(_q1);bone.parent.getWorldQuaternion(_q3);bone.quaternion.copy(_q3.invert().multiply(_q2));}
+const _q4=new THREE.Quaternion(),_q5=new THREE.Quaternion();
+function pointBoneK(bone,child,dir,k){_q4.copy(bone.quaternion);pointBone(bone,child,dir);if(k<1){_q5.copy(bone.quaternion);bone.quaternion.copy(_q4).slerp(_q5,k);bone.updateMatrixWorld(true);}}
+function poseRestore(r){const P=r.pose;if(!P.on)return;for(let i=0;i<P.list.length;i++)P.list[i].quaternion.copy(P.q[i]);if(r.bones.hips)r.bones.hips.position.copy(P.hp);P.on=false;}
+function poseBody(r,e,c,p){const B=r.bones,P=r.pose;if(!B.hips||(c<0.002&&p<0.002))return;
+  for(let i=0;i<P.list.length;i++)P.q[i].copy(P.list[i].quaternion);P.hp.copy(B.hips.position);P.on=true;
+  r.g.updateMatrixWorld(true);r.g.getWorldQuaternion(_gq);_ax.set(1,0,0).applyQuaternion(_gq);_ay.set(0,1,0).applyQuaternion(_gq);_az.set(0,0,1).applyQuaternion(_gq);
+  if(c>0.002){const th=c*1.02,d=0.93*(1-Math.cos(th));
+    B.hips.getWorldPosition(_hp);_hp.addScaledVector(_ay,-d).addScaledVector(_az,-0.1*c);B.hips.parent.worldToLocal(_hp);B.hips.position.copy(_hp);B.hips.updateMatrixWorld(true);
+    rotBoneW(B.sp0,_ax,0.4*c);rotBoneW(B.neck,_ax,-0.32*c);
+    for(const [u,l,f] of [[B.upL,B.legL,B.footL],[B.upR,B.legR,B.footR]]){rotBoneW(u,_ax,-th);rotBoneW(l,_ax,2*th);rotBoneW(f,_ax,-th);}}
+  if(p>0.002){const mv=e.moving&&!e.downed?1:e.moving?0.6:0,w=Math.sin(e.walk*0.55)*mv;
+    rotBoneW(B.sp0,_ay,0.07*w*p);rotBoneW(B.sp1,_ax,-0.26*p);rotBoneW(B.neck,_ax,-0.6*p);rotBoneW(B.head,_ax,-0.58*p);
+    const aL=(0.2+0.5*Math.max(0,w))*p,aR=(0.2+0.5*Math.max(0,-w))*p;
+    const D=(x,y,z)=>_pd.set(x,y,z).normalize().applyQuaternion(_gq),k=Math.min(1,p*1.4);
+    for(const [u,l,f,sg,a] of [[B.upL,B.legL,B.footL,1,aL/p],[B.upR,B.legR,B.footR,-1,aR/p]]){if(!u||!l||!f)continue;const b=a-1.5*(a-0.2);
+      pointBoneK(u,l,D(sg*Math.sin(a),-Math.cos(a),0),k);pointBoneK(l,f,D(sg*Math.sin(b),-Math.cos(b),0.05),k);rotBoneW(f,_ax,1.15*p);}}
+  B.hips.updateMatrixWorld(true);}
+function poseProneArms(r,e){const b=r.bones;if(!b.armR||!b.foreR||!b.hand||!b.armL||!b.foreL)return;
+  _gq.setFromAxisAngle(_YUP,r.g.rotation.y);const w=e.moving?Math.sin(e.walk*0.55)*0.12:0,D=v=>_pd.set(v[0],v[1],v[2]).normalize().applyQuaternion(_gq);
+  pointBone(b.armR,b.foreR,D([-0.38,-0.78,0.5-w]));pointBone(b.foreR,b.hand,D([0.36,0.14,1]));
+  pointBone(b.armL,b.foreL,D([0.36,-0.74,0.58+w]));if(b.handL)pointBone(b.foreL,b.handL,D([-0.3,0.14,1]));
   b.hand.getWorldQuaternion(_q2);r.gun.quaternion.copy(_q2.invert().multiply(_gq));}
 function makeBar(isPlayer){
   const g=new THREE.Group();
@@ -2364,13 +2391,21 @@ function syncVisual(e,dt,pb){
     else if(e.rollT>0){const th=(1-e.rollT/0.42)*Math.PI*2,c=0.6,f=r.g.rotation.y;r.g.rotation.x=th;r.g.position.y+=c-c*Math.cos(th);r.g.position.x-=Math.sin(f)*c*Math.sin(th);r.g.position.z-=Math.cos(f)*c*Math.sin(th);
       r.legs[0].position.y=r.legs[1].position.y=0.55;r.legs[0].scale.y=r.legs[1].scale.y=0.62;r.upper.position.y=-0.35;}
     else if(e.slideT>0){r.g.rotation.x+=(-0.55-r.g.rotation.x)*Math.min(1,dt*14);}
+    else if(r.mdl){ // cuerpo a tierra: tumbado de verdad, centrado en su posición y siguiendo la pendiente del terreno
+      const P=r.pose,f=r.g.rotation.y,sf=Math.sin(f),cf=Math.cos(f);let sl=0,yb=e.y;
+      if(e.prone&&ground&&e.jy<=0&&Math.abs(gH(e.x,e.z)-e.y)<0.35){const hb=gH(e.x-sf*0.8,e.z-cf*0.8),hf=gH(e.x+sf*0.9,e.z+cf*0.9);sl=clamp(Math.atan2(hf-hb,1.7),-0.6,0.6);yb=hb;}
+      P.sl=(P.sl||0)+(sl-(P.sl||0))*Math.min(1,dt*8);P.yb=P.yb==null?yb:P.yb+(yb-P.yb)*Math.min(1,dt*12);
+      const tx=e.prone?1.5708-P.sl:0;r.g.rotation.x+=(tx-r.g.rotation.x)*Math.min(1,dt*7);
+      const k=clamp(r.g.rotation.x/1.5708,0,1);if(k>0.02){r.g.position.y+=(P.yb-e.y)*k+0.2*k;r.g.position.x-=sf*0.8*k;r.g.position.z-=cf*0.8*k;}
+      if(r.g.userData.ring)r.g.userData.ring.visible=k<0.25;}
     else{const tx=e.prone?1.42:0;r.g.rotation.x+=(tx-r.g.rotation.x)*Math.min(1,dt*10);if(r.g.rotation.x>0.05)r.g.position.y+=0.24*(r.g.rotation.x/1.42);}
     if(r.mixer){
       {const sp=Math.hypot(e.x-(e._lx==null?e.x:e._lx),e.z-(e._lz==null?e.z:e._lz))/Math.max(dt,1e-3);e._lx=e.x;e._lz=e.z;e.spd=(e.spd||0)+(Math.min(sp,14)-(e.spd||0))*Math.min(1,dt*10);}
-      const mv=ground&&e.spd>0.6&&e.jy<=0&&e.rollT<=0,run=mv&&!e.crouch&&!e.prone&&e.spd>3.2,tw=[mv?0:1,mv&&!run?1:0,run?1:0];
+      const lying=e.prone&&e.flipT<=0&&e.rollT<=0&&e.slideT<=0,mv=ground&&e.spd>0.6&&e.jy<=0&&e.rollT<=0&&!lying,run=mv&&!e.crouch&&!e.prone&&e.spd>3.2,tw=[mv?0:1,mv&&!run?1:0,run?1:0];
+      {const P=r.pose,ct=ground&&e.crouch&&!lying&&e.slideT<=0&&e.rollT<=0?1:0;P.c+=(ct-P.c)*Math.min(1,dt*9);P.p+=((lying&&ground?1:0)-P.p)*Math.min(1,dt*7);}
       for(let i=0;i<3;i++){r.wt[i]+=(tw[i]-r.wt[i])*Math.min(1,dt*8);r.acts[i].setEffectiveWeight(r.wt[i]);}
-      r.mdl.scale.y=CHAR_MODEL.scale*(e.crouch?0.78:1);
-      if(r.g.visible||e.isPlayer){r.acts[2].timeScale=clamp(e.spd/6.5,0.7,1.7);r.acts[1].timeScale=clamp(e.spd/2.2,0.6,1.6);r.mixer.update(dt);if(ground&&e.rollT<=0&&!e.prone)poseAim(r,e);}
+      if(r.g.visible||e.isPlayer){r.acts[2].timeScale=clamp(e.spd/6.5,0.7,1.7);r.acts[1].timeScale=clamp(e.spd/2.2,0.6,1.6);poseRestore(r);r.mixer.update(dt);poseBody(r,e,r.pose.c,r.pose.p);
+        if(ground&&e.rollT<=0){if(r.pose.p>0.5)poseProneArms(r,e);else if(!e.prone)poseAim(r,e);}}
       r.gun.position.set(TUNE.gunPos[0],TUNE.gunPos[1],TUNE.gunPos[2]).multiplyScalar(r.gun.userData.inv||1);
     }else{const gt=ground&&e.weapon.reloadT>0?0.9:0;r.gun.rotation.x+=(gt-r.gun.rotation.x)*Math.min(1,dt*12);}
     r.chute.visible=e.chute;e.flashT-=dt;r.muzzle.visible=e.flashT>0;if(r.muzzle.visible)r.muzzle.material.rotation=RNG()*6.28;
