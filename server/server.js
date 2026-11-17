@@ -9,7 +9,8 @@ const MAX_PLAYERS = 24;
 const QUICK_WAIT = 20000;   // espera máxima en partida rápida antes de empezar con bots
 const QUICK_SHORT = 8000;   // si ya hay bastante gente, se acorta la espera
 const QUICK_ENOUGH = 6;     // jugadores a partir de los cuales se acorta
-const MODES = ['solo', 'duo', 'trio', 'squad'];
+const MODES = ['solo', 'duo', 'trio', 'squad', 'tdm'];
+const roomCap = r => (r.mode === 'tdm' ? 10 : MAX_PLAYERS);
 const LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; // sin I ni O para no confundir con 1 y 0
 const CONTROL = new Set(['create', 'join', 'start', 'quick']);
 const rooms = new Map(); // código -> { code, hostId, players: Map(id -> {id, name, char, ws}) }
@@ -92,7 +93,7 @@ wss.on('connection', ws => {
       if (ws.roomCode) leave(ws);
       const mode = MODES.includes(msg.mode) ? msg.mode : 'solo';
       // primero una sala del mismo modo; si no hay, cualquier sala pública esperando (con poca gente es mejor jugar juntos)
-      const open = [...rooms.values()].filter(r => r.public && !r.started && r.players.size < MAX_PLAYERS);
+      const open = [...rooms.values()].filter(r => r.public && !r.started && r.players.size < roomCap(r));
       let room = open.find(r => r.mode === mode) || open[0];
       if (!room) {
         const code = newCode();
@@ -122,7 +123,7 @@ wss.on('connection', ws => {
     if (msg.t === 'start') {
       if (room.hostId !== ws.playerId) return;
       const seed = Number.isFinite(msg.seed) ? msg.seed | 0 : Math.floor(Math.random() * 2147483647);
-      const mode = ['solo', 'duo', 'trio', 'squad'].includes(msg.mode) ? msg.mode : 'solo';
+      const mode = MODES.includes(msg.mode) ? msg.mode : 'solo';
       const rule = msg.rule === 'versus' ? 'versus' : 'together';
       broadcast(room, { t: 'start', seed, hostId: room.hostId, players: playerList(room), mode, rule });
       return;
