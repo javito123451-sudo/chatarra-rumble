@@ -1571,6 +1571,18 @@ function robotGeo(ck,mdl,src){
     LR('ToeBase',ACC,()=>rbox(0.11,0.03,0.06,0.012),[toe[0]-0.004,0.098,toe[2]+0.06]);
     LR('Leg',ACC,()=>cyl(0.09,0.09,0.03,14),[an[0],an[1]+0.06,an[2]]);
   }
+  // Mk-II: microdetalles de armadura compartidos por los cuatro robots.
+  // Se añaden a la geometría skinned existente: no alteran el rig, las animaciones ni la colisión.
+  LR('Arm',DARK,()=>sph(0.018,8),[sh[0]+0.035,sh[1]+0.075,sh[2]+0.125]);
+  LR('Arm',ACC,()=>rbox(0.105,0.035,0.075,0.012),[sh[0]+0.015,sh[1]-0.055,sh[2]+0.105],[0.08,0,0]);
+  LR('ForeArm',DARK,()=>sph(0.016,8),[(el[0]+wr[0])/2,el[1]+0.035,el[2]+0.105]);
+  LR('Leg',DARK,()=>sph(0.018,8),[kn[0],kn[1]+0.045,kn[2]+0.105]);
+  LR('Leg',ACC,()=>rbox(0.105,0.028,0.055,0.01),[kn[0],kn[1]-0.035,kn[2]+0.105]);
+  // Placa de identificación y testigos frontales: se mantienen en el pecho al animar.
+  A('Spine2',DARK,rbox(0.105,0.052,0.014,0.006),[0,ch[1]+0.16,ch[2]+0.205]);
+  for(const x of [-0.039,0.039])A('Spine2',ACC,sph(0.008,6),[x,ch[1]+0.16,ch[2]+0.216]);
+  for(let k=0;k<3;k++)A('Spine2',GLOW,rbox(0.012,0.006,0.006,0.002),[(k-1)*0.025,ch[1]+0.16,ch[2]+0.217]);
+
   const g=new THREE.BufferGeometry(),p=[],n=[],u=[],si=[],sw=[],ix=[];let vo=0;
   bufs.forEach((b,mi)=>{g.addGroup(ix.length,b.i.length,mi);for(const k of b.i)ix.push(k+vo);for(const x of b.p)p.push(x);for(const x of b.n)n.push(x);for(const x of b.u)u.push(x);for(const s of b.s){si.push(s,0,0,0);sw.push(1,0,0,0);}vo+=b.p.length/3;});
   g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('normal',new THREE.Float32BufferAttribute(n,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(u,2));
@@ -1613,7 +1625,8 @@ function makeModelHuman(ck,isPlayer,cos){cos=cleanCos(cos);
   const cb=new Batch();cb.add(G.dome,MX(0,4,0,0,0,0,2,1.1,2),c.color,false);cb.add(G.cyl8,MX(0,4.02,0,0,0,0,2.02,0.12,2.02),0xfff6e8,false);
   for(const [x,z] of [[-1.4,-1.4],[1.4,-1.4],[-1.4,1.4],[1.4,1.4]])cb.add(G.cyl8,lineMX(x*0.18,1.75,z*0.12,x,4,z,0.02),0x2f3138,false);
   const chute=new THREE.Group();chute.add(cb.build(MAT({vertexColors:true}),0.035,true));chute.visible=false;g.add(chute);
-  return {g,upper,legs,arms,flash,all,gunMat,gun,gunMesh,shield,stun,chute,muzzle,mdl,mixer,acts,bones,pose,wt:[1,0,0]};
+  const glowMats=all.filter(m=>m&&m.userData&&m.userData.glow);
+  return {g,upper,legs,arms,flash,all,glowMats,gunMat,gun,gunMesh,shield,stun,chute,muzzle,mdl,mixer,acts,bones,pose,wt:[1,0,0]};
 }
 // pose de apuntar: orienta brazos hacia delante (como sujetando un arma larga) y alinea el arma con la mirada
 const _pa=new THREE.Vector3(),_pb=new THREE.Vector3(),_pd=new THREE.Vector3(),_q1=new THREE.Quaternion(),_q2=new THREE.Quaternion(),_q3=new THREE.Quaternion(),_gq=new THREE.Quaternion();
@@ -2516,6 +2529,9 @@ function syncVisual(e,dt,pb){
       r.gun.position.set(TUNE.gunPos[0],TUNE.gunPos[1],TUNE.gunPos[2]).multiplyScalar(r.gun.userData.inv||1);
     }else{const gt=ground&&e.weapon.reloadT>0?0.9:0;r.gun.rotation.x+=(gt-r.gun.rotation.x)*Math.min(1,dt*12);}
     r.chute.visible=e.chute;e.flashT-=dt;r.muzzle.visible=e.flashT>0;if(r.muzzle.visible)r.muzzle.material.rotation=RNG()*6.28;
+    // Pulso energético de los paneles emisivos: el brillo acompaña el ritmo de animación sin crear luces por robot.
+    if(r.glowMats&&r.glowMats.length){const pulse=1.45+0.42*Math.sin(time*3.2+(e.ix||0)*0.7)+(e.hitFlash>0?0.65:0);
+      for(const gm of r.glowMats)gm.emissiveIntensity=pulse;}
     if(HQ&&ground&&e.moving&&!e.crouch&&e.jy<=0){e.dustT=(e.dustT||0)-dt;if(e.dustT<=0){e.dustT=0.32;if(Math.hypot(e.x-camera.position.x,e.z-camera.position.z)<30)dust(e.x,e.z,1);}}
     r.shield.visible=e.heatT>0;if(r.shield.visible)r.shield.material.opacity=0.25+0.12*Math.sin(time*20);
     r.stun.visible=e.stunT>0;if(r.stun.visible)r.stun.rotation.z+=dt*7;
