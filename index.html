@@ -1571,6 +1571,18 @@ function robotGeo(ck,mdl,src){
     LR('ToeBase',ACC,()=>rbox(0.11,0.03,0.06,0.012),[toe[0]-0.004,0.098,toe[2]+0.06]);
     LR('Leg',ACC,()=>cyl(0.09,0.09,0.03,14),[an[0],an[1]+0.06,an[2]]);
   }
+  // Mk-II: microdetalles de armadura compartidos por los cuatro robots.
+  // Se añaden a la geometría skinned existente: no alteran el rig, las animaciones ni la colisión.
+  LR('Arm',DARK,()=>sph(0.018,8),[sh[0]+0.035,sh[1]+0.075,sh[2]+0.125]);
+  LR('Arm',ACC,()=>rbox(0.105,0.035,0.075,0.012),[sh[0]+0.015,sh[1]-0.055,sh[2]+0.105],[0.08,0,0]);
+  LR('ForeArm',DARK,()=>sph(0.016,8),[(el[0]+wr[0])/2,el[1]+0.035,el[2]+0.105]);
+  LR('Leg',DARK,()=>sph(0.018,8),[kn[0],kn[1]+0.045,kn[2]+0.105]);
+  LR('Leg',ACC,()=>rbox(0.105,0.028,0.055,0.01),[kn[0],kn[1]-0.035,kn[2]+0.105]);
+  // Placa de identificación y testigos frontales: se mantienen en el pecho al animar.
+  A('Spine2',DARK,rbox(0.105,0.052,0.014,0.006),[0,ch[1]+0.16,ch[2]+0.205]);
+  for(const x of [-0.039,0.039])A('Spine2',ACC,sph(0.008,6),[x,ch[1]+0.16,ch[2]+0.216]);
+  for(let k=0;k<3;k++)A('Spine2',GLOW,rbox(0.012,0.006,0.006,0.002),[(k-1)*0.025,ch[1]+0.16,ch[2]+0.217]);
+
   const g=new THREE.BufferGeometry(),p=[],n=[],u=[],si=[],sw=[],ix=[];let vo=0;
   bufs.forEach((b,mi)=>{g.addGroup(ix.length,b.i.length,mi);for(const k of b.i)ix.push(k+vo);for(const x of b.p)p.push(x);for(const x of b.n)n.push(x);for(const x of b.u)u.push(x);for(const s of b.s){si.push(s,0,0,0);sw.push(1,0,0,0);}vo+=b.p.length/3;});
   g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('normal',new THREE.Float32BufferAttribute(n,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(u,2));
